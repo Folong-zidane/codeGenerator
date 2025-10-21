@@ -17,8 +17,11 @@ public class EnhancedEntityGenerator {
         
         addIdField(entityBuilder);
         
+        // Ajouter seulement les champs du modèle (pas l'ID qui est déjà ajouté)
         for (Field field : model.getFields()) {
-            entityBuilder.addField(generateEnhancedField(field));
+            if (!field.getName().equals("id")) {
+                entityBuilder.addField(generateEnhancedField(field));
+            }
         }
         
         addAuditFields(entityBuilder);
@@ -128,21 +131,23 @@ public class EnhancedEntityGenerator {
             .build());
         
         for (Field field : model.getFields()) {
-            String fieldName = field.getName();
-            String capitalizedName = capitalize(fieldName);
-            TypeName fieldType = getJavaType(field.getType());
-            
-            builder.addMethod(MethodSpec.methodBuilder("get" + capitalizedName)
-                .addModifiers(Modifier.PUBLIC)
-                .returns(fieldType)
-                .addStatement("return $L", fieldName)
-                .build());
-            
-            builder.addMethod(MethodSpec.methodBuilder("set" + capitalizedName)
-                .addModifiers(Modifier.PUBLIC)
-                .addParameter(fieldType, fieldName)
-                .addStatement("this.$L = $L", fieldName, fieldName)
-                .build());
+            if (!field.getName().equals("id")) {
+                String fieldName = field.getName();
+                String capitalizedName = capitalize(fieldName);
+                TypeName fieldType = getJavaType(field.getType());
+                
+                builder.addMethod(MethodSpec.methodBuilder("get" + capitalizedName)
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(fieldType)
+                    .addStatement("return $L", fieldName)
+                    .build());
+                
+                builder.addMethod(MethodSpec.methodBuilder("set" + capitalizedName)
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(fieldType, fieldName)
+                    .addStatement("this.$L = $L", fieldName, fieldName)
+                    .build());
+            }
         }
     }
     

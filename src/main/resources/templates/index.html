@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">UML-to-CRUD Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        .hero-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .feature-card { transition: transform 0.3s; }
+        .feature-card:hover { transform: translateY(-5px); }
+        .code-block { background: #2d3748; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">🚀 UML-to-CRUD Generator</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/docs">Documentation</a>
+                <a class="nav-link" href="/examples">Exemples</a>
+                <a class="nav-link" href="/api/generate/validate" target="_blank">API</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section py-5">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-4">Générateur de Code CRUD</h1>
+            <p class="lead mb-4">Transformez vos diagrammes UML en applications complètes</p>
+            <p class="mb-4">
+                <strong>Auteur :</strong> <span th:text="${author}">FOLONG TAFOUKEU ZIDANE</span><br>
+                <strong>École :</strong> <span th:text="${school}">ENSPY</span>
+            </p>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="code-block p-4 text-start">
+                        <pre class="text-light mb-0"><code>python crud_generator_cli.py generate \
+  --uml diagram.mermaid \
+  --output ./mon-projet \
+  --framework spring-boot</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">🎯 Fonctionnalités</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 border-0 shadow">
+                        <div class="card-body text-center">
+                            <div class="display-1 mb-3">⚡</div>
+                            <h5>Génération Rapide</h5>
+                            <p>De UML à application complète en quelques secondes</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 border-0 shadow">
+                        <div class="card-body text-center">
+                            <div class="display-1 mb-3">🌐</div>
+                            <h5>Multi-Frameworks</h5>
+                            <p>Spring Boot, Django, Flask, .NET, Express.js</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 border-0 shadow">
+                        <div class="card-body text-center">
+                            <div class="display-1 mb-3">🏗️</div>
+                            <h5>Architecture MVC</h5>
+                            <p>Entités, Repositories, Services, Controllers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workflow -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">📋 Comment ça marche ?</h2>
+            <div class="row">
+                <div class="col-md-3 text-center mb-4">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <span class="fw-bold">1</span>
+                    </div>
+                    <h6 class="mt-3">Créez votre diagramme UML</h6>
+                    <p class="small text-muted">Format Mermaid</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <span class="fw-bold">2</span>
+                    </div>
+                    <h6 class="mt-3">Lancez la commande CLI</h6>
+                    <p class="small text-muted">Spécifiez le framework</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <span class="fw-bold">3</span>
+                    </div>
+                    <h6 class="mt-3">L'API génère le code</h6>
+                    <p class="small text-muted">Projet complet créé</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <span class="fw-bold">4</span>
+                    </div>
+                    <h6 class="mt-3">Lancez votre app</h6>
+                    <p class="small text-muted">Prêt à l'emploi !</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Start -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">🚀 Démarrage Rapide</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>1. Installation CLI</h5>
+                    <div class="code-block p-3 mb-4">
+                        <pre class="text-light mb-0"><code>git clone &lt;repo&gt;
+cd cli-clients/python-client
+pip install -r requirements.txt</code></pre>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>2. Génération</h5>
+                    <div class="code-block p-3 mb-4">
+                        <pre class="text-light mb-0"><code>python crud_generator_cli.py generate \
+  --uml diagram.mermaid \
+  --output ./mon-app \
+  --framework spring-boot</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container text-center">
+            <p class="mb-2">
+                <strong>Développé par :</strong> <span th:text="${author}">FOLONG TAFOUKEU ZIDANE</span>
+            </p>
+            <p class="mb-0 text-muted">
+                Élève Ingénieur - ENSPY (École Nationale Supérieure Polytechnique de Yaoundé)
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

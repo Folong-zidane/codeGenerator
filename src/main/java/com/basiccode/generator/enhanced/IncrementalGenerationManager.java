@@ -20,10 +20,18 @@ public class IncrementalGenerationManager {
     public GenerationResult generateIncremental(List<ClassModel> classes, String basePackage, Path outputDir) throws IOException {
         Files.createDirectories(outputDir);
         
+        // Générateurs pour tous les composants
         EnhancedEntityGenerator entityGen = new EnhancedEntityGenerator();
+        com.basiccode.generator.generator.RepositoryGenerator repoGen = new com.basiccode.generator.generator.RepositoryGenerator();
+        com.basiccode.generator.generator.ServiceGenerator serviceGen = new com.basiccode.generator.generator.ServiceGenerator();
+        com.basiccode.generator.generator.ControllerGenerator controllerGen = new com.basiccode.generator.generator.ControllerGenerator();
         
         for (ClassModel classModel : classes) {
+            // Générer tous les composants
             generateEntityIncremental(classModel, basePackage, outputDir, entityGen);
+            generateRepositoryIncremental(classModel, basePackage, outputDir, repoGen);
+            generateServiceIncremental(classModel, basePackage, outputDir, serviceGen);
+            generateControllerIncremental(classModel, basePackage, outputDir, controllerGen);
         }
         
         return new GenerationResult(reports);
@@ -60,12 +68,70 @@ public class IncrementalGenerationManager {
         } else {
             // New file
             Files.createDirectories(entityPath.getParent());
-            newCode.writeTo(outputDir);
+            Files.writeString(entityPath, newCode.toString());
             report.setCreated(true);
             System.out.println("✅ Created " + entityName);
         }
         
         reports.add(report);
+    }
+    
+    private void generateRepositoryIncremental(ClassModel classModel, String basePackage, Path outputDir, com.basiccode.generator.generator.RepositoryGenerator generator) throws IOException {
+        String className = classModel.getName() + "Repository";
+        Path filePath = getComponentPath(outputDir, basePackage, "repository", className);
+        
+        JavaFile newCode = generator.generateRepository(classModel, basePackage, "java");
+        generateComponent(classModel, filePath, newCode, "Repository");
+    }
+    
+    private void generateServiceIncremental(ClassModel classModel, String basePackage, Path outputDir, com.basiccode.generator.generator.ServiceGenerator generator) throws IOException {
+        String className = classModel.getName() + "Service";
+        Path filePath = getComponentPath(outputDir, basePackage, "service", className);
+        
+        JavaFile newCode = generator.generateService(classModel, basePackage, "java");
+        generateComponent(classModel, filePath, newCode, "Service");
+    }
+    
+    private void generateControllerIncremental(ClassModel classModel, String basePackage, Path outputDir, com.basiccode.generator.generator.ControllerGenerator generator) throws IOException {
+        String className = classModel.getName() + "Controller";
+        Path filePath = getComponentPath(outputDir, basePackage, "controller", className);
+        
+        JavaFile newCode = generator.generateController(classModel, basePackage, "java");
+        generateComponent(classModel, filePath, newCode, "Controller");
+    }
+    
+    private void generateComponent(ClassModel classModel, Path filePath, JavaFile newCode, String type) throws IOException {
+        GenerationReport report = new GenerationReport(classModel.getName(), type);
+        
+        if (Files.exists(filePath)) {
+            createBackup(filePath);
+            IntelligentMerger.MergeResult result = merger.mergeWithExisting(newCode, filePath);
+            
+            if (result.getChanges().hasChanges()) {
+                Files.writeString(filePath, result.getMergedCode());
+                report.setMerged(true);
+                report.addChanges(result.getChanges().getNewFields(), result.getChanges().getNewMethods());
+                System.out.println("🔄 Merged " + classModel.getName() + type);
+            } else {
+                report.setSkipped(true);
+                System.out.println("⏭️  Skipped " + classModel.getName() + type);
+            }
+        } else {
+            Files.createDirectories(filePath.getParent());
+            Files.writeString(filePath, newCode.toString());
+            report.setCreated(true);
+            System.out.println("✅ Created " + classModel.getName() + type);
+        }
+        
+        reports.add(report);
+    }
+    
+    private Path getComponentPath(Path outputDir, String basePackage, String component, String className) {
+        String packagePath = basePackage.replace('.', '/');
+        return outputDir.resolve("src/main/java")
+            .resolve(packagePath)
+            .resolve(component)
+            .resolve(className + ".java");
     }
     
     private Path getEntityPath(Path outputDir, String basePackage, String entityName) {

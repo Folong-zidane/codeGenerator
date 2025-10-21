@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemples - UML-to-CRUD Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .code-block { background: #2d3748; border-radius: 8px; }
+        .example-card { transition: transform 0.2s; }
+        .example-card:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">🚀 UML-to-CRUD Generator</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Accueil</a>
+                <a class="nav-link" href="/docs">Documentation</a>
+                <a class="nav-link active" href="/examples">Exemples</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <h1>💡 Exemples Pratiques</h1>
+        <p class="lead">Découvrez comment utiliser le générateur avec des cas concrets</p>
+        <p><strong>Auteur :</strong> <span th:text="${author}">FOLONG TAFOUKEU ZIDANE</span></p>
+
+        <!-- E-commerce Example -->
+        <div class="card example-card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">🛒 Exemple E-commerce</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Diagramme UML</h5>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>classDiagram
+    class User {
+        +UUID id
+        +String username
+        +String email
+        +String password
+        +Boolean active
+        +validateEmail()
+        +changePassword(newPassword)
+    }
+    
+    class Product {
+        +UUID id
+        +String name
+        +String description
+        +Float price
+        +Integer stock
+        +Boolean available
+        +updateStock(quantity)
+    }
+    
+    class Order {
+        +UUID id
+        +UUID userId
+        +Float totalAmount
+        +String status
+        +Date orderDate
+        +processOrder()
+        +cancelOrder()
+    }
+    
+    class OrderItem {
+        +UUID id
+        +UUID orderId
+        +UUID productId
+        +Integer quantity
+        +Float unitPrice
+        +calculateSubtotal()
+    }
+    
+    User "1" --> "*" Order
+    Order "1" --> "*" OrderItem
+    Product "1" --> "*" OrderItem</code></pre>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Commande de génération</h5>
+                        <div class="code-block p-3 mb-3">
+                            <pre class="text-light mb-0"><code># Spring Boot
+python crud_generator_cli.py generate \
+  --uml ecommerce.mermaid \
+  --output ./ecommerce-api \
+  --framework spring-boot \
+  --package com.ecommerce \
+  --type complete-project</code></pre>
+                        </div>
+                        
+                        <h5>Structure générée</h5>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>ecommerce-api/
+├── pom.xml
+├── src/main/java/com/ecommerce/
+│   ├── Application.java
+│   ├── entity/
+│   │   ├── User.java
+│   │   ├── Product.java
+│   │   ├── Order.java
+│   │   └── OrderItem.java
+│   ├── repository/
+│   │   ├── UserRepository.java
+│   │   ├── ProductRepository.java
+│   │   ├── OrderRepository.java
+│   │   └── OrderItemRepository.java
+│   ├── service/
+│   │   ├── UserService.java
+│   │   ├── ProductService.java
+│   │   ├── OrderService.java
+│   │   └── OrderItemService.java
+│   └── controller/
+│       ├── UserController.java
+│       ├── ProductController.java
+│       ├── OrderController.java
+│       └── OrderItemController.java
+├── src/main/resources/
+│   └── application.yml
+└── README.md</code></pre>
+                        </div>
+                        
+                        <h5>Lancement</h5>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>cd ecommerce-api
+mvn spring-boot:run
+# API disponible sur http://localhost:8080</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blog Example -->
+        <div class="card example-card mb-4">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">📝 Exemple Blog (Django)</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Diagramme UML</h5>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>classDiagram
+    class Author {
+        +UUID id
+        +String name
+        +String email
+        +String bio
+        +Date joinDate
+        +updateProfile()
+    }
+    
+    class Post {
+        +UUID id
+        +UUID authorId
+        +String title
+        +String content
+        +String status
+        +Date publishDate
+        +publish()
+        +archive()
+    }
+    
+    class Comment {
+        +UUID id
+        +UUID postId
+        +String authorName
+        +String content
+        +Date createdAt
+        +moderate()
+    }
+    
+    Author "1" --> "*" Post
+    Post "1" --> "*" Comment</code></pre>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Commande</h5>
+                        <div class="code-block p-3 mb-3">
+                            <pre class="text-light mb-0"><code>python crud_generator_cli.py generate \
+  --uml blog.mermaid \
+  --output ./blog-django \
+  --framework django \
+  --package blog \
+  --type complete-project</code></pre>
+                        </div>
+                        
+                        <h5>Lancement</h5>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>cd blog-django
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+# API sur http://localhost:8000</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Library Example -->
+        <div class="card example-card mb-4">
+            <div class="card-header bg-warning text-white">
+                <h4 class="mb-0">📚 Exemple Bibliothèque (Flask)</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Diagramme UML Simple</h5>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>classDiagram
+    class Book {
+        +UUID id
+        +String title
+        +String author
+        +String isbn
+        +Boolean available
+        +Date publishDate
+        +borrow()
+        +return()
+    }
+    
+    class Member {
+        +UUID id
+        +String name
+        +String email
+        +Date memberSince
+        +register()
+    }
+    
+    class Loan {
+        +UUID id
+        +UUID bookId
+        +UUID memberId
+        +Date loanDate
+        +Date returnDate
+        +extend()
+    }
+    
+    Book "1" --> "*" Loan
+    Member "1" --> "*" Loan</code></pre>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Génération Flask</h5>
+                        <div class="code-block p-3 mb-3">
+                            <pre class="text-light mb-0"><code>python crud_generator_cli.py generate \
+  --uml library.mermaid \
+  --output ./library-flask \
+  --framework flask \
+  --type complete-project</code></pre>
+                        </div>
+                        
+                        <h5>Résultat</h5>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>library-flask/
+├── app.py
+├── requirements.txt
+├── entities/
+├── services/
+├── controllers/
+└── README.md
+
+# Lancement
+cd library-flask
+pip install -r requirements.txt
+python app.py</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Commands -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">⚡ Commandes Rapides</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Validation UML</h5>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code># Vérifier la syntaxe
+python crud_generator_cli.py validate \
+  --uml mon-diagram.mermaid</code></pre>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Génération fichiers uniquement</h5>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code># Juste les classes CRUD
+python crud_generator_cli.py generate \
+  --uml diagram.mermaid \
+  --output ./crud-only \
+  --type files-only</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-light py-4">
+        <div class="container text-center">
+            <p class="mb-0">
+                <strong>Développé par :</strong> <span th:text="${author}">FOLONG TAFOUKEU ZIDANE</span> - ENSPY
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

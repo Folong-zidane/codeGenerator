@@ -1,0 +1,16 @@
+{
+  "name": "crud-generator-cli",
+  "version": "1.0.0",
+  "description": "CLI client for UML-to-CRUD Generator",
+  "main": "crud-generator.js",
+  "bin": {
+    "crud-generator": "./crud-generator.js"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "axios": "^1.6.2"
+  },
+  "scripts": {
+    "start": "node crud-generator.js"
+  }
+}

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation API - UML-to-CRUD Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        .code-block { background: #2d3748; border-radius: 8px; }
+        .endpoint { border-left: 4px solid #007bff; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">🚀 UML-to-CRUD Generator</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Accueil</a>
+                <a class="nav-link active" href="/docs">Documentation</a>
+                <a class="nav-link" href="/examples">Exemples</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="sticky-top" style="top: 20px;">
+                    <h6>Navigation</h6>
+                    <nav class="nav flex-column">
+                        <a class="nav-link" href="#cli">CLI Client</a>
+                        <a class="nav-link" href="#api">API REST</a>
+                        <a class="nav-link" href="#frameworks">Frameworks</a>
+                        <a class="nav-link" href="#examples">Exemples</a>
+                    </nav>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <h1>📚 Documentation API</h1>
+                <p class="lead">Guide complet pour utiliser le générateur UML-to-CRUD</p>
+                <p><strong>Auteur :</strong> <span th:text="${author}">FOLONG TAFOUKEU ZIDANE</span></p>
+
+                <!-- CLI Section -->
+                <section id="cli" class="mb-5">
+                    <h2>🖥️ CLI Client</h2>
+                    
+                    <h4>Installation</h4>
+                    <div class="code-block p-3 mb-3">
+                        <pre class="text-light mb-0"><code># Python CLI
+cd cli-clients/python-client
+pip install -r requirements.txt
+
+# Node.js CLI  
+cd cli-clients/node-client
+npm install</code></pre>
+                    </div>
+
+                    <h4>Utilisation</h4>
+                    <div class="code-block p-3 mb-3">
+                        <pre class="text-light mb-0"><code># Génération complète Spring Boot
+python crud_generator_cli.py generate \
+  --uml diagram.mermaid \
+  --output ./mon-projet \
+  --framework spring-boot \
+  --type complete-project
+
+# Génération Django
+python crud_generator_cli.py generate \
+  --uml diagram.mermaid \
+  --output ./django-app \
+  --framework django
+
+# Validation UML
+python crud_generator_cli.py validate --uml diagram.mermaid</code></pre>
+                    </div>
+
+                    <h4>Options disponibles</h4>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Option</th>
+                                <th>Description</th>
+                                <th>Valeurs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>--uml</code></td>
+                                <td>Fichier diagramme UML</td>
+                                <td>Chemin vers .mermaid</td>
+                            </tr>
+                            <tr>
+                                <td><code>--output</code></td>
+                                <td>Répertoire de sortie</td>
+                                <td>Chemin absolu/relatif</td>
+                            </tr>
+                            <tr>
+                                <td><code>--framework</code></td>
+                                <td>Framework cible</td>
+                                <td>spring-boot, django, flask, dotnet, express</td>
+                            </tr>
+                            <tr>
+                                <td><code>--type</code></td>
+                                <td>Type de génération</td>
+                                <td>files-only, complete-project</td>
+                            </tr>
+                            <tr>
+                                <td><code>--package</code></td>
+                                <td>Nom du package</td>
+                                <td>com.example (défaut)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- API Section -->
+                <section id="api" class="mb-5">
+                    <h2>🌐 API REST</h2>
+                    
+                    <div class="endpoint p-3 mb-3">
+                        <h5>POST /api/v2/generate/files</h5>
+                        <p>Génère les fichiers directement sur le serveur</p>
+                        
+                        <h6>Request Body:</h6>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>{
+  "umlContent": "classDiagram\n    class User {\n        +UUID id\n        +String name\n    }",
+  "packageName": "com.example",
+  "outputPath": "/path/to/project",
+  "generationType": "COMPLETE_PROJECT",
+  "framework": "SPRING_BOOT"
+}</code></pre>
+                        </div>
+
+                        <h6>Response:</h6>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>{
+  "success": true,
+  "message": "Files generated successfully",
+  "projectPath": "/path/to/project",
+  "classCount": 3
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint p-3 mb-3">
+                        <h5>POST /api/generate/validate</h5>
+                        <p>Valide la syntaxe UML</p>
+                        
+                        <h6>Request Body:</h6>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>"classDiagram\n    class User {\n        +UUID id\n    }"</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Frameworks Section -->
+                <section id="frameworks" class="mb-5">
+                    <h2>🏗️ Frameworks Supportés</h2>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">Spring Boot</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="mb-0">
+                                        <li>pom.xml avec dépendances</li>
+                                        <li>application.yml</li>
+                                        <li>Structure Maven</li>
+                                        <li>JPA Entities</li>
+                                        <li>REST Controllers</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">Django</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="mb-0">
+                                        <li>requirements.txt</li>
+                                        <li>settings.py</li>
+                                        <li>manage.py</li>
+                                        <li>Models Django</li>
+                                        <li>ViewSets DRF</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-warning text-white">
+                                    <h6 class="mb-0">Flask</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="mb-0">
+                                        <li>requirements.txt</li>
+                                        <li>app.py principal</li>
+                                        <li>SQLAlchemy models</li>
+                                        <li>Flask routes</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">.NET</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="mb-0">
+                                        <li>.csproj file</li>
+                                        <li>Program.cs</li>
+                                        <li>Entity Framework</li>
+                                        <li>API Controllers</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Examples Section -->
+                <section id="examples" class="mb-5">
+                    <h2>💡 Exemples Pratiques</h2>
+                    
+                    <h4>Diagramme UML exemple</h4>
+                    <div class="code-block p-3 mb-3">
+                        <pre class="text-light mb-0"><code>classDiagram
+    class User {
+        +UUID id
+        +String username
+        +String email
+        +Boolean active
+        +validateEmail()
+    }
+    
+    class Order {
+        +UUID id
+        +UUID userId
+        +Float totalAmount
+        +Date orderDate
+        +processOrder()
+    }
+    
+    User "1" --> "*" Order</code></pre>
+                    </div>
+
+                    <h4>Commandes complètes</h4>
+                    <div class="code-block p-3 mb-3">
+                        <pre class="text-light mb-0"><code># Projet Spring Boot complet
+python crud_generator_cli.py generate \
+  --uml ecommerce.mermaid \
+  --output /home/user/mon-ecommerce \
+  --framework spring-boot \
+  --package com.ecommerce \
+  --type complete-project
+
+# Résultat: Projet prêt avec mvn spring-boot:run</code></pre>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-light py-4">
+        <div class="container text-center">
+            <p class="mb-0">
+                <strong>Développé par :</strong> <span th:text="${author}">FOLONG TAFOUKEU ZIDANE</span> - ENSPY
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
