@@ -1,0 +1,30 @@
+classDiagram
+    class User {
+        +UUID id
+        +String username
+        +String email
+        +Boolean active
+    }
+    
+    class Product {
+        +UUID id
+        +String name
+        +Float price
+        +Integer stock
+    }
+    
+    class Order {
+        +UUID id
+        +Float totalAmount
+        +String status
+    }
+    
+    class OrderItem {
+        +UUID id
+        +Integer quantity
+        +Float unitPrice
+    }
+    
+    User "1" --> "*" Order
+    Order "1" --> "*" OrderItem
+    Product "1" --> "*" OrderItem

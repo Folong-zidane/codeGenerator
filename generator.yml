@@ -1,0 +1,5 @@
+watch_directory: "./diagrams"
+output_directory: "./generated"
+package_name: "com.example"
+incremental: true
+auto_watch: true

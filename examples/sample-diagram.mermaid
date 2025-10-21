@@ -1,0 +1,44 @@
+classDiagram
+    class User {
+        +UUID id
+        +String username
+        +String email
+        +String password
+        +Boolean active
+        +validateEmail()
+        +changePassword(newPassword)
+    }
+    
+    class Product {
+        +UUID id
+        +String name
+        +String description
+        +Float price
+        +Integer stock
+        +Boolean available
+        +updateStock(quantity)
+        +calculateDiscount()
+    }
+    
+    class Order {
+        +UUID id
+        +UUID userId
+        +Float totalAmount
+        +String status
+        +Date orderDate
+        +processOrder()
+        +cancelOrder()
+    }
+    
+    class OrderItem {
+        +UUID id
+        +UUID orderId
+        +UUID productId
+        +Integer quantity
+        +Float unitPrice
+        +calculateSubtotal()
+    }
+    
+    User "1" --> "*" Order
+    Order "1" --> "*" OrderItem
+    Product "1" --> "*" OrderItem

@@ -1,0 +1,12 @@
+target/
+*.jar
+*.war
+*.ear
+*.class
+.DS_Store
+.idea/
+*.iml
+.vscode/
+generated*/
+test-output/
+*.log
