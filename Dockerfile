@@ -16,4 +16,4 @@ RUN mvn clean package -DskipTests
 EXPOSE 8080
 
 # Run Spring Boot application
-CMD ["java", "-jar", "target/uml-to-code-generator-1.0.0.jar"]
+CMD ["java", "-jar", "target/uml-generator.jar"]
