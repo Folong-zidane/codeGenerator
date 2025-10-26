@@ -1,0 +1,598 @@
+classDiagram
+    %% ==================== USER HIERARCHY ====================
+    class User {
+        +UUID id
+        +String email
+        +String password
+        +String name
+        +String phone_number
+        +Date birth_date
+        +String country
+        +String region
+        +String city
+        +String home_address
+        +String home_address_locality
+        +String id_card_number
+        +String niu
+        +String identity_photo_url
+        +JSON id_card_urls
+        +String niu_document_url
+        +AccountType account_type
+        +AccountType previous_account_type
+        +Boolean is_active
+        +Date created_at
+        +Date updated_at
+        +login()
+        +logout()
+        +updateProfile()
+        +upgradeAccount(newType)
+        +suspendAccount()
+    }
+
+    class UserHistory {
+        +UUID id
+        +UUID user_id
+        +AccountType old_type
+        +AccountType new_type
+        +String change_reason
+        +UUID actor_id
+        +Date change_date
+        +JSON metadata
+        +String comment
+    }
+
+    class BusinessActor {
+        <<abstract>>
+        +UUID user_id
+        +String business_name
+        +String business_address
+        +String business_locality
+        +String country
+        +String town
+        +String cni_number
+        +String cni_recto_url
+        +String cni_verso_url
+        +String niu
+        +String photo_url
+        +Boolean is_verified
+        +Boolean is_enabled
+        +Date verification_date
+        +verifyAccount()
+        +getStatistics()
+    }
+
+    class Client {
+        +sendPackage()
+        +trackPackage()
+        +getHistory()
+        +upgradeToFreelance()
+    }
+
+    class Freelance {
+        +UUID relay_point_id
+        +manageRelayPoint()
+        +acceptPackage()
+        +getInventory()
+    }
+
+    class Employee {
+        +UUID relay_point_id
+        +UUID agency_id
+        +manageRelayPoint()
+        +acceptPackage()
+        +sendPackage()
+        +createPackage()
+        +getInventory()
+    }
+
+    class Agency {
+        +UUID owner_id
+        +String commercial_name
+        +String address
+        +String address_locality
+        +String opening_hours
+        +String photo_url
+        +Int employee_count
+        +Boolean is_enabled
+        +addEmployee()
+        +manageRelayPoint()
+        +getRevenue()
+    }
+
+    class AgencyOwner {
+        +UUID agency_id
+        +String business_registration
+        +manageAgency()
+        +addRelayPoint()
+        +viewReports()
+    }
+
+    class Deliverer {
+        +UUID vehicle_id
+        +String driving_license_front_url
+        +String driving_license_back_url
+        +String accident_history
+        +Boolean is_available
+        +DeliveryStatus status
+        +Float current_latitude
+        +Float current_longitude
+        +Date last_location_update
+        +acceptDelivery()
+        +completeDelivery()
+        +pickupPackage()
+        +updateLocation(lat, lon)
+        +changeStatus(newStatus)
+        +getEarnings()
+    }
+
+    class DelivererHistory {
+        +UUID id
+        +UUID deliverer_id
+        +DeliveryStatus old_status
+        +DeliveryStatus new_status
+        +Float latitude
+        +Float longitude
+        +Date change_date
+        +String reason
+        +JSON metadata
+    }
+
+    %% ==================== RELAY POINT ====================
+    class RelayPoint {
+        +UUID id
+        +UUID owner_id
+        +String relay_point_name
+        +String relay_point_address
+        +String relay_point_locality
+        +String opening_hours
+        +StorageCapacity storage_capacity
+        +Int current_package_count
+        +Int max_capacity
+        +String relay_point_photo_url
+        +Float latitude
+        +Float longitude
+        +Boolean is_active
+        +JSON day_schedules
+        +Date created_at
+        +Date updated_at
+        +addPackage()
+        +removePackage()
+        +checkCapacity()
+        +getAvailability()
+        +updateSchedule(schedule)
+        +activate()
+        +deactivate()
+    }
+
+    class RelayPointHistory {
+        +UUID id
+        +UUID relay_point_id
+        +String action_type
+        +String old_state
+        +String new_state
+        +UUID actor_id
+        +Date change_date
+        +String reason
+        +JSON metadata
+        +String comment
+    }
+
+    %% ==================== VEHICLE ====================
+    class Vehicle {
+        +UUID id
+        +UUID deliverer_id
+        +VehicleType vehicle_type
+        +String vehicle_brand
+        +String vehicle_registration
+        +String vehicle_color
+        +String trunk_dimensions
+        +JSON vehicle_photo_urls
+        +Boolean is_verified
+        +Boolean is_active
+        +Date verification_date
+        +Date created_at
+        +Date updated_at
+        +updateInfo()
+        +verifyDocuments()
+        +activate()
+        +deactivate()
+    }
+
+    class VehicleHistory {
+        +UUID id
+        +UUID vehicle_id
+        +String action_type
+        +Boolean old_verification_state
+        +Boolean new_verification_state
+        +UUID actor_id
+        +Date change_date
+        +String reason
+        +JSON metadata
+    }
+
+    %% ==================== PACKAGE ====================
+    class Package {
+        +UUID id
+        +UUID sender_id
+        +UUID recipient_id
+        +String recipient_name
+        +String recipient_phone
+        +String recipient_address
+        +String recipient_locality
+        +UUID departure_relay_point_id
+        +UUID arrival_relay_point_id
+        +UUID final_deliverer_id
+        +UUID sender_employee_id
+        +String tracking_number
+        +PackageStatus status
+        +Float weight
+        +JSON dimensions
+        +String description
+        +PackageType package_type
+        +Float declared_value
+        +Float delivery_fee
+        +QoS qos
+        +DeliveryOption delivery_option
+        +PaymentMode payment_mode
+        +Date pre_registration_date
+        +Date registration_date
+        +Date departure_pickup_date
+        +Date destination_arrival_date
+        +Date withdrawal_date
+        +String pre_registration_code
+        +String package_photo_url
+        +String delivery_proof_photo_url
+        +String recipient_signature_url
+        +String withdrawer_name
+        +String withdrawer_phone
+        +String withdrawer_id_document
+        +Boolean withdrawer_is_deliverer
+        +JSON deposit_coordinates
+        +JSON delivery_coordinates
+        +Date created_at
+        +Date updated_at
+        +preRegister()
+        +register(relayPoint)
+        +updateStatus(newStatus, context)
+        +canTransitionTo(newStatus)
+        +assignDeliverer(deliverer)
+        +pickupPackage(deliverer)
+        +confirmDelivery(deliverer)
+        +confirmPickup(shipment)
+        +confirmArrival(relayPoint)
+        +confirmWithdrawal(withdrawer)
+        +calculateFee()
+        +generateTrackingNumber()
+        +getFullHistory()
+    }
+
+    class PackageHistory {
+        +UUID id
+        +UUID package_id
+        +PackageStatus old_status
+        +PackageStatus new_status
+        +Date change_date
+        +UUID actor_id
+        +ActorType actor_type
+        +UUID relay_point_id
+        +String location
+        +Float latitude
+        +Float longitude
+        +String comment
+        +JSON metadata
+    }
+
+    %% ==================== SHIPMENT ====================
+    class Shipment {
+        +UUID id
+        +UUID package_id
+        +UUID departure_relay_point_id
+        +UUID arrival_relay_point_id
+        +UUID vehicle_id
+        +String driver_name
+        +String vehicle_registration
+        +VehicleType vehicle_type
+        +Date scheduled_departure_date
+        +Date actual_departure_date
+        +Date scheduled_arrival_date
+        +Date actual_arrival_date
+        +ShipmentStatus status
+        +String shipment_notes
+        +Boolean is_reshipment
+        +Int hop_number
+        +Date created_at
+        +start()
+        +complete()
+        +cancel()
+        +updateStatus(newStatus)
+    }
+
+    class ShipmentHistory {
+        +UUID id
+        +UUID shipment_id
+        +ShipmentStatus old_status
+        +ShipmentStatus new_status
+        +Date change_date
+        +UUID actor_id
+        +Float latitude
+        +Float longitude
+        +String comment
+        +JSON metadata
+    }
+
+    %% ==================== NOTIFICATION ====================
+    class Notification {
+        +UUID id
+        +UUID recipient_id
+        +UUID package_id
+        +NotificationType type
+        +String title
+        +String message
+        +NotificationStatus status
+        +Int send_attempts
+        +Date send_date
+        +Date delivery_date
+        +JSON metadata
+        +send()
+        +markAsRead()
+        +retry()
+    }
+
+    class NotificationHistory {
+        +UUID id
+        +UUID notification_id
+        +NotificationStatus old_status
+        +NotificationStatus new_status
+        +Date change_date
+        +String failure_reason
+        +JSON metadata
+    }
+
+    %% ==================== EVENT LOG ====================
+    class EventLog {
+        +UUID id
+        +EventCategory category
+        +EventType type
+        +String action
+        +UUID entity_id
+        +String entity_type
+        +UUID actor_id
+        +ActorType actor_type
+        +String description
+        +EventLevel level
+        +UUID session_id
+        +String ip_address
+        +String user_agent
+        +JSON payload
+        +Date timestamp
+        +search(criteria)
+        +export(format)
+    }
+
+    %% ==================== ENUMERATIONS ====================
+    class AccountType {
+        <<enumeration>>
+        CLIENT
+        FREELANCE
+        EMPLOYEE
+        AGENCY
+        AGENCY_OWNER
+        DELIVERER
+        SUPER_ADMIN
+    }
+
+    class StorageCapacity {
+        <<enumeration>>
+        SMALL
+        MEDIUM
+        LARGE
+        EXTRA_LARGE
+    }
+
+    class VehicleType {
+        <<enumeration>>
+        BICYCLE
+        MOTORCYCLE
+        TRICYCLE
+        CAR
+        TRUCK
+    }
+
+    class PackageStatus {
+        <<enumeration>>
+        PRE_REGISTERED
+        REGISTERED
+        AT_DEPARTURE_RELAY_POINT
+        IN_TRANSIT
+        AT_INTERMEDIATE_RELAY_POINT
+        AT_ARRIVAL_RELAY_POINT
+        IN_FINAL_DELIVERY
+        DELIVERED
+        WITHDRAWN
+        CANCELLED
+        AWAITING_RETURN
+        RETURNED
+    }
+
+    class ShipmentStatus {
+        <<enumeration>>
+        PLANNED
+        IN_PROGRESS
+        ARRIVED
+        COMPLETED
+        CANCELLED
+    }
+
+    class DeliveryStatus {
+        <<enumeration>>
+        AVAILABLE
+        ON_DELIVERY
+        OUT_OF_SERVICE
+        ON_BREAK
+    }
+
+    class PackageType {
+        <<enumeration>>
+        STANDARD
+        FRAGILE
+        PERISHABLE
+        BULKY
+        URGENT
+    }
+
+    class DeliveryOption {
+        <<enumeration>>
+        STANDARD
+        EXPRESS
+        SAME_DAY
+    }
+
+    class QoS {
+        <<enumeration>>
+        NORMAL
+        URGENT
+        CRITICAL
+    }
+
+    class PaymentMode {
+        <<enumeration>>
+        CASH
+        MOBILE_MONEY
+        BANK_CARD
+    }
+
+    class ActorType {
+        <<enumeration>>
+        CLIENT
+        FREELANCE
+        EMPLOYEE
+        AGENCY
+        DELIVERER
+        SYSTEM
+        ADMIN
+    }
+
+    class NotificationType {
+        <<enumeration>>
+        PACKAGE_REGISTERED
+        PACKAGE_IN_TRANSIT
+        PACKAGE_ARRIVED
+        PACKAGE_READY_FOR_PICKUP
+        PACKAGE_DELIVERED
+        PACKAGE_DELAYED
+        PICKUP_REMINDER
+    }
+
+    class NotificationStatus {
+        <<enumeration>>
+        PENDING
+        SENT
+        DELIVERED
+        READ
+        FAILED
+    }
+
+    class EventCategory {
+        <<enumeration>>
+        PACKAGE
+        USER
+        RELAY_POINT
+        DELIVERY
+        SHIPMENT
+        NOTIFICATION
+        SYSTEM
+        SECURITY
+    }
+
+    class EventType {
+        <<enumeration>>
+        CREATE
+        UPDATE
+        DELETE
+        STATUS_CHANGE
+        LOGIN
+        LOGOUT
+        ERROR
+        WARNING
+    }
+
+    class EventLevel {
+        <<enumeration>>
+        INFO
+        WARNING
+        ERROR
+        CRITICAL
+    }
+
+    %% ==================== RELATIONSHIPS ====================
+    
+    %% User relationships
+    User "1" --> "1" AccountType : has
+    User "1" --> "0..*" UserHistory : history
+    User <|-- Client : extends
+    User <|-- BusinessActor : extends
+    
+    %% BusinessActor relationships
+    BusinessActor <|-- Freelance : extends
+    BusinessActor <|-- Employee : extends
+    BusinessActor <|-- Agency : extends
+    BusinessActor <|-- AgencyOwner : extends
+    BusinessActor <|-- Deliverer : extends
+    
+    %% RelayPoint relationships
+    Freelance "1" --> "1" RelayPoint : owns
+    Employee "1" --> "1..*" RelayPoint : manages
+    Agency "1" --> "1..*" RelayPoint : owns
+    AgencyOwner "1" --> "1" Agency : owns
+    RelayPoint "1" --> "1" StorageCapacity : has
+    RelayPoint "1" --> "0..*" RelayPointHistory : history
+    
+    %% Deliverer and Vehicle relationships
+    Deliverer "1" --> "1" Vehicle : drives
+    Deliverer "1" --> "1" DeliveryStatus : has
+    Deliverer "1" --> "0..*" DelivererHistory : history
+    Vehicle "1" --> "1" VehicleType : has
+    Vehicle "1" --> "0..*" VehicleHistory : history
+    
+    %% Package relationships
+    Client "1" --> "0..*" Package : sends
+    User "1" --> "0..*" Package : receives
+    Package "1" --> "1" PackageStatus : current status
+    Package "1" --> "1..*" PackageHistory : state history
+    Package "1" --> "1..*" Shipment : routing hops
+    Package "0..*" --> "0..1" Deliverer : final delivery by
+    Package "0..*" --> "0..1" RelayPoint : departure relay point
+    Package "0..*" --> "0..1" RelayPoint : arrival relay point
+    Package "1" --> "1" PackageType : type
+    Package "1" --> "1" DeliveryOption : option
+    Package "1" --> "1" QoS : qos
+    Package "1" --> "1" PaymentMode : payment
+    
+    %% Shipment relationships
+    Shipment "1" --> "1" ShipmentStatus : status
+    Shipment "0..*" --> "1" RelayPoint : departure
+    Shipment "0..*" --> "1" RelayPoint : arrival
+    Shipment "0..*" --> "0..1" Vehicle : transport
+    Shipment "1" --> "0..*" ShipmentHistory : history
+    
+    %% Notification relationships
+    Notification "0..*" --> "1" User : recipient
+    Notification "0..*" --> "1" Package : concerns
+    Notification "1" --> "1" NotificationType : type
+    Notification "1" --> "1" NotificationStatus : status
+    Notification "1" --> "0..*" NotificationHistory : history
+    
+    %% EventLog relationships
+    EventLog "1" --> "1" EventCategory : category
+    EventLog "1" --> "1" EventType : type
+    EventLog "1" --> "1" EventLevel : level
+    EventLog "1" --> "1" ActorType : actor
+    
+    %% Notes
+    note for Package "Dynamic object with complete lifecycle inspired by IP packets\nPre-registration generates unique code\nEach state transition creates history + event\nMulti-hop routing via Shipment"
+    
+    note for Shipment "Represents a 'hop' in IP routing\nCaptures physical movement between 2 relay points\nIncludes vehicle, driver, schedules\nOne package = multiple shipments (multi-hop)"
+    
+    note for EventLog "Global journal inspired by Windows Event Viewer\nTraces ALL system actions\nFor audit, investigation, statistics\nNon-repudiation and compliance"
+    
+    note for RelayPoint "Relay Point = Router in IP model\nTypes: Departure, Intermediate, Arrival\nDynamic capacity monitored\nHistory of all changes"

@@ -1,96 +1,234 @@
 package com.basiccode.generator.enhanced;
 
-import com.basiccode.generator.model.ClassModel;
-import com.basiccode.generator.model.Field;
+import com.basiccode.generator.model.*;
+import com.basiccode.generator.config.Framework;
 import com.squareup.javapoet.*;
 import javax.lang.model.element.Modifier;
 import java.util.UUID;
+import java.time.Instant;
 
 public class EnhancedEntityGenerator {
     
-    public JavaFile generateEnhancedEntity(ClassModel model, String basePackage) {
-        TypeSpec.Builder entityBuilder = TypeSpec.classBuilder(model.getName())
-            .addModifiers(Modifier.PUBLIC)
-            .addAnnotation(createEntityAnnotation())
-            .addAnnotation(createTableAnnotation(model.getName()))
-            .addAnnotation(createSwaggerSchemaAnnotation(model.getName()));
+    public JavaFile generateEntity(ClassModel model, String basePackage, Framework framework) {
+        return switch (framework.getLanguage()) {
+            case "java" -> generateJavaEntity(model, basePackage);
+            case "python" -> generatePythonEntity(model, basePackage);
+            case "django" -> generateDjangoEntity(model, basePackage);
+            case "csharp" -> generateCSharpEntity(model, basePackage);
+            case "javascript" -> generateJavaScriptEntity(model, basePackage);
+            case "typescript" -> generateTypeScriptEntity(model, basePackage);
+            case "php" -> generatePhpEntity(model, basePackage);
+            default -> generateJavaEntity(model, basePackage);
+        };
+    }
+    
+    private JavaFile generateJavaEntity(ClassModel model, String basePackage) {
+        TypeSpec.Builder classBuilder = TypeSpec.classBuilder(model.getName())
+            .addModifiers(Modifier.PUBLIC);
         
-        addIdField(entityBuilder);
+        // Gestion de l'héritage
+        if (model.isAbstract()) {
+            classBuilder.addModifiers(Modifier.ABSTRACT);
+        }
         
-        // Ajouter seulement les champs du modèle (pas l'ID qui est déjà ajouté)
+        // Héritage JPA
+        if (model.getParentClass() != null) {
+            // Classe enfant
+            classBuilder.superclass(ClassName.get(basePackage + ".entity", model.getParentClass()));
+            classBuilder.addAnnotation(ClassName.get("jakarta.persistence", "Entity"));
+            classBuilder.addAnnotation(AnnotationSpec.builder(ClassName.get("jakarta.persistence", "DiscriminatorValue"))
+                .addMember("value", "$S", model.getName().toUpperCase())
+                .build());
+        } else if (hasChildClasses(model)) {
+            // Classe parent avec enfants
+            classBuilder.addAnnotation(ClassName.get("jakarta.persistence", "Entity"));
+            classBuilder.addAnnotation(AnnotationSpec.builder(ClassName.get("jakarta.persistence", "Table"))
+                .addMember("name", "$S", toSnakeCase(model.getName()))
+                .build());
+            classBuilder.addAnnotation(AnnotationSpec.builder(ClassName.get("jakarta.persistence", "Inheritance"))
+                .addMember("strategy", "$T.JOINED", ClassName.get("jakarta.persistence", "InheritanceType"))
+                .build());
+            classBuilder.addAnnotation(AnnotationSpec.builder(ClassName.get("jakarta.persistence", "DiscriminatorColumn"))
+                .addMember("name", "$S", "entity_type")
+                .addMember("discriminatorType", "$T.STRING", ClassName.get("jakarta.persistence", "DiscriminatorType"))
+                .build());
+        } else {
+            // Classe simple sans héritage
+            classBuilder.addAnnotation(ClassName.get("jakarta.persistence", "Entity"));
+            classBuilder.addAnnotation(AnnotationSpec.builder(ClassName.get("jakarta.persistence", "Table"))
+                .addMember("name", "$S", toSnakeCase(model.getName()))
+                .build());
+        }
+        
+        // Add validation annotations
+        classBuilder.addAnnotation(ClassName.get("jakarta.validation", "Valid"));
+        
+        // Add ID field seulement pour les classes parent ou sans héritage
+        if (model.getParentClass() == null) {
+            FieldSpec idField = FieldSpec.builder(UUID.class, "id", Modifier.PRIVATE)
+                .addAnnotation(ClassName.get("jakarta.persistence", "Id"))
+                .addAnnotation(ClassName.get("jakarta.persistence", "GeneratedValue"))
+                .addAnnotation(AnnotationSpec.builder(ClassName.get("jakarta.persistence", "Column"))
+                    .addMember("name", "$S", "id")
+                    .addMember("updatable", "false")
+                    .build())
+                .build();
+            classBuilder.addField(idField);
+        }
+        
+        // Add fields with enhanced validation
         for (Field field : model.getFields()) {
-            if (!field.getName().equals("id")) {
-                entityBuilder.addField(generateEnhancedField(field));
+            FieldSpec fieldSpec = generateEnhancedJavaField(field);
+            classBuilder.addField(fieldSpec);
+        }
+        
+        // Add audit fields
+        addAuditFields(classBuilder);
+        
+        // Add constructors
+        addConstructors(classBuilder, model);
+        
+        // Add getters/setters
+        addGettersSetters(classBuilder, model);
+        
+        // Add seulement les méthodes d'état et validation dans l'entité
+        for (Method method : model.getMethods()) {
+            if (isEntityMethod(method)) {
+                classBuilder.addMethod(generateEntityMethod(method));
             }
         }
         
-        addAuditFields(entityBuilder);
-        addConstructors(entityBuilder, model);
-        addAccessors(entityBuilder, model);
-        addUtilityMethods(entityBuilder, model);
+        return JavaFile.builder(basePackage + ".entity", classBuilder.build())
+            .addFileComment("Generated by Enhanced UML-to-Code Generator")
+            .indent("    ")
+            .build();
+    }
+    
+    private FieldSpec generateEnhancedJavaField(Field field) {
+        // Détecter et transformer les relations JPA
+        if (isRelationField(field)) {
+            return generateJpaRelationField(field);
+        }
         
-        return JavaFile.builder(basePackage + ".entity", entityBuilder.build())
-            .addFileComment("Generated Enhanced Entity with ORM mapping and Swagger documentation")
-            .build();
-    }
-    
-    private AnnotationSpec createEntityAnnotation() {
-        return AnnotationSpec.builder(ClassName.get("jakarta.persistence", "Entity")).build();
-    }
-    
-    private AnnotationSpec createTableAnnotation(String entityName) {
-        return AnnotationSpec.builder(ClassName.get("jakarta.persistence", "Table"))
-            .addMember("name", "$S", toSnakeCase(entityName))
-            .build();
-    }
-    
-    private AnnotationSpec createSwaggerSchemaAnnotation(String entityName) {
-        return AnnotationSpec.builder(ClassName.get("io.swagger.v3.oas.annotations.media", "Schema"))
-            .addMember("description", "$S", entityName + " entity")
-            .build();
-    }
-    
-    private void addIdField(TypeSpec.Builder builder) {
-        builder.addField(FieldSpec.builder(UUID.class, "id", Modifier.PRIVATE)
-            .addAnnotation(ClassName.get("jakarta.persistence", "Id"))
-            .addAnnotation(ClassName.get("jakarta.persistence", "GeneratedValue"))
-            .addAnnotation(AnnotationSpec.builder(ClassName.get("jakarta.persistence", "Column"))
-                .addMember("name", "$S", "id")
-                .addMember("updatable", "false")
-                .build())
-            .build());
-    }
-    
-    private FieldSpec generateEnhancedField(Field field) {
-        TypeName fieldType = getJavaType(field.getType());
-        FieldSpec.Builder builder = FieldSpec.builder(fieldType, field.getName(), Modifier.PRIVATE);
+        FieldSpec.Builder builder = FieldSpec.builder(
+            getEnhancedJavaType(field.getType()),
+            field.getName(),
+            Modifier.PRIVATE
+        );
         
+        // JPA Column annotation
         AnnotationSpec.Builder columnBuilder = AnnotationSpec.builder(ClassName.get("jakarta.persistence", "Column"))
-            .addMember("name", "$S", toSnakeCase(field.getName()))
-            .addMember("nullable", "$L", field.isNullable());
+            .addMember("name", "$S", toSnakeCase(field.getName()));
         
-        if (field.getType().equals("String")) {
-            columnBuilder.addMember("length", "255");
-            if (field.getName().toLowerCase().contains("email")) {
-                columnBuilder.addMember("unique", "true");
-                builder.addAnnotation(AnnotationSpec.builder(ClassName.get("jakarta.validation.constraints", "Email"))
-                    .addMember("message", "$S", "Invalid email format")
-                    .build());
-            }
+        if (!field.isNullable()) {
+            columnBuilder.addMember("nullable", "false");
+        }
+        if (field.isUnique()) {
+            columnBuilder.addMember("unique", "true");
+        }
+        
+        // Gestion spéciale pour les champs JSON
+        if (field.getType().equals("JSON")) {
+            columnBuilder.addMember("columnDefinition", "$S", "JSON");
+            builder.addAnnotation(AnnotationSpec.builder(ClassName.get("org.hibernate.annotations", "JdbcTypeCode"))
+                .addMember("value", "$T.JSON", ClassName.get("org.hibernate.type", "SqlTypes"))
+                .build());
         }
         
         builder.addAnnotation(columnBuilder.build());
         
-        builder.addAnnotation(AnnotationSpec.builder(ClassName.get("io.swagger.v3.oas.annotations.media", "Schema"))
-            .addMember("description", "$S", generateFieldDescription(field))
-            .addMember("required", "$L", !field.isNullable())
-            .build());
+        // Validation annotations
+        if (field.hasAnnotation("NotNull") || !field.isNullable()) {
+            builder.addAnnotation(ClassName.get("jakarta.validation.constraints", "NotNull"));
+        }
+        
+        if (field.hasAnnotation("Email")) {
+            builder.addAnnotation(ClassName.get("jakarta.validation.constraints", "Email"));
+        }
+        
+        if (field.hasConstraint("min") || field.hasConstraint("max")) {
+            AnnotationSpec.Builder sizeBuilder = AnnotationSpec.builder(ClassName.get("jakarta.validation.constraints", "Size"));
+            if (field.getMinSize() != null) {
+                sizeBuilder.addMember("min", "$L", field.getMinSize());
+            }
+            if (field.getMaxSize() != null) {
+                sizeBuilder.addMember("max", "$L", field.getMaxSize());
+            }
+            builder.addAnnotation(sizeBuilder.build());
+        }
+        
+        if (field.hasAnnotation("JsonIgnore")) {
+            builder.addAnnotation(ClassName.get("com.fasterxml.jackson.annotation", "JsonIgnore"));
+        }
         
         return builder.build();
     }
     
-    private void addAuditFields(TypeSpec.Builder builder) {
-        builder.addField(FieldSpec.builder(ClassName.get("java.time", "Instant"), "createdAt", Modifier.PRIVATE)
+    private boolean isEntityMethod(Method method) {
+        // Seules les méthodes d'état, validation et getters/setters dans l'entité
+        String name = method.getName();
+        return name.startsWith("is") || name.startsWith("can") || name.startsWith("has") ||
+               name.equals("validate") || name.equals("isValid") || name.equals("equals") ||
+               name.equals("hashCode") || name.equals("toString");
+    }
+    
+    private MethodSpec generateEntityMethod(Method method) {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder(method.getName())
+            .addModifiers(Modifier.PUBLIC);
+        
+        builder.returns(getEnhancedJavaType(method.getReturnType()));
+        
+        // Add parameters
+        for (Parameter param : method.getParameters()) {
+            builder.addParameter(getEnhancedJavaType(param.getType()), param.getName());
+        }
+        
+        // Générer seulement un stub pour les méthodes d'état
+        if (method.getReturnType().equals("Boolean") || method.getReturnType().equals("boolean")) {
+            builder.addStatement("return false; // TODO: Implement validation logic");
+        } else {
+            builder.addStatement("// TODO: Implement entity method");
+        }
+        
+        return builder.build();
+    }
+    
+    private TypeName getEnhancedJavaType(String type) {
+        return switch (type) {
+            case "String" -> ClassName.get(String.class);
+            case "Integer", "int", "Int" -> ClassName.get(Integer.class);
+            case "Long", "long" -> ClassName.get(Long.class);
+            case "Float", "float" -> ClassName.get(Float.class);
+            case "Double", "double" -> ClassName.get(Double.class);
+            case "Boolean", "boolean" -> ClassName.get(Boolean.class);
+            case "UUID" -> ClassName.get(UUID.class);
+            case "JSON" -> ClassName.get(String.class); // JSON stocké comme String
+            case "Instant", "Date" -> ClassName.get(Instant.class);
+            case "LocalDateTime" -> ClassName.get("java.time", "LocalDateTime");
+            case "LocalDate" -> ClassName.get("java.time", "LocalDate");
+            case "LocalTime" -> ClassName.get("java.time", "LocalTime");
+            case "BigDecimal" -> ClassName.get("java.math", "BigDecimal");
+            case "byte[]" -> ArrayTypeName.of(TypeName.BYTE);
+            case "void" -> TypeName.VOID;
+            default -> {
+                if (type.startsWith("List<")) {
+                    String innerType = type.substring(5, type.length() - 1);
+                    yield ParameterizedTypeName.get(ClassName.get("java.util", "List"), getEnhancedJavaType(innerType));
+                } else if (type.startsWith("Set<")) {
+                    String innerType = type.substring(4, type.length() - 1);
+                    yield ParameterizedTypeName.get(ClassName.get("java.util", "Set"), getEnhancedJavaType(innerType));
+                } else if (type.startsWith("Map<")) {
+                    String[] types = type.substring(4, type.length() - 1).split(",");
+                    yield ParameterizedTypeName.get(ClassName.get("java.util", "Map"), 
+                        getEnhancedJavaType(types[0].trim()), getEnhancedJavaType(types[1].trim()));
+                }
+                yield ClassName.bestGuess(type);
+            }
+        };
+    }
+    
+    private void addAuditFields(TypeSpec.Builder classBuilder) {
+        classBuilder.addField(FieldSpec.builder(Instant.class, "createdAt", Modifier.PRIVATE)
             .addAnnotation(AnnotationSpec.builder(ClassName.get("jakarta.persistence", "Column"))
                 .addMember("name", "$S", "created_at")
                 .addMember("nullable", "false")
@@ -98,101 +236,214 @@ public class EnhancedEntityGenerator {
                 .build())
             .build());
         
-        builder.addField(FieldSpec.builder(ClassName.get("java.time", "Instant"), "updatedAt", Modifier.PRIVATE)
+        classBuilder.addField(FieldSpec.builder(Instant.class, "updatedAt", Modifier.PRIVATE)
             .addAnnotation(AnnotationSpec.builder(ClassName.get("jakarta.persistence", "Column"))
                 .addMember("name", "$S", "updated_at")
-                .addMember("nullable", "false")
                 .build())
             .build());
-        
-        builder.addField(FieldSpec.builder(Long.class, "version", Modifier.PRIVATE)
-            .addAnnotation(ClassName.get("jakarta.persistence", "Version"))
-            .build());
     }
     
-    private void addConstructors(TypeSpec.Builder builder, ClassModel model) {
-        builder.addMethod(MethodSpec.constructorBuilder()
+    private void addConstructors(TypeSpec.Builder classBuilder, ClassModel model) {
+        // Default constructor
+        classBuilder.addMethod(MethodSpec.constructorBuilder()
             .addModifiers(Modifier.PUBLIC)
-            .addComment("Default constructor for JPA")
+            .addStatement("this.createdAt = $T.now()", Instant.class)
             .build());
     }
     
-    private void addAccessors(TypeSpec.Builder builder, ClassModel model) {
-        builder.addMethod(MethodSpec.methodBuilder("getId")
+    private void addGettersSetters(TypeSpec.Builder classBuilder, ClassModel model) {
+        // ID getter
+        classBuilder.addMethod(MethodSpec.methodBuilder("getId")
             .addModifiers(Modifier.PUBLIC)
             .returns(UUID.class)
-            .addStatement("return id")
+            .addStatement("return this.id")
             .build());
         
-        builder.addMethod(MethodSpec.methodBuilder("setId")
-            .addModifiers(Modifier.PUBLIC)
-            .addParameter(UUID.class, "id")
-            .addStatement("this.id = id")
-            .build());
+        // Field getters/setters
+        for (Field field : model.getFields()) {
+            String fieldName = field.getName();
+            TypeName fieldType;
+            String actualFieldName;
+            
+            if (isRelationField(field)) {
+                // Pour les relations, utiliser le nom sans _id
+                String entityName = fieldName.replace("_id", "");
+                actualFieldName = entityName.replace("_", "");
+                fieldType = ClassName.bestGuess(toPascalCase(entityName));
+            } else {
+                actualFieldName = fieldName;
+                fieldType = getEnhancedJavaType(field.getType());
+            }
+            
+            // Getter
+            classBuilder.addMethod(MethodSpec.methodBuilder("get" + capitalize(actualFieldName))
+                .addModifiers(Modifier.PUBLIC)
+                .returns(fieldType)
+                .addStatement("return this.$N", actualFieldName)
+                .build());
+            
+            // Setter
+            classBuilder.addMethod(MethodSpec.methodBuilder("set" + capitalize(actualFieldName))
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(fieldType, actualFieldName)
+                .addStatement("this.$N = $N", actualFieldName, actualFieldName)
+                .addStatement("this.updatedAt = $T.now()", Instant.class)
+                .build());
+        }
+    }
+    
+    private JavaFile generatePythonEntity(ClassModel model, String basePackage) {
+        StringBuilder pythonCode = new StringBuilder();
+        pythonCode.append("from sqlalchemy import Column, String, DateTime, UUID, Integer, Float, Boolean\n");
+        pythonCode.append("from sqlalchemy.ext.declarative import declarative_base\n");
+        pythonCode.append("from pydantic import BaseModel, validator\n");
+        pythonCode.append("from datetime import datetime\n");
+        pythonCode.append("from typing import Optional\n\n");
+        
+        pythonCode.append("Base = declarative_base()\n\n");
+        pythonCode.append("class ").append(model.getName()).append("(Base):\n");
+        pythonCode.append("    __tablename__ = '").append(toSnakeCase(model.getName())).append("'\n\n");
+        pythonCode.append("    id = Column(UUID, primary_key=True)\n");
         
         for (Field field : model.getFields()) {
-            if (!field.getName().equals("id")) {
-                String fieldName = field.getName();
-                String capitalizedName = capitalize(fieldName);
-                TypeName fieldType = getJavaType(field.getType());
-                
-                builder.addMethod(MethodSpec.methodBuilder("get" + capitalizedName)
-                    .addModifiers(Modifier.PUBLIC)
-                    .returns(fieldType)
-                    .addStatement("return $L", fieldName)
-                    .build());
-                
-                builder.addMethod(MethodSpec.methodBuilder("set" + capitalizedName)
-                    .addModifiers(Modifier.PUBLIC)
-                    .addParameter(fieldType, fieldName)
-                    .addStatement("this.$L = $L", fieldName, fieldName)
-                    .build());
+            pythonCode.append("    ").append(field.getName())
+                     .append(" = Column(").append(getPythonType(field.getType()));
+            
+            if (!field.isNullable()) {
+                pythonCode.append(", nullable=False");
             }
+            if (field.isUnique()) {
+                pythonCode.append(", unique=True");
+            }
+            
+            pythonCode.append(")\n");
         }
-    }
-    
-    private void addUtilityMethods(TypeSpec.Builder builder, ClassModel model) {
-        builder.addMethod(MethodSpec.methodBuilder("equals")
-            .addModifiers(Modifier.PUBLIC)
-            .addAnnotation(Override.class)
-            .returns(boolean.class)
-            .addParameter(Object.class, "obj")
-            .addStatement("if (this == obj) return true")
-            .addStatement("if (obj == null || getClass() != obj.getClass()) return false")
-            .addStatement("$T other = ($T) obj", ClassName.bestGuess(model.getName()), ClassName.bestGuess(model.getName()))
-            .addStatement("return id != null && id.equals(other.id)")
-            .build());
         
-        builder.addMethod(MethodSpec.methodBuilder("hashCode")
-            .addModifiers(Modifier.PUBLIC)
-            .addAnnotation(Override.class)
-            .returns(int.class)
-            .addStatement("return id != null ? id.hashCode() : 0")
-            .build());
+        pythonCode.append("    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)\n");
+        pythonCode.append("    updated_at = Column(DateTime, onupdate=datetime.utcnow)\n");
+        
+        TypeSpec dummyClass = TypeSpec.classBuilder("PythonCode")
+            .addJavadoc("Generated Python Entity:\n" + pythonCode.toString())
+            .build();
+        
+        return JavaFile.builder(basePackage, dummyClass).build();
     }
     
-    private String generateFieldDescription(Field field) {
-        String baseName = field.getName();
-        if (baseName.toLowerCase().contains("email")) {
-            return "Email address";
-        } else if (baseName.toLowerCase().contains("name")) {
-            return "Name";
-        } else if (baseName.toLowerCase().contains("price")) {
-            return "Price in currency units";
-        } else {
-            return baseName + " (" + field.getType() + ")";
+    private JavaFile generateCSharpEntity(ClassModel model, String basePackage) {
+        StringBuilder csharpCode = new StringBuilder();
+        csharpCode.append("using System;\n");
+        csharpCode.append("using System.ComponentModel.DataAnnotations;\n");
+        csharpCode.append("using System.ComponentModel.DataAnnotations.Schema;\n");
+        csharpCode.append("using System.Collections.Generic;\n\n");
+        
+        csharpCode.append("namespace ").append(basePackage).append(".Entities\n{\n");
+        csharpCode.append("    [Table(\"").append(toSnakeCase(model.getName())).append("\")]\n");
+        csharpCode.append("    public class ").append(model.getName()).append("\n    {\n");
+        csharpCode.append("        [Key]\n");
+        csharpCode.append("        public Guid Id { get; set; }\n\n");
+        
+        for (Field field : model.getFields()) {
+            if (!field.isNullable()) {
+                csharpCode.append("        [Required]\n");
+            }
+            if (field.hasAnnotation("Email")) {
+                csharpCode.append("        [EmailAddress]\n");
+            }
+            if (field.getMaxSize() != null) {
+                csharpCode.append("        [StringLength(").append(field.getMaxSize()).append(")]\n");
+            }
+            
+            csharpCode.append("        public ").append(getCSharpType(field.getType()))
+                     .append(" ").append(capitalize(field.getName())).append(" { get; set; }\n");
         }
+        
+        csharpCode.append("        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;\n");
+        csharpCode.append("        public DateTime? UpdatedAt { get; set; }\n");
+        csharpCode.append("    }\n}");
+        
+        TypeSpec dummyClass = TypeSpec.classBuilder("CSharpCode")
+            .addJavadoc("Generated C# Entity:\n" + csharpCode.toString())
+            .build();
+        
+        return JavaFile.builder(basePackage, dummyClass).build();
     }
     
-    private TypeName getJavaType(String type) {
+    private JavaFile generateJavaScriptEntity(ClassModel model, String basePackage) {
+        StringBuilder jsCode = new StringBuilder();
+        jsCode.append("const { DataTypes } = require('sequelize');\n\n");
+        jsCode.append("module.exports = (sequelize) => {\n");
+        jsCode.append("  const ").append(model.getName()).append(" = sequelize.define('").append(model.getName()).append("', {\n");
+        jsCode.append("    id: {\n");
+        jsCode.append("      type: DataTypes.UUID,\n");
+        jsCode.append("      defaultValue: DataTypes.UUIDV4,\n");
+        jsCode.append("      primaryKey: true\n");
+        jsCode.append("    },\n");
+        
+        for (Field field : model.getFields()) {
+            jsCode.append("    ").append(field.getName()).append(": {\n");
+            jsCode.append("      type: ").append(getJavaScriptType(field.getType())).append(",\n");
+            if (!field.isNullable()) {
+                jsCode.append("      allowNull: false,\n");
+            }
+            if (field.isUnique()) {
+                jsCode.append("      unique: true,\n");
+            }
+            jsCode.append("    },\n");
+        }
+        
+        jsCode.append("  }, {\n");
+        jsCode.append("    timestamps: true,\n");
+        jsCode.append("    createdAt: 'created_at',\n");
+        jsCode.append("    updatedAt: 'updated_at'\n");
+        jsCode.append("  });\n\n");
+        jsCode.append("  return ").append(model.getName()).append(";\n");
+        jsCode.append("}");
+        
+        TypeSpec dummyClass = TypeSpec.classBuilder("JavaScriptCode")
+            .addJavadoc("Generated JavaScript Entity:\n" + jsCode.toString())
+            .build();
+        
+        return JavaFile.builder(basePackage, dummyClass).build();
+    }
+    
+    private String getPythonType(String type) {
         return switch (type) {
-            case "String" -> ClassName.get(String.class);
-            case "UUID" -> ClassName.get(UUID.class);
-            case "Boolean" -> ClassName.get(Boolean.class);
-            case "Integer" -> ClassName.get(Integer.class);
-            case "Float" -> ClassName.get(Float.class);
-            case "Date" -> ClassName.get("java.time", "Instant");
-            default -> ClassName.bestGuess(type);
+            case "String" -> "String";
+            case "Integer", "int" -> "Integer";
+            case "Long", "long" -> "BigInteger";
+            case "Float", "float", "Double", "double" -> "Float";
+            case "Boolean", "boolean" -> "Boolean";
+            case "UUID" -> "UUID";
+            case "Instant", "Date", "LocalDateTime" -> "DateTime";
+            default -> "String";
+        };
+    }
+    
+    private String getCSharpType(String type) {
+        return switch (type) {
+            case "String" -> "string";
+            case "Integer", "int" -> "int";
+            case "Long", "long" -> "long";
+            case "Float", "float" -> "float";
+            case "Double", "double" -> "double";
+            case "Boolean", "boolean" -> "bool";
+            case "UUID" -> "Guid";
+            case "Instant", "Date", "LocalDateTime" -> "DateTime";
+            default -> "string";
+        };
+    }
+    
+    private String getJavaScriptType(String type) {
+        return switch (type) {
+            case "String" -> "DataTypes.STRING";
+            case "Integer", "int" -> "DataTypes.INTEGER";
+            case "Long", "long" -> "DataTypes.BIGINT";
+            case "Float", "float" -> "DataTypes.FLOAT";
+            case "Double", "double" -> "DataTypes.DOUBLE";
+            case "Boolean", "boolean" -> "DataTypes.BOOLEAN";
+            case "UUID" -> "DataTypes.UUID";
+            case "Instant", "Date", "LocalDateTime" -> "DataTypes.DATE";
+            default -> "DataTypes.STRING";
         };
     }
     
@@ -202,5 +453,144 @@ public class EnhancedEntityGenerator {
     
     private String capitalize(String str) {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+    
+    // Méthode helper pour détecter si une classe a des enfants
+    private boolean hasChildClasses(ClassModel model) {
+        return model.isAbstract() || 
+               (model.getStereotype() != null && model.getStereotype().equals("abstract")) ||
+               model.getName().equals("BusinessActor") ||
+               model.getName().equals("User");
+    }
+    
+    // Méthode statique pour détecter les énumérations
+    public static boolean isEnumType(ClassModel model) {
+        String name = model.getName();
+        return name.endsWith("Type") || name.endsWith("Status") || 
+               name.endsWith("Mode") || name.endsWith("Option") ||
+               name.equals("QoS") || model.isEnumeration();
+    }
+    
+    private boolean isRelationField(Field field) {
+        return field.getType().equals("UUID") && field.getName().endsWith("_id");
+    }
+    
+    private FieldSpec generateJpaRelationField(Field field) {
+        String fieldName = field.getName();
+        String entityName = fieldName.replace("_id", "");
+        String targetEntity = toPascalCase(entityName);
+        String relationFieldName = entityName.replace("_", "");
+        
+        // Créer le champ avec le type de l'entité cible
+        FieldSpec.Builder builder = FieldSpec.builder(
+            ClassName.bestGuess(targetEntity),
+            relationFieldName,
+            Modifier.PRIVATE
+        );
+        
+        // Ajouter les annotations JPA
+        builder.addAnnotation(AnnotationSpec.builder(ClassName.get("jakarta.persistence", "ManyToOne"))
+            .addMember("fetch", "$T.LAZY", ClassName.get("jakarta.persistence", "FetchType"))
+            .build());
+            
+        builder.addAnnotation(AnnotationSpec.builder(ClassName.get("jakarta.persistence", "JoinColumn"))
+            .addMember("name", "$S", fieldName)
+            .build());
+        
+        return builder.build();
+    }
+    
+    private JavaFile generateDjangoEntity(ClassModel model, String basePackage) {
+        StringBuilder djangoCode = new StringBuilder();
+        djangoCode.append("from django.db import models\n");
+        djangoCode.append("import uuid\n\n");
+        
+        djangoCode.append("class ").append(model.getName()).append("(models.Model):\n");
+        djangoCode.append("    id = models.UUIDField(primary_key=True, default=uuid.uuid4)\n");
+        
+        for (Field field : model.getFields()) {
+            djangoCode.append("    ").append(field.getName())
+                     .append(" = ").append(getDjangoFieldType(field)).append("\n");
+        }
+        
+        djangoCode.append("    created_at = models.DateTimeField(auto_now_add=True)\n");
+        djangoCode.append("    updated_at = models.DateTimeField(auto_now=True)\n");
+        
+        TypeSpec dummyClass = TypeSpec.classBuilder("DjangoCode")
+            .addJavadoc("Generated Django Entity:\n" + djangoCode.toString())
+            .build();
+        
+        return JavaFile.builder(basePackage, dummyClass).build();
+    }
+    
+    private JavaFile generateTypeScriptEntity(ClassModel model, String basePackage) {
+        StringBuilder tsCode = new StringBuilder();
+        tsCode.append("import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';\n\n");
+        
+        tsCode.append("@Entity()\n");
+        tsCode.append("export class ").append(model.getName()).append(" {\n");
+        tsCode.append("  @PrimaryGeneratedColumn('uuid')\n");
+        tsCode.append("  id: string;\n\n");
+        
+        for (Field field : model.getFields()) {
+            tsCode.append("  @Column()\n");
+            tsCode.append("  ").append(field.getName()).append(": ")
+                  .append(getTypeScriptType(field.getType())).append(";\n\n");
+        }
+        
+        tsCode.append("}\n");
+        
+        TypeSpec dummyClass = TypeSpec.classBuilder("TypeScriptCode")
+            .addJavadoc("Generated TypeScript Entity:\n" + tsCode.toString())
+            .build();
+        
+        return JavaFile.builder(basePackage, dummyClass).build();
+    }
+    
+    private JavaFile generatePhpEntity(ClassModel model, String basePackage) {
+        StringBuilder phpCode = new StringBuilder();
+        phpCode.append("<?php\n\n");
+        phpCode.append("class ").append(model.getName()).append("\n{\n");
+        phpCode.append("    public $id;\n");
+        
+        for (Field field : model.getFields()) {
+            phpCode.append("    public $").append(field.getName()).append(";\n");
+        }
+        
+        phpCode.append("}\n");
+        
+        TypeSpec dummyClass = TypeSpec.classBuilder("PhpCode")
+            .addJavadoc("Generated PHP Entity:\n" + phpCode.toString())
+            .build();
+        
+        return JavaFile.builder(basePackage, dummyClass).build();
+    }
+    
+    private String getDjangoFieldType(Field field) {
+        return switch (field.getType()) {
+            case "String" -> "models.CharField(max_length=255)";
+            case "Integer", "int" -> "models.IntegerField()";
+            case "Boolean", "boolean" -> "models.BooleanField()";
+            case "BigDecimal" -> "models.DecimalField(max_digits=10, decimal_places=2)";
+            default -> "models.CharField(max_length=255)";
+        };
+    }
+    
+    private String getTypeScriptType(String type) {
+        return switch (type) {
+            case "String" -> "string";
+            case "Integer", "int", "Long", "long" -> "number";
+            case "Boolean", "boolean" -> "boolean";
+            default -> "string";
+        };
+    }
+    
+    private String toPascalCase(String snakeCase) {
+        String[] parts = snakeCase.split("_");
+        StringBuilder result = new StringBuilder();
+        for (String part : parts) {
+            result.append(capitalize(part));
+        }
+        return result.toString();
     }
 }

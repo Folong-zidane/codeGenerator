@@ -1,0 +1,35 @@
+classDiagram
+    class User {
+        +UUID id
+        +String email
+        +String password
+        +String name
+        +String phone_number
+        +Boolean is_active
+    }
+
+    class Package {
+        +UUID id
+        +UUID sender_id
+        +String tracking_number
+        +String status
+        +Float weight
+        +String description
+    }
+
+    class Deliverer {
+        +UUID id
+        +String name
+        +Boolean is_available
+        +Float current_latitude
+        +Float current_longitude
+    }
+
+    class RelayPoint {
+        +UUID id
+        +String relay_point_name
+        +String relay_point_address
+        +Float latitude
+        +Float longitude
+        +Boolean is_active
+    }

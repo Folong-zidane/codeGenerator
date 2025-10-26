@@ -8,23 +8,29 @@ import java.io.IOException;
 public class DiagramParser {
     
     public Diagram parse(String input) throws IOException {
-        // Create input stream
+        try {
+            // Essayer d'abord le parser ANTLR
+            return parseWithAntlr(input);
+        } catch (Exception e) {
+            // Fallback vers le parser regex
+            System.out.println("ANTLR failed, using regex parser: " + e.getMessage());
+            return parseWithRegex(input);
+        }
+    }
+    
+    private Diagram parseWithAntlr(String input) throws IOException {
         CharStream charStream = CharStreams.fromString(input);
-        
-        // Create lexer
         MermaidClassLexer lexer = new MermaidClassLexer(charStream);
-        
-        // Create token stream
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        
-        // Create parser
         MermaidClassParser parser = new MermaidClassParser(tokens);
         
-        // Parse
-        ParseTree tree = parser.diagram();
-        
-        // Visit tree to build model
+        ParseTree tree = parser.classDiagram();
         ModelBuilderVisitor visitor = new ModelBuilderVisitor();
         return (Diagram) visitor.visit(tree);
+    }
+    
+    private Diagram parseWithRegex(String input) {
+        RegexMermaidParser regexParser = new RegexMermaidParser();
+        return regexParser.parse(input);
     }
 }

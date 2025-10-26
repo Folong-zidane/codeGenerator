@@ -14,11 +14,16 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/">🚀 UML-to-CRUD Generator</a>
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-code"></i> UML-to-CRUD Generator
+            </a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/">Accueil</a>
-                <a class="nav-link active" href="/docs">Documentation</a>
-                <a class="nav-link" href="/examples">Exemples</a>
+                <a class="nav-link" href="/"><i class="fas fa-home"></i> Accueil</a>
+                <a class="nav-link active" href="/docs"><i class="fas fa-book"></i> Documentation</a>
+                <a class="nav-link" href="/examples"><i class="fas fa-code-branch"></i> Exemples</a>
+                <a class="nav-link" href="https://codegenerator-cpyh.onrender.com" target="_blank">
+                    <i class="fas fa-cloud"></i> API Live
+                </a>
             </div>
         </div>
     </nav>
@@ -44,36 +49,45 @@
 
                 <!-- CLI Section -->
                 <section id="cli" class="mb-5">
-                    <h2>🖥️ CLI Client</h2>
+                    <h2><i class="fas fa-terminal"></i> CLI Client</h2>
                     
-                    <h4>Installation</h4>
-                    <div class="code-block p-3 mb-3">
-                        <pre class="text-light mb-0"><code># Python CLI
-cd cli-clients/python-client
-pip install -r requirements.txt
-
-# Node.js CLI  
-cd cli-clients/node-client
-npm install</code></pre>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> <strong>API Live :</strong> 
+                        <a href="https://codegenerator-cpyh.onrender.com" target="_blank">https://codegenerator-cpyh.onrender.com</a>
                     </div>
 
-                    <h4>Utilisation</h4>
+                    <h4>Installation Rapide</h4>
                     <div class="code-block p-3 mb-3">
-                        <pre class="text-light mb-0"><code># Génération complète Spring Boot
+                        <pre class="text-light mb-0"><code># Python CLI (Recommandé)
+git clone https://github.com/votre-repo/basicCode.git
+cd basicCode/cli-clients/python-client
+pip install requests click
+
+# Test de connexion API
+curl https://codegenerator-cpyh.onrender.com/api/generate/validate</code></pre>
+                    </div>
+
+                    <h4>Utilisation Moderne 2025</h4>
+                    <div class="code-block p-3 mb-3">
+                        <pre class="text-light mb-0"><code># Génération projet complet Spring Boot
 python crud_generator_cli.py generate \
-  --uml diagram.mermaid \
-  --output ./mon-projet \
+  --uml ecommerce.mermaid \
+  --output ./ecommerce-api \
   --framework spring-boot \
+  --type complete-project \
+  --api-url https://codegenerator-cpyh.onrender.com/api/v2/generate
+
+# Génération Django avec structure complète
+python crud_generator_cli.py generate \
+  --uml blog.mermaid \
+  --output ./blog-django \
+  --framework django \
   --type complete-project
 
-# Génération Django
-python crud_generator_cli.py generate \
+# Validation UML en ligne
+python crud_generator_cli.py validate \
   --uml diagram.mermaid \
-  --output ./django-app \
-  --framework django
-
-# Validation UML
-python crud_generator_cli.py validate --uml diagram.mermaid</code></pre>
+  --api-url https://codegenerator-cpyh.onrender.com/api/generate</code></pre>
                     </div>
 
                     <h4>Options disponibles</h4>
@@ -117,112 +131,155 @@ python crud_generator_cli.py validate --uml diagram.mermaid</code></pre>
 
                 <!-- API Section -->
                 <section id="api" class="mb-5">
-                    <h2>🌐 API REST</h2>
+                    <h2><i class="fas fa-cloud"></i> API REST</h2>
                     
-                    <div class="endpoint p-3 mb-3">
-                        <h5>POST /api/v2/generate/files</h5>
-                        <p>Génère les fichiers directement sur le serveur</p>
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> <strong>API Déployée :</strong> 
+                        Disponible 24/7 sur Render avec haute disponibilité
+                    </div>
+
+                    <div class="endpoint p-3 mb-3 border-start border-primary border-4">
+                        <h5><span class="badge bg-success">POST</span> /api/v2/generate/files</h5>
+                        <p>Génère un projet complet directement sur le serveur</p>
+                        
+                        <h6><i class="fas fa-upload"></i> Request Body:</h6>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>{
+  "umlContent": "classDiagram\n    class User {\n        +UUID id\n        +String username\n        +String email\n    }\n    class Order {\n        +UUID id\n        +UUID userId\n        +Float total\n    }\n    User \"1\" --> \"*\" Order",
+  "packageName": "com.ecommerce",
+  "outputPath": "/tmp/ecommerce-project",
+  "generationType": "COMPLETE_PROJECT",
+  "framework": "SPRING_BOOT"
+}</code></pre>
+                        </div>
+
+                        <h6><i class="fas fa-download"></i> Response:</h6>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>{
+  "success": true,
+  "message": "Files generated successfully in /tmp/ecommerce-project",
+  "classCount": 2,
+  "outputPath": "/tmp/ecommerce-project"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint p-3 mb-3 border-start border-info border-4">
+                        <h5><span class="badge bg-info">POST</span> /api/generate/crud</h5>
+                        <p>Génère et retourne un ZIP avec le code</p>
                         
                         <h6>Request Body:</h6>
                         <div class="code-block p-3">
                             <pre class="text-light mb-0"><code>{
   "umlContent": "classDiagram\n    class User {\n        +UUID id\n        +String name\n    }",
   "packageName": "com.example",
-  "outputPath": "/path/to/project",
-  "generationType": "COMPLETE_PROJECT",
-  "framework": "SPRING_BOOT"
+  "language": "java",
+  "projectType": "complete-project"
 }</code></pre>
                         </div>
+                        <p><i class="fas fa-file-archive"></i> <strong>Réponse :</strong> Fichier ZIP téléchargeable</p>
+                    </div>
 
+                    <div class="endpoint p-3 mb-3 border-start border-warning border-4">
+                        <h5><span class="badge bg-warning">POST</span> /api/generate/validate</h5>
+                        <p>Valide la syntaxe UML avant génération</p>
+                        
+                        <h6>Request (text/plain):</h6>
+                        <div class="code-block p-3">
+                            <pre class="text-light mb-0"><code>classDiagram
+    class User {
+        +UUID id
+        +String username
+        +validateEmail()
+    }</code></pre>
+                        </div>
+                        
                         <h6>Response:</h6>
                         <div class="code-block p-3">
                             <pre class="text-light mb-0"><code>{
-  "success": true,
-  "message": "Files generated successfully",
-  "projectPath": "/path/to/project",
-  "classCount": 3
+  "valid": true,
+  "message": "Valid UML",
+  "classCount": 1
 }</code></pre>
-                        </div>
-                    </div>
-
-                    <div class="endpoint p-3 mb-3">
-                        <h5>POST /api/generate/validate</h5>
-                        <p>Valide la syntaxe UML</p>
-                        
-                        <h6>Request Body:</h6>
-                        <div class="code-block p-3">
-                            <pre class="text-light mb-0"><code>"classDiagram\n    class User {\n        +UUID id\n    }"</code></pre>
                         </div>
                     </div>
                 </section>
 
                 <!-- Frameworks Section -->
                 <section id="frameworks" class="mb-5">
-                    <h2>🏗️ Frameworks Supportés</h2>
+                    <h2><i class="fas fa-layer-group"></i> Frameworks Supportés</h2>
                     
                     <div class="row g-4">
                         <div class="col-md-6">
-                            <div class="card">
+                            <div class="card border-success">
                                 <div class="card-header bg-success text-white">
-                                    <h6 class="mb-0">Spring Boot</h6>
+                                    <h6 class="mb-0"><i class="fab fa-java"></i> Spring Boot</h6>
                                 </div>
                                 <div class="card-body">
-                                    <ul class="mb-0">
-                                        <li>pom.xml avec dépendances</li>
-                                        <li>application.yml</li>
-                                        <li>Structure Maven</li>
-                                        <li>JPA Entities</li>
-                                        <li>REST Controllers</li>
+                                    <ul class="mb-2">
+                                        <li>pom.xml avec dépendances Spring Boot 3.2+</li>
+                                        <li>application.yml avec H2/PostgreSQL</li>
+                                        <li>Structure Maven complète</li>
+                                        <li>JPA Entities avec relations</li>
+                                        <li>REST Controllers + Swagger</li>
+                                        <li>Services transactionnels</li>
                                     </ul>
+                                    <span class="badge bg-success">Production Ready</span>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="card">
+                            <div class="card border-primary">
                                 <div class="card-header bg-primary text-white">
-                                    <h6 class="mb-0">Django</h6>
+                                    <h6 class="mb-0"><i class="fab fa-python"></i> Django</h6>
                                 </div>
                                 <div class="card-body">
-                                    <ul class="mb-0">
-                                        <li>requirements.txt</li>
-                                        <li>settings.py</li>
-                                        <li>manage.py</li>
-                                        <li>Models Django</li>
-                                        <li>ViewSets DRF</li>
+                                    <ul class="mb-2">
+                                        <li>requirements.txt avec Django 4.2+</li>
+                                        <li>settings.py configuré</li>
+                                        <li>manage.py + structure apps</li>
+                                        <li>Models Django avec migrations</li>
+                                        <li>ViewSets Django REST Framework</li>
+                                        <li>Admin interface</li>
                                     </ul>
+                                    <span class="badge bg-primary">Full Stack</span>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="card">
+                            <div class="card border-warning">
                                 <div class="card-header bg-warning text-white">
-                                    <h6 class="mb-0">Flask</h6>
+                                    <h6 class="mb-0"><i class="fab fa-python"></i> Flask</h6>
                                 </div>
                                 <div class="card-body">
-                                    <ul class="mb-0">
-                                        <li>requirements.txt</li>
-                                        <li>app.py principal</li>
+                                    <ul class="mb-2">
+                                        <li>requirements.txt Flask 2.3+</li>
+                                        <li>app.py avec blueprints</li>
                                         <li>SQLAlchemy models</li>
-                                        <li>Flask routes</li>
+                                        <li>Flask-RESTful routes</li>
+                                        <li>Configuration environnements</li>
                                     </ul>
+                                    <span class="badge bg-warning">Microservices</span>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="card">
+                            <div class="card border-info">
                                 <div class="card-header bg-info text-white">
-                                    <h6 class="mb-0">.NET</h6>
+                                    <h6 class="mb-0"><i class="fab fa-microsoft"></i> .NET Core</h6>
                                 </div>
                                 <div class="card-body">
-                                    <ul class="mb-0">
-                                        <li>.csproj file</li>
-                                        <li>Program.cs</li>
-                                        <li>Entity Framework</li>
-                                        <li>API Controllers</li>
+                                    <ul class="mb-2">
+                                        <li>.csproj avec .NET 8</li>
+                                        <li>Program.cs minimal API</li>
+                                        <li>Entity Framework Core</li>
+                                        <li>API Controllers + Swagger</li>
+                                        <li>Dependency Injection</li>
                                     </ul>
+                                    <span class="badge bg-info">Enterprise</span>
                                 </div>
                             </div>
                         </div>
@@ -255,17 +312,25 @@ python crud_generator_cli.py validate --uml diagram.mermaid</code></pre>
     User "1" --> "*" Order</code></pre>
                     </div>
 
-                    <h4>Commandes complètes</h4>
+                    <h4>Commandes Complètes 2025</h4>
                     <div class="code-block p-3 mb-3">
-                        <pre class="text-light mb-0"><code># Projet Spring Boot complet
+                        <pre class="text-light mb-0"><code># Projet Spring Boot complet avec API live
 python crud_generator_cli.py generate \
   --uml ecommerce.mermaid \
-  --output /home/user/mon-ecommerce \
+  --output ./ecommerce-api \
   --framework spring-boot \
   --package com.ecommerce \
-  --type complete-project
+  --type complete-project \
+  --api-url https://codegenerator-cpyh.onrender.com/api/v2/generate
 
-# Résultat: Projet prêt avec mvn spring-boot:run</code></pre>
+# Résultat: Projet prêt avec mvn spring-boot:run
+# API disponible sur http://localhost:8080
+# Swagger UI sur http://localhost:8080/swagger-ui.html
+
+# Test direct avec cURL
+curl -X POST https://codegenerator-cpyh.onrender.com/api/v2/generate/files \
+  -H "Content-Type: application/json" \
+  -d @request.json</code></pre>
                     </div>
                 </section>
             </div>
@@ -274,9 +339,23 @@ python crud_generator_cli.py generate \
 
     <footer class="bg-dark text-light py-4">
         <div class="container text-center">
-            <p class="mb-0">
+            <p class="mb-2">
                 <strong>Développé par :</strong> <span th:text="${author}">FOLONG TAFOUKEU ZIDANE</span> - ENSPY
             </p>
+            <div class="d-flex justify-content-center gap-4">
+                <a href="https://www.linkedin.com/in/folongzidane/" target="_blank" class="text-light">
+                    <i class="fab fa-linkedin"></i> LinkedIn
+                </a>
+                <a href="mailto:tafoukeuz@gmail.com" class="text-light">
+                    <i class="fas fa-envelope"></i> Email
+                </a>
+                <a href="https://github.com/Folong-zidane" target="_blank" class="text-light">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                <a href="https://wa.me/237672538346" target="_blank" class="text-light">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+            </div>
         </div>
     </footer>
 

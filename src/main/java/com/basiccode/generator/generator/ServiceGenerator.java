@@ -38,6 +38,7 @@ public class ServiceGenerator {
             .addMethod(generateFindAllMethod(model, entityClass))
             .addMethod(generateUpdateMethod(model, entityClass))
             .addMethod(generateDeleteMethod(model))
+            .addMethods(generateBusinessMethods(model, entityClass))
             .build();
         
         return JavaFile.builder(basePackage + ".service", service)
@@ -156,5 +157,108 @@ public class ServiceGenerator {
             .addParameter(UUID.class, "id")
             .addStatement("repository.deleteById(id)")
             .build();
+    }
+    
+    private Iterable<MethodSpec> generateBusinessMethods(ClassModel model, ClassName entityClass) {
+        return model.getMethods().stream()
+            .filter(this::isBusinessMethod)
+            .map(method -> generateBusinessMethod(method, entityClass))
+            .toList();
+    }
+    
+    private boolean isBusinessMethod(Method method) {
+        String name = method.getName();
+        // Méthodes métier : actions, calculs, orchestration
+        return !name.startsWith("get") && !name.startsWith("set") && 
+               !name.startsWith("is") && !name.startsWith("can") &&
+               !name.equals("equals") && !name.equals("hashCode") && !name.equals("toString");
+    }
+    
+    private MethodSpec generateBusinessMethod(Method method, ClassName entityClass) {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder(method.getName())
+            .addModifiers(Modifier.PUBLIC);
+        
+        // Ajouter les paramètres (filtrer les noms invalides)
+        for (Parameter param : method.getParameters()) {
+            String paramName = sanitizeParameterName(param.getName());
+            if (paramName != null && !paramName.isEmpty()) {
+                builder.addParameter(getJavaType(param.getType()), paramName);
+            }
+        }
+        
+        // Type de retour
+        String returnType = method.getReturnType() != null ? method.getReturnType() : "void";
+        if (!returnType.equals("void")) {
+            builder.returns(getJavaType(returnType));
+        }
+        
+        // Générer l'implémentation basée sur le nom de la méthode
+        generateBusinessLogic(builder, method, entityClass);
+        
+        return builder.build();
+    }
+    
+    private void generateBusinessLogic(MethodSpec.Builder builder, Method method, ClassName entityClass) {
+        String methodName = method.getName();
+        
+        if (methodName.contains("calculate") || methodName.contains("compute")) {
+            builder.addComment("Business calculation logic");
+            builder.addStatement("// TODO: Implement calculation for " + methodName);
+            if (!method.getReturnType().equals("void")) {
+                builder.addStatement("return null; // Placeholder");
+            }
+        } else if (methodName.contains("validate") || methodName.contains("verify")) {
+            builder.addComment("Validation logic");
+            builder.addStatement("// TODO: Implement validation for " + methodName);
+            if (method.getReturnType().equals("Boolean")) {
+                builder.addStatement("return true; // Placeholder");
+            }
+        } else if (methodName.contains("process") || methodName.contains("handle")) {
+            builder.addComment("Business process orchestration");
+            builder.addStatement("// TODO: Implement process for " + methodName);
+        } else {
+            builder.addComment("Business logic");
+            builder.addStatement("// TODO: Implement business logic for " + methodName);
+            if (!method.getReturnType().equals("void")) {
+                builder.addStatement("return null; // Placeholder");
+            }
+        }
+    }
+    
+    private String sanitizeParameterName(String name) {
+        if (name == null || name.isEmpty()) {
+            return "param";
+        }
+        
+        // Supprimer les caractères invalides et les contraintes
+        String sanitized = name.replaceAll("[^a-zA-Z0-9_]", "")
+                              .replaceAll("^[0-9]+", "")
+                              .replaceAll("min=\\d+", "")
+                              .replaceAll("max=\\d+", "")
+                              .trim();
+        
+        // Si le nom est vide après nettoyage, utiliser un nom par défaut
+        if (sanitized.isEmpty()) {
+            return "param";
+        }
+        
+        // S'assurer que le nom commence par une lettre
+        if (!Character.isLetter(sanitized.charAt(0))) {
+            sanitized = "param" + sanitized;
+        }
+        
+        return sanitized;
+    }
+    
+    private TypeName getJavaType(String type) {
+        return switch (type) {
+            case "String" -> ClassName.get(String.class);
+            case "Integer", "int", "Int" -> ClassName.get(Integer.class);
+            case "Boolean", "boolean" -> ClassName.get(Boolean.class);
+            case "Float", "float" -> ClassName.get(Float.class);
+            case "UUID" -> ClassName.get(UUID.class);
+            case "void" -> TypeName.VOID;
+            default -> ClassName.bestGuess(type);
+        };
     }
 }

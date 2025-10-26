@@ -1,0 +1,48 @@
+classDiagram
+    class BusinessActor {
+        <<abstract>>
+        +UUID user_id
+        +String business_name
+        +String business_address
+        +Boolean is_verified
+        +Boolean is_enabled
+    }
+
+    class Freelance {
+        +UUID relay_point_id
+    }
+
+    class AgencyOwner {
+        +UUID agency_id
+        +String business_registration
+    }
+
+    class Employee {
+        +UUID agency_id
+        +UUID relay_point_id
+    }
+
+    class User {
+        +UUID id
+        +String email
+        +String name
+        +Boolean is_active
+    }
+
+    class Client {
+        +String preferences
+    }
+
+    class Deliverer {
+        +UUID vehicle_id
+        +Boolean is_available
+        +Float current_latitude
+        +Float current_longitude
+    }
+
+    %% Relations d'héritage
+    BusinessActor <|-- Freelance
+    BusinessActor <|-- AgencyOwner
+    BusinessActor <|-- Employee
+    User <|-- Client
+    User <|-- Deliverer

@@ -1,282 +1,169 @@
-# Générateur de Code CRUD avec Architecture MVC
+# 🚀 Générateur UML vers Code - Production Ready
 
-Un générateur de code puissant qui transforme vos diagrammes UML en code CRUD complet avec architecture MVC pour plusieurs langages de programmation.
+Transformez vos diagrammes UML en applications CRUD complètes et fonctionnelles en quelques secondes.
 
-## 🚀 Fonctionnalités
+## 🌟 Fonctionnalités
 
-- **Multi-langages** : Java, Python, C#, C, C++
+- **6 langages supportés** : Java, Python (FastAPI/Django), C#, TypeScript, PHP
+- **Applications 100% fonctionnelles** : Base de données, API REST, documentation incluses
 - **Architecture MVC complète** : Entités, Repositories, Services, Controllers
-- **Support UML** : Diagrammes Mermaid et PlantUML
-- **Génération automatique** : Code prêt à l'emploi avec annotations JPA/ORM
-- **CLI simple** : Interface en ligne de commande intuitive
+- **Déploiement immédiat** : Applications prêtes pour la production
 
-## 📦 Installation
+## 🌐 API Déployée
+
+- **URL Production** : https://codegenerator-cpyh.onrender.com
+- **Documentation** : [API-DOCUMENTATION-COMPLETE.md](API-DOCUMENTATION-COMPLETE.md)
+- **Script d'utilisation** : [generate-from-mermaid.sh](generate-from-mermaid.sh)
+
+## ⚡ Utilisation Rapide
+
+### 1. Avec le Script (Recommandé)
+```bash
+# Télécharger le script
+curl -O https://raw.githubusercontent.com/votre-repo/generate-from-mermaid.sh
+chmod +x generate-from-mermaid.sh
+
+# Créer un diagramme UML
+cat > app.mermaid << 'EOF'
+classDiagram
+    class User {
+        +String username
+        +String email
+        +Boolean active
+    }
+    class Product {
+        +String name
+        +Float price
+        +Integer stock
+    }
+EOF
+
+# Générer une application Django
+./generate-from-mermaid.sh app.mermaid django com.example ./my-django-app
+
+# Démarrer l'application
+cd my-django-app
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+### 2. Avec cURL Direct
+```bash
+curl -X POST "https://codegenerator-cpyh.onrender.com/api/generate/crud" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "umlContent": "classDiagram\n    class User {\n        +String username\n        +String email\n    }",
+    "packageName": "com.example",
+    "language": "java"
+  }' \
+  -o java-app.zip
+```
+
+## 🎯 Langages Supportés
+
+| Langage | Framework | Status | Exemple |
+|---------|-----------|--------|---------|
+| **Java** | Spring Boot | ✅ Complet | `./generate-from-mermaid.sh app.mermaid java` |
+| **Python** | FastAPI | ✅ Complet | `./generate-from-mermaid.sh app.mermaid python` |
+| **Python** | Django REST | ✅ Complet | `./generate-from-mermaid.sh app.mermaid django` |
+| **C#** | .NET Core | ✅ Complet | `./generate-from-mermaid.sh app.mermaid csharp` |
+| **TypeScript** | Express + TypeORM | ✅ Complet | `./generate-from-mermaid.sh app.mermaid typescript` |
+| **PHP** | Slim + Eloquent | ✅ Complet | `./generate-from-mermaid.sh app.mermaid php` |
+
+## 📋 Ce qui est Généré
+
+### Pour Chaque Langage
+- ✅ **Entités/Modèles** avec annotations ORM
+- ✅ **Repositories** avec CRUD complet
+- ✅ **Services** avec logique métier
+- ✅ **Controllers** avec endpoints REST
+- ✅ **Configuration** base de données
+- ✅ **Documentation** API (Swagger)
+- ✅ **Point d'entrée** application
+- ✅ **Dépendances** et configuration
+
+### Endpoints REST Automatiques
+```
+GET    /api/users/        # Liste avec pagination
+POST   /api/users/        # Création
+GET    /api/users/{id}/   # Détail
+PUT    /api/users/{id}/   # Modification
+DELETE /api/users/{id}/   # Suppression
+```
+
+## 🏗️ Développement Local
 
 ### Prérequis
 - Java 21+
 - Maven 3.9+
 
-### Build
+### Démarrage
 ```bash
 git clone <repository>
-cd uml-to-code-generator
-mvn clean package
+cd basicCode
+mvn spring-boot:run
 ```
 
-### Utilisation
-```bash
-# Générer du code Java
-java -jar target/uml-generator.jar examples/sample-diagram.mermaid \
-  --output=./generated \
-  --package=com.example \
-  --language=java
+L'API sera disponible sur http://localhost:8080
 
-# Générer du code Python
-java -jar target/uml-generator.jar examples/sample-diagram.mermaid \
-  --output=./generated \
-  --package=com.example \
-  --language=python
+## 📚 Documentation
 
-# Générer du code C#
-java -jar target/uml-generator.jar examples/sample-diagram.mermaid \
-  --output=./generated \
-  --package=com.example \
-  --language=csharp
-```
+- **[Documentation Complète](API-DOCUMENTATION-COMPLETE.md)** - Guide complet d'utilisation
+- **[Améliorations Django](DJANGO-AMELIORE.md)** - Détails sur le générateur Django
+- **[Langages Complétés](LANGAGES-COMPLETES.md)** - Support multi-langages
+- **[Corrections Appliquées](CORRECTIONS-APPLIQUEES.md)** - Historique des améliorations
 
-## 📋 Options CLI
+## 🎯 Exemples d'Applications
 
-```
-Usage: uml-generator <inputFile> [OPTIONS]
-
-Parameters:
-  <inputFile>              Input UML file (Mermaid or PlantUML)
-
-Options:
-  -o, --output=<dir>       Output directory (default: generated)
-  -p, --package=<name>     Base package name (default: com.example)
-  -l, --language=<lang>    Target language: java, python, csharp, c, cpp
-      --with-services      Generate Service layer (default: true)
-      --with-controllers   Generate Controller layer (default: true)
-      --with-repositories  Generate Repository layer (default: true)
-  -h, --help              Show help message
-  -V, --version           Print version information
-```
-
-## 📝 Format UML Supporté
-
-### Exemple Mermaid
+### E-commerce
 ```mermaid
 classDiagram
     class User {
-        +UUID id
         +String username
         +String email
-        +validateEmail()
-        +changePassword(newPassword)
     }
-    
+    class Product {
+        +String name
+        +Float price
+    }
     class Order {
-        +UUID id
-        +UUID userId
-        +Float totalAmount
-        +processOrder()
+        +String userId
+        +String productId
+        +Integer quantity
     }
-    
     User "1" --> "*" Order
+    Product "1" --> "*" Order
 ```
 
-## 🏗️ Architecture Générée
-
-### Java (Spring Boot)
-```
-generated/
-├── src/main/java/com/example/
-│   ├── entity/
-│   │   ├── User.java
-│   │   └── Order.java
-│   ├── repository/
-│   │   ├── UserRepository.java
-│   │   └── OrderRepository.java
-│   ├── service/
-│   │   ├── UserService.java
-│   │   └── OrderService.java
-│   └── controller/
-│       ├── UserController.java
-│       └── OrderController.java
-```
-
-### Python (FastAPI)
-```
-generated/
-├── entities/
-│   ├── User.py
-│   └── Order.py
-├── repositories/
-│   ├── UserRepository.py
-│   └── OrderRepository.py
-├── services/
-│   ├── UserService.py
-│   └── OrderService.py
-└── controllers/
-    ├── UserController.py
-    └── OrderController.py
-```
-
-### C# (.NET)
-```
-generated/
-├── Entities/
-│   ├── User.cs
-│   └── Order.cs
-├── Repositories/
-│   ├── UserRepository.cs
-│   └── OrderRepository.cs
-├── Services/
-│   ├── UserService.cs
-│   └── OrderService.cs
-└── Controllers/
-    ├── UserController.cs
-    └── OrderController.cs
-```
-
-## 🔧 Exemple de Code Généré
-
-### Entité Java
-```java
-@Entity
-@Table(name = "user")
-public class User {
-    @Id
-    @GeneratedValue
-    private UUID id;
-    
-    @Column(nullable = false, unique = true)
-    private String username;
-    
-    @Column(nullable = false)
-    private String email;
-    
-    // Constructors, getters, setters...
-    
-    public void validateEmail() {
-        // TODO: Implement business logic
+### Blog
+```mermaid
+classDiagram
+    class Author {
+        +String name
+        +String email
     }
-    
-    public void changePassword(String newPassword) {
-        // TODO: Implement business logic
+    class Post {
+        +String title
+        +String content
+        +String authorId
     }
-}
+    Author "1" --> "*" Post
 ```
 
-### Repository Java
-```java
-@Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
-    Optional<User> findByUsername(String username);
-    Optional<User> findByEmail(String email);
-}
-```
+## 🚀 Déploiement
 
-### Service Java
-```java
-@Service
-@Transactional
-public class UserService {
-    private final UserRepository repository;
-    
-    public User create(User entity) {
-        return repository.save(entity);
-    }
-    
-    @Transactional(readOnly = true)
-    public Optional<User> findById(UUID id) {
-        return repository.findById(id);
-    }
-    
-    // ... autres méthodes CRUD
-}
-```
-
-### Controller Java
-```java
-@RestController
-@RequestMapping("/api/users")
-public class UserController {
-    private final UserService service;
-    
-    @PostMapping
-    public ResponseEntity<User> create(@RequestBody User entity) {
-        User created = service.create(entity);
-        return ResponseEntity.ok(created);
-    }
-    
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getById(@PathVariable UUID id) {
-        Optional<User> entity = service.findById(id);
-        return entity.map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-    }
-    
-    // ... autres endpoints REST
-}
-```
-
-## 🧪 Tests
-
-```bash
-# Exécuter les tests
-mvn test
-
-# Test avec l'exemple fourni
-java -jar target/uml-generator.jar examples/sample-diagram.mermaid \
-  --output=./test-output \
-  --package=com.test \
-  --language=java
-```
-
-## 🛠️ Développement
-
-### Structure du Projet
-```
-src/main/java/com/basiccode/generator/
-├── model/          # Modèles de données (Diagram, ClassModel, etc.)
-├── parser/         # Parsers ANTLR4 pour UML
-├── generator/      # Générateurs de code par langage
-├── cli/            # Interface ligne de commande
-└── util/           # Utilitaires
-```
-
-### Ajouter un Nouveau Langage
-1. Étendre `EntityGenerator`, `RepositoryGenerator`, etc.
-2. Ajouter la logique de génération dans chaque générateur
-3. Mettre à jour `GeneratorCLI` pour supporter le nouveau langage
-
-## 📚 Technologies Utilisées
-
-- **ANTLR4** : Parsing des diagrammes UML
-- **JavaPoet** : Génération de code Java
-- **PicoCLI** : Interface ligne de commande
-- **Lombok** : Réduction du boilerplate
-- **JUnit 5** : Tests unitaires
+L'application est déployée sur Render et accessible à l'adresse :
+**https://codegenerator-cpyh.onrender.com**
 
 ## 🤝 Contribution
 
 1. Fork le projet
-2. Créer une branche feature (`git checkout -b feature/amazing-feature`)
-3. Commit vos changements (`git commit -m 'Add amazing feature'`)
-4. Push vers la branche (`git push origin feature/amazing-feature`)
+2. Créer une branche feature
+3. Commit les changements
+4. Push vers la branche
 5. Ouvrir une Pull Request
 
 ## 📄 Licence
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-
-## 🎯 Roadmap
-
-- [ ] Support PlantUML complet
-- [ ] Génération de tests unitaires
-- [ ] Support Kotlin et Go
-- [ ] Plugin Maven/Gradle
-- [ ] Interface web
-- [ ] Génération de documentation API
+Ce projet est sous licence MIT.

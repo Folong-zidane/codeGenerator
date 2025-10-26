@@ -27,7 +27,13 @@ public class IncrementalGenerationManager {
         com.basiccode.generator.generator.ControllerGenerator controllerGen = new com.basiccode.generator.generator.ControllerGenerator();
         
         for (ClassModel classModel : classes) {
-            // Générer tous les composants
+            // Filtrer les énumérations
+            if (isEnumType(classModel)) {
+                generateEnumIncremental(classModel, basePackage, outputDir);
+                continue; // Pas de repository/service/controller pour les enums
+            }
+            
+            // Générer tous les composants pour les vraies entités
             generateEntityIncremental(classModel, basePackage, outputDir, entityGen);
             generateRepositoryIncremental(classModel, basePackage, outputDir, repoGen);
             generateServiceIncremental(classModel, basePackage, outputDir, serviceGen);
@@ -42,7 +48,7 @@ public class IncrementalGenerationManager {
         Path entityPath = getEntityPath(outputDir, basePackage, entityName);
         
         // Generate new code
-        JavaFile newCode = generator.generateEnhancedEntity(classModel, basePackage);
+        JavaFile newCode = generator.generateEntity(classModel, basePackage, com.basiccode.generator.config.Framework.SPRING_BOOT);
         
         GenerationReport report = new GenerationReport(entityName, "Entity");
         
@@ -153,6 +159,29 @@ public class IncrementalGenerationManager {
         
         Files.copy(originalFile, backupPath, StandardCopyOption.REPLACE_EXISTING);
         System.out.println("💾 Backup created: " + backupPath.getFileName());
+    }
+    
+    private boolean isEnumType(ClassModel model) {
+        String name = model.getName();
+        return name.endsWith("Type") || name.endsWith("Status") || 
+               name.endsWith("Mode") || name.endsWith("Option") ||
+               name.equals("QoS") || model.isEnumeration();
+    }
+    
+    private void generateEnumIncremental(ClassModel classModel, String basePackage, Path outputDir) throws IOException {
+        com.basiccode.generator.generator.EnumGenerator enumGen = new com.basiccode.generator.generator.EnumGenerator();
+        JavaFile enumCode = enumGen.generateEnum(classModel, basePackage);
+        
+        if (enumCode != null) {
+            String className = classModel.getName();
+            Path enumPath = getComponentPath(outputDir, basePackage, "enums", className);
+            
+            if (!Files.exists(enumPath)) {
+                Files.createDirectories(enumPath.getParent());
+                Files.writeString(enumPath, enumCode.toString());
+                System.out.println("✅ Created enum " + className);
+            }
+        }
     }
     
     public static class GenerationResult {
