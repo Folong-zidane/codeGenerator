@@ -89,7 +89,7 @@ public class DjangoProjectGenerator {
             
             ## API Documentation
             
-            - Swagger UI: http://localhost:8000/api/docs/
+            - Swagger UI: http://localhost:8000/api/documentation/
             - Admin Panel: http://localhost:8000/admin/
             - API Base: http://localhost:8000/api/v1/
             

@@ -9,55 +9,43 @@ Transformez vos diagrammes UML en applications CRUD complètes et fonctionnelles
 - **Architecture MVC complète** : Entités, Repositories, Services, Controllers
 - **Déploiement immédiat** : Applications prêtes pour la production
 
-## 🌐 API Déployée
+## 🌐 API Déployée - Prête à l'Emploi
 
 - **URL Production** : https://codegenerator-cpyh.onrender.com
-- **Documentation** : [API-DOCUMENTATION-COMPLETE.md](API-DOCUMENTATION-COMPLETE.md)
-- **Script d'utilisation** : [generate-from-mermaid.sh](generate-from-mermaid.sh)
+- **Documentation Live** : https://codegenerator-cpyh.onrender.com/docs
+- **Guide d'utilisation** : [API-USAGE-DEPLOYED.md](API-USAGE-DEPLOYED.md)
+- **Aucune installation locale requise** ✅
 
-## ⚡ Utilisation Rapide
+## ⚡ Utilisation Rapide - API Déployée
 
-### 1. Avec le Script (Recommandé)
+### 1. Génération Directe avec cURL
 ```bash
-# Télécharger le script
-curl -O https://raw.githubusercontent.com/votre-repo/generate-from-mermaid.sh
-chmod +x generate-from-mermaid.sh
-
-# Créer un diagramme UML
-cat > app.mermaid << 'EOF'
-classDiagram
-    class User {
-        +String username
-        +String email
-        +Boolean active
-    }
-    class Product {
-        +String name
-        +Float price
-        +Integer stock
-    }
-EOF
-
-# Générer une application Django
-./generate-from-mermaid.sh app.mermaid django com.example ./my-django-app
-
-# Démarrer l'application
-cd my-django-app
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-```
-
-### 2. Avec cURL Direct
-```bash
+# Générer un projet Java Spring Boot complet
 curl -X POST "https://codegenerator-cpyh.onrender.com/api/generate/crud" \
   -H "Content-Type: application/json" \
   -d '{
-    "umlContent": "classDiagram\n    class User {\n        +String username\n        +String email\n    }",
-    "packageName": "com.example",
+    "umlContent": "classDiagram\n    class User {\n        +UUID id\n        +String username\n        +String email\n        +validateEmail()\n    }\n    class Product {\n        +UUID id\n        +String name\n        +Float price\n    }\n    User \"1\" --> \"*\" Product",
+    "packageName": "com.ecommerce",
     "language": "java"
   }' \
-  -o java-app.zip
+  -o ecommerce-java.zip
+
+# Extraire et démarrer
+unzip ecommerce-java.zip
+cd ecommerce-java
+./start.sh  # Application prête !
+```
+
+### 2. Avec Insomnia/Postman
+```json
+POST https://codegenerator-cpyh.onrender.com/api/generate/crud
+Content-Type: application/json
+
+{
+  "umlContent": "classDiagram\n    class User {\n        +UUID id\n        +String username\n    }\n    class Order {\n        +UUID id\n        +UUID userId\n        +Float total\n    }\n    User \"1\" --> \"*\" Order",
+  "language": "django",
+  "packageName": "com.blog"
+}
 ```
 
 ## 🎯 Langages Supportés
@@ -92,20 +80,24 @@ PUT    /api/users/{id}/   # Modification
 DELETE /api/users/{id}/   # Suppression
 ```
 
-## 🏗️ Développement Local
+## 🌐 API Live - Aucune Installation
 
-### Prérequis
-- Java 21+
-- Maven 3.9+
+### Accès Direct
+- **API Production** : https://codegenerator-cpyh.onrender.com
+- **Documentation** : https://codegenerator-cpyh.onrender.com/docs
+- **Exemples** : https://codegenerator-cpyh.onrender.com/examples
+- **Santé API** : https://codegenerator-cpyh.onrender.com/actuator/health
 
-### Démarrage
+### Test Rapide
 ```bash
-git clone <repository>
-cd basicCode
-mvn spring-boot:run
-```
+# Vérifier que l'API fonctionne
+curl https://codegenerator-cpyh.onrender.com/actuator/health
 
-L'API sera disponible sur http://localhost:8080
+# Valider un diagramme UML
+curl -X POST https://codegenerator-cpyh.onrender.com/api/generate/validate \
+  -H "Content-Type: text/plain" \
+  -d "classDiagram\n    class User {\n        +UUID id\n    }"
+```
 
 ## 📚 Documentation
 

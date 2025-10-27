@@ -6,8 +6,10 @@ import com.basiccode.generator.generator.CSharpProjectGenerator;
 import com.basiccode.generator.generator.DjangoProjectGenerator;
 import com.basiccode.generator.generator.TypeScriptProjectGenerator;
 import com.basiccode.generator.generator.PhpProjectGenerator;
+import com.basiccode.generator.service.ZipEnhancementService;
 import com.basiccode.generator.model.Diagram;
 import com.basiccode.generator.parser.DiagramParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,9 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/api/generate")
 @CrossOrigin(origins = "*")
 public class GeneratorController {
+    
+    @Autowired
+    private ZipEnhancementService zipEnhancementService;
     
     @PostMapping("/crud")
     public ResponseEntity<byte[]> generateCrud(@RequestBody GenerateRequest request) throws Exception {
@@ -42,6 +47,9 @@ public class GeneratorController {
             case "php" -> generatePhpEntitiesOnly(diagram, request, tempDir);
             default -> generateJavaCrud(diagram, request, tempDir);
         }
+        
+        // ✨ NOUVEAU: Ajouter les scripts de développement continu
+        zipEnhancementService.addDevelopmentScripts(tempDir, request.umlContent(), request.packageName(), request.language());
         
         byte[] zipBytes = createZip(tempDir);
         deleteDirectory(tempDir);

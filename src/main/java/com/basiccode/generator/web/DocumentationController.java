@@ -20,12 +20,20 @@ public class DocumentationController {
     @GetMapping("/docs")
     public String documentation(Model model) {
         model.addAttribute("author", "FOLONG TAFOUKEU ZIDANE");
-        return "documentation";
+        model.addAttribute("school", "ENSPY - École Nationale Supérieure Polytechnique de Yaoundé");
+        model.addAttribute("title", "Documentation API - UML-to-CRUD Generator");
+        model.addAttribute("email", "tafoukeuz@gmail.com");
+        model.addAttribute("linkedin", "https://www.linkedin.com/in/folongzidane/");
+        model.addAttribute("github", "https://github.com/Folong-zidane");
+        model.addAttribute("whatsapp", "https://wa.me/237672538346");
+        return "docs";
     }
     
     @GetMapping("/examples")
     public String examples(Model model) {
         model.addAttribute("author", "FOLONG TAFOUKEU ZIDANE");
+        model.addAttribute("school", "ENSPY - École Nationale Supérieure Polytechnique de Yaoundé");
+        model.addAttribute("title", "Exemples - UML-to-CRUD Generator");
         return "examples";
     }
 }
