@@ -1,0 +1,47 @@
+graph TD
+    subgraph "User Instance Data"
+        U1[User: john_doe]
+        U1 --> |id| UID["550e8400-e29b-41d4-a716-446655440001"]
+        U1 --> |username| UN["john_doe"]
+        U1 --> |email| UE["john@example.com"]
+        U1 --> |status| US["ACTIVE"]
+        U1 --> |createdAt| UC["2024-01-15T10:30:00Z"]
+    end
+    
+    subgraph "Product Instance Data"
+        P1[Product: laptop_pro]
+        P1 --> |id| PID["550e8400-e29b-41d4-a716-446655440002"]
+        P1 --> |name| PN["MacBook Pro 16"]
+        P1 --> |price| PP["2499.99"]
+        P1 --> |stock| PS["15"]
+        P1 --> |category| PC["ELECTRONICS"]
+    end
+    
+    subgraph "Order Instance Data"
+        O1[Order: order_001]
+        O1 --> |id| OID["550e8400-e29b-41d4-a716-446655440003"]
+        O1 --> |userId| OUI["550e8400-e29b-41d4-a716-446655440001"]
+        O1 --> |status| OS["CONFIRMED"]
+        O1 --> |total| OT["2499.99"]
+        O1 --> |orderDate| OD["2024-01-20T14:45:00Z"]
+    end
+    
+    subgraph "OrderItem Instance Data"
+        OI1[OrderItem: item_001]
+        OI1 --> |id| OIID["550e8400-e29b-41d4-a716-446655440004"]
+        OI1 --> |orderId| OIOI["550e8400-e29b-41d4-a716-446655440003"]
+        OI1 --> |productId| OIPI["550e8400-e29b-41d4-a716-446655440002"]
+        OI1 --> |quantity| OIQ["1"]
+        OI1 --> |unitPrice| OIUP["2499.99"]
+        OI1 --> |subtotal| OIS["2499.99"]
+    end
+    
+    U1 -.->|places| O1
+    O1 -.->|contains| OI1
+    P1 -.->|referenced_by| OI1
+    
+    classDef instanceStyle fill:#e1f5fe,stroke:#01579b
+    classDef dataStyle fill:#f3e5f5,stroke:#4a148c
+    
+    class U1,P1,O1,OI1 instanceStyle
+    class UID,UN,UE,US,UC,PID,PN,PP,PS,PC,OID,OUI,OS,OT,OD,OIID,OIOI,OIPI,OIQ,OIUP,OIS dataStyle

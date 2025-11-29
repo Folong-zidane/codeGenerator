@@ -1,0 +1,42 @@
+package com.basiccode.generator.parser;
+
+import com.basiccode.generator.model.StateMachine;
+import org.springframework.stereotype.Component;
+
+/**
+ * Mermaid-specific state diagram parser
+ */
+@Component
+public class MermaidStateParser implements UmlParser<StateMachine> {
+    
+    // Use existing parser - will be injected later
+    // private final StateDiagramParser delegate = new StateDiagramParser();
+    
+    @Override
+    public StateMachine parse(String content) throws ParseException {
+        // Basic implementation - create empty state machine for now
+        StateMachine stateMachine = new StateMachine();
+        // TODO: Implement actual parsing logic
+        return stateMachine;
+    }
+    
+    @Override
+    public boolean validate(String content) {
+        try {
+            parse(content);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+    
+    @Override
+    public DiagramType getSupportedType() {
+        return DiagramType.STATE;
+    }
+    
+    @Override
+    public String getFormat() {
+        return "mermaid";
+    }
+}

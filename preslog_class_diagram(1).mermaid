@@ -1,0 +1,634 @@
+classDiagram
+    class Utilisateur {
+        <<abstract>>
+        -String id
+        -String nom
+        -String prenom
+        -String telephone
+        -String email
+        -String motDePasse
+        -Date dateInscription
+        -boolean estActif
+        -boolean estVerifie
+        -TypeUtilisateur type
+        +seConnecter()
+        +seDeconnecter()
+        +mettreAJourProfil()
+    }
+
+    class Client {
+        -String adresse
+        -List~Commande~ historiqueCommandes
+        -List~ModePaiement~ moyensPaiement
+        -Double soldePortefeuille
+        +creerCommande()
+        +suivreLivraison()
+        +effectuerPaiement()
+        +consulterHistorique()
+        +ouvrirReclamation()
+        +envoyerColis()
+        +recevoirColis()
+        +signerReception()
+        +ajouterModePaiement()
+    }
+
+    class Livreur {
+        -String numeroPermis
+        -String numeroCNI
+        -String photoPermis
+        -String photoCNI
+        -String photoMoto
+        -String immatriculationMoto
+        -StatutCompteLivreur statutCompte
+        -DisponibiliteLivreur disponibilite
+        -Double solde
+        -Double tauxAcceptation
+        -Double noteEvaluation
+        -int nbCoursesEffectuees
+        -int nbAnnulations
+        -PositionGPS positionActuelle
+        +changerDisponibilite()
+        +accepterCourse()
+        +refuserCourse()
+        +confirmerRecuperationColis()
+        +confirmerDepotColis()
+        +mettreAJourPosition()
+        +demanderRetrait()
+        +consulterGains()
+        +prendrePhotoPreuve()
+    }
+
+    class Destinataire {
+        -String nom
+        -String telephone
+        -String adresse
+        -String whatsapp
+        +signerReception()
+        +refuserColis()
+        +effectuerPaiement()
+    }
+
+    class Administrateur {
+        -String role
+        -List~String~ permissions
+        +gererUtilisateurs()
+        +gererTarifs()
+        +gererZones()
+        +traiterLitiges()
+        +genererRapports()
+        +validerLivreur()
+        +consulterTableauBord()
+    }
+
+    class Colis {
+        -String id
+        -String numeroSuivi
+        -StatutColis statut
+        -TypeColis type
+        -String description
+        -Double poids
+        -String dimensions
+        -Double valeurDeclaree
+        -boolean fragile
+        -Date dateCreation
+        -Client expediteur
+        -Destinataire destinataire
+        -Adresse adresseDepart
+        -Adresse adresseArrivee
+        -String instructionsSpeciales
+        -Date dateDepotPointRelais
+        -String photoDepotUrl
+        -PositionGPS coordonneesDepot
+        -Date datePriseEnCharge
+        -Livreur livreur
+        -Date dateLivraison
+        -String signatureDestinataire
+        -String photoPreuveLivraisonUrl
+        -String codeVerification
+        -String qrCodeUrl
+        +creer()
+        +confirmerDepotPointRelais()
+        +confirmerPriseEnCharge()
+        +confirmerLivraison()
+        +annuler()
+        +signalerProbleme()
+        +genererCodeVerification()
+        +verifierCodeVerification()
+        +ajouterPhotoPreuve()
+    }
+
+    class ColisHistorique {
+        -String id
+        -Colis colis
+        -StatutColis statutPrecedent
+        -StatutColis nouveauStatut
+        -Date dateChangement
+        -Utilisateur acteur
+        -String typeActeur
+        -PositionGPS localisation
+        -String commentaire
+        -String photoUrl
+        -Map~String,String~ metadonnees
+        +enregistrerTransition()
+        +obtenirHistoriqueComplet()
+    }
+
+    class PreuveColis {
+        -String id
+        -Colis colis
+        -TypePreuve type
+        -String photoUrl
+        -String signatureUrl
+        -Date dateCapture
+        -PositionGPS position
+        -Utilisateur auteur
+        -String commentaire
+        +capturer()
+        +valider()
+        +telecharger()
+    }
+
+    class Livraison {
+        -String id
+        -String numeroCommande
+        -Date dateCreation
+        -Client client
+        -Livreur livreur
+        -Destinataire destinataire
+        -List~Colis~ colis
+        -Adresse lieuPriseEnCharge
+        -Adresse lieuLivraison
+        -StatutLivraison statut
+        -TypePaiement typePaiement
+        -Double prixTotal
+        -Double fraisLivraison
+        -Double fraisColis
+        -Date dateAcceptation
+        -Date datePriseEnCharge
+        -Date dateLivraison
+        -String codeVerification
+        -int tempsEstimeMinutes
+        -Double distanceKm
+        +calculerTarif()
+        +assignerLivreur()
+        +ajouterColis()
+        +retirerColis()
+        +changerStatut()
+        +annuler()
+        +calculerETA()
+        +genererRecapitulatif()
+    }
+
+    class EtapeLivraison {
+        -String id
+        -Livraison livraison
+        -TypeEtape type
+        -StatutEtape statut
+        -Date dateDebut
+        -Date dateFin
+        -PositionGPS position
+        -String description
+        -String photoUrl
+        -Utilisateur acteur
+        +demarrer()
+        +terminer()
+        +annuler()
+    }
+
+    class SignatureElectronique {
+        -String id
+        -Colis colis
+        -Livraison livraison
+        -String signatureData
+        -String nomSignataire
+        -Date dateSignature
+        -PositionGPS position
+        -String ipAddress
+        -String deviceInfo
+        +capturer()
+        +valider()
+        +exporter()
+    }
+
+    class PhotoPreuve {
+        -String id
+        -String colisId
+        -String livraisonId
+        -TypePhoto type
+        -String url
+        -String urlMiniature
+        -Date dateCapture
+        -PositionGPS position
+        -String metadata
+        +uploader()
+        +compresser()
+        +ajouterWatermark()
+    }
+
+    class Notification {
+        -String id
+        -Utilisateur destinataire
+        -String titre
+        -String contenu
+        -TypeNotification type
+        -Date dateHeure
+        -boolean estLue
+        -String urlAction
+        -Map~String,String~ data
+        +envoyer()
+        +marquerCommeLue()
+        +planifier()
+    }
+
+    class SuiviTempsReel {
+        -String id
+        -Livraison livraison
+        -List~PositionGPS~ positions
+        -PositionGPS positionActuelle
+        -PositionGPS destination
+        -Double distanceRestante
+        -int tempsRestantMinutes
+        -Double vitesseMoyenne
+        -Date derniereMaj
+        +actualiserPosition()
+        +calculerETA()
+        +notifierClients()
+    }
+
+    class Transaction {
+        -String id
+        -String numeroTransaction
+        -Date dateHeure
+        -Utilisateur emetteur
+        -Utilisateur recepteur
+        -Double montant
+        -TypeTransaction typeTransaction
+        -StatutTransaction statut
+        -ModePaiement modePaiement
+        -Livraison livraison
+        -String referenceExterne
+        -String messageErreur
+        +traiter()
+        +annuler()
+        +rembourser()
+        +genererRecu()
+    }
+
+    class PaiementMobileMoney {
+        -String id
+        -Transaction transaction
+        -String numeroTelephone
+        -String operateur
+        -String referenceOperateur
+        -String callbackURL
+        +initier()
+        +verifierStatut()
+        +traiterCallback()
+    }
+
+    class PositionGPS {
+        -Double latitude
+        -Double longitude
+        -Double altitude
+        -Double precision
+        -Date timestamp
+        -Double vitesse
+        -Double cap
+        +calculerDistance()
+        +estDansZone()
+        +obtenirAdresse()
+    }
+
+    class Adresse {
+        -String id
+        -Double latitude
+        -Double longitude
+        -String rue
+        -String quartier
+        -String ville
+        -String codePostal
+        -String complementAdresse
+        -String nomLieu
+        -String instructions
+        +valider()
+        +geocoder()
+        +calculerDistance()
+    }
+
+    class Trajet {
+        -String id
+        -Livraison livraison
+        -Livreur livreur
+        -Date dateDebut
+        -Date dateFin
+        -Double distanceTotale
+        -int dureeMinutes
+        -List~PositionGPS~ pointsTrajet
+        -List~EtapeLivraison~ etapes
+        +ajouterPoint()
+        +calculerDistanceTotale()
+        +calculerDuree()
+        +calculerETA()
+        +optimiserItineraire()
+    }
+
+    class Zone {
+        -String id
+        -String nom
+        -String description
+        -List~PositionGPS~ polygone
+        -Double tarifBase
+        -Double tarifKm
+        -String couleur
+        -boolean active
+        +contientPoint()
+        +calculerCentre()
+        +calculerTarif()
+    }
+
+    class Reclamation {
+        -String id
+        -String numeroTicket
+        -Utilisateur auteur
+        -Livraison livraison
+        -Colis colis
+        -TypeReclamation type
+        -String description
+        -StatutReclamation statut
+        -PrioriteReclamation priorite
+        -Date dateOuverture
+        -Date dateCloture
+        -Administrateur assigneA
+        -String resolution
+        -List~Message~ messages
+        -List~String~ photosUrls
+        +ouvrir()
+        +assigner()
+        +traiter()
+        +cloturer()
+        +ajouterMessage()
+        +ajouterPhoto()
+    }
+
+    class StatutColis {
+        <<enumeration>>
+        CREE
+        DEPOT_POINT_RELAIS
+        PRET_RECUPERATION
+        RECUPERE
+        EN_TRANSIT
+        ARRIVE_DESTINATION
+        EN_COURS_LIVRAISON
+        LIVRE
+        RETOUR_EXPEDITEUR
+        ANNULE
+        PERDU
+        ENDOMMAGE
+    }
+
+    class StatutLivraison {
+        <<enumeration>>
+        CREEE
+        EN_ATTENTE_LIVREUR
+        LIVREUR_ASSIGNE
+        EN_COURS_RECUPERATION
+        COLIS_RECUPERE
+        EN_ROUTE
+        ARRIVE_DESTINATION
+        LIVREE
+        ANNULEE
+        PROBLEME
+    }
+
+    class TypePreuve {
+        <<enumeration>>
+        DEPOT_POINT_RELAIS
+        RECUPERATION_LIVREUR
+        ETAT_COLIS
+        SIGNATURE_DESTINATAIRE
+        LIVRAISON_REUSSIE
+        COLIS_ENDOMMAGE
+        REFUS_LIVRAISON
+    }
+
+    class TypeEtape {
+        <<enumeration>>
+        CREATION_COMMANDE
+        DEPOT_COLIS
+        ASSIGNATION_LIVREUR
+        RECUPERATION_COLIS
+        DEBUT_TRAJET
+        EN_ROUTE
+        ARRIVEE_DESTINATION
+        LIVRAISON
+        TERMINE
+    }
+
+    class StatutEtape {
+        <<enumeration>>
+        EN_ATTENTE
+        EN_COURS
+        TERMINEE
+        ANNULEE
+        ECHEC
+    }
+
+    class TypePhoto {
+        <<enumeration>>
+        DEPOT_INITIAL
+        ETAT_EMBALLAGE
+        CONTENU_COLIS
+        RECUPERATION
+        EN_TRANSIT
+        ARRIVEE
+        SIGNATURE
+        REMISE_DESTINATAIRE
+        PROBLEME
+    }
+
+    class TypeNotification {
+        <<enumeration>>
+        COLIS_CREE
+        COLIS_DEPOSE
+        LIVREUR_ASSIGNE
+        COLIS_RECUPERE
+        LIVREUR_EN_ROUTE
+        ARRIVE_DESTINATION
+        LIVRAISON_TERMINEE
+        PROBLEME_LIVRAISON
+        PAIEMENT_RECU
+        COLIS_RETOUR
+    }
+
+    class TypeTransaction {
+        <<enumeration>>
+        PAIEMENT_LIVRAISON
+        PAIEMENT_COLIS
+        COMMISSION_PLATEFORME
+        GAIN_LIVREUR
+        RETRAIT_LIVREUR
+        REMBOURSEMENT
+        FRAIS_ANNULATION
+    }
+
+    class StatutTransaction {
+        <<enumeration>>
+        EN_ATTENTE
+        EN_COURS
+        VALIDEE
+        ECHOUEE
+        ANNULEE
+        REMBOURSEE
+    }
+
+    class ModePaiement {
+        <<enumeration>>
+        MOBILE_MONEY_MTN
+        MOBILE_MONEY_ORANGE
+        ESPECES
+        CARTE_BANCAIRE
+        PORTEFEUILLE
+    }
+
+    class TypeReclamation {
+        <<enumeration>>
+        COLIS_PERDU
+        COLIS_ENDOMMAGE
+        RETARD_LIVRAISON
+        PAIEMENT_NON_RECU
+        COMPORTEMENT_LIVREUR
+        ERREUR_ADRESSE
+        CONTENU_MANQUANT
+        AUTRE
+    }
+
+    class StatutReclamation {
+        <<enumeration>>
+        OUVERTE
+        EN_INVESTIGATION
+        EN_ATTENTE_REPONSE
+        RESOLUE
+        CLOTUREE
+    }
+
+    class PrioriteReclamation {
+        <<enumeration>>
+        BASSE
+        NORMALE
+        HAUTE
+        URGENTE
+    }
+
+    class TypeUtilisateur {
+        <<enumeration>>
+        PARTICULIER
+        ENTREPRISE
+        COMMERCIAL
+    }
+
+    class StatutCompteLivreur {
+        <<enumeration>>
+        EN_ATTENTE
+        ACTIF_VALIDE
+        SUSPENDU
+        DESACTIVE
+    }
+
+    class DisponibiliteLivreur {
+        <<enumeration>>
+        DISPONIBLE
+        EN_COURSE
+        PAUSE
+        HORS_LIGNE
+    }
+
+    class TypePaiement {
+        <<enumeration>>
+        PRE_PAYE
+        POST_PAYE
+        MIXTE
+    }
+
+    %% Relations d'héritage
+    Utilisateur <|-- Client
+    Utilisateur <|-- Livreur
+    Utilisateur <|-- Administrateur
+
+    %% Relations Client
+    Client "1" -- "0..*" Colis : expédie
+    Client "1" -- "0..*" Colis : reçoit
+    Client "1" -- "0..*" Livraison : commande
+
+    %% Relations Livreur
+    Livreur "0..1" -- "0..*" Colis : transporte
+    Livreur "0..1" -- "0..*" Livraison : effectue
+    Livreur "1" -- "0..1" PositionGPS : position actuelle
+    Livreur "1" -- "0..*" Trajet : effectue
+
+    %% Relations Colis
+    Colis "1" -- "1..*" ColisHistorique : historique
+    Colis "1" -- "0..*" PreuveColis : preuves
+    Colis "1" -- "0..1" SignatureElectronique : signature
+    Colis "1" -- "0..*" PhotoPreuve : photos
+    Colis "1" -- "1" Adresse : départ
+    Colis "1" -- "1" Adresse : arrivée
+    Colis "1" -- "0..*" Zone : passe
+    Colis --> StatutColis : utilise
+
+    %% Relations Livraison
+    Livraison "1" -- "0..*" Destinataire : destinataire
+    Livraison "1" -- "1..*" Colis : contient
+    Livraison "1" -- "0..*" EtapeLivraison : étapes
+    Livraison "1" -- "0..1" Trajet : trajet
+    Livraison "1" -- "0..1" SignatureElectronique : signature
+    Livraison "1" -- "1" Transaction : paiement
+    Livraison "1" -- "1" Adresse : prise en charge
+    Livraison "1" -- "1" Adresse : livraison
+    Livraison "1" -- "0..1" SuiviTempsReel : suivi
+    Livraison --> StatutLivraison : utilise
+    Livraison --> TypePaiement : utilise
+
+    %% Relations EtapeLivraison
+    EtapeLivraison "1" -- "0..1" PhotoPreuve : photo
+    EtapeLivraison --> TypeEtape : utilise
+    EtapeLivraison --> StatutEtape : utilise
+
+    %% Relations Notification
+    Utilisateur "1" -- "0..*" Notification : reçoit
+    Notification --> TypeNotification : utilise
+
+    %% Relations SuiviTempsReel
+    SuiviTempsReel "1" -- "0..*" PositionGPS : positions
+
+    %% Relations Transaction
+    Utilisateur "1" -- "0..*" Transaction : émet
+    Utilisateur "1" -- "0..*" Transaction : reçoit
+    Transaction "1" -- "0..1" PaiementMobileMoney : via
+    Transaction --> TypeTransaction : utilise
+    Transaction --> StatutTransaction : utilise
+    Transaction --> ModePaiement : utilise
+
+    %% Relations Adresse et Zone
+    Adresse "0..*" -- "0..1" Zone : dans zone
+
+    %% Relations Trajet
+    Trajet "1" -- "0..*" PositionGPS : points
+
+    %% Relations Zone
+    Zone "1" -- "1..*" PositionGPS : coordonnées
+
+    %% Relations Reclamation
+    Utilisateur "1" -- "0..*" Reclamation : ouvre
+    Administrateur "0..1" -- "0..*" Reclamation : traite
+    Reclamation "0..1" -- "0..*" Livraison : concerne
+    Reclamation "0..1" -- "0..*" Colis : concerne
+    Reclamation --> TypeReclamation : utilise
+    Reclamation --> StatutReclamation : utilise
+    Reclamation --> PrioriteReclamation : utilise
+
+    %% Relations énumérations avec classes
+    PreuveColis --> TypePreuve : utilise
+    PhotoPreuve --> TypePhoto : utilise
+    Livreur --> StatutCompteLivreur : utilise
+    Livreur --> DisponibiliteLivreur : utilise
+    Utilisateur --> TypeUtilisateur : utilise

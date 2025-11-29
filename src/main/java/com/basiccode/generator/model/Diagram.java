@@ -16,4 +16,8 @@ public class Diagram {
     public void addRelationship(Relationship relationship) {
         relationships.add(relationship);
     }
+    
+    public List<ClassModel> getClasses() {
+        return classes;
+    }
 }

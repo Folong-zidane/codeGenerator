@@ -1,0 +1,42 @@
+package com.basiccode.generator.parser;
+
+import com.basiccode.generator.model.SequenceDiagram;
+import org.springframework.stereotype.Component;
+
+/**
+ * Mermaid-specific sequence diagram parser
+ */
+@Component
+public class MermaidSequenceParser implements UmlParser<SequenceDiagram> {
+    
+    // Use existing parser - will be injected later
+    // private final SequenceParser delegate = new SequenceParser();
+    
+    @Override
+    public SequenceDiagram parse(String content) throws ParseException {
+        // Basic implementation - create empty sequence diagram for now
+        SequenceDiagram sequenceDiagram = new SequenceDiagram();
+        // TODO: Implement actual parsing logic
+        return sequenceDiagram;
+    }
+    
+    @Override
+    public boolean validate(String content) {
+        try {
+            parse(content);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+    
+    @Override
+    public DiagramType getSupportedType() {
+        return DiagramType.SEQUENCE;
+    }
+    
+    @Override
+    public String getFormat() {
+        return "mermaid";
+    }
+}

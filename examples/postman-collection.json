@@ -1,0 +1,161 @@
+{
+  "info": {
+    "name": "Code Generator API Tests",
+    "description": "Collection pour tester l'API de génération de code",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/actuator/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["actuator", "health"]
+        }
+      }
+    },
+    {
+      "name": "Generate Java Spring Boot CRUD",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"umlContent\": \"classDiagram\\n    class User {\\n        +UUID id\\n        +String username\\n        +String email\\n        +UserStatus status\\n        +validateEmail()\\n    }\\n    class Post {\\n        +UUID id\\n        +UUID authorId\\n        +String title\\n        +String content\\n        +publish()\\n    }\\n    User \\\"1\\\" --> \\\"*\\\" Post\",\n  \"packageName\": \"com.example.blog\",\n  \"language\": \"java\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/generate/crud",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "generate", "crud"]
+        }
+      }
+    },
+    {
+      "name": "Generate Django REST CRUD",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"umlContent\": \"classDiagram\\n    class User {\\n        +UUID id\\n        +String username\\n        +String email\\n        +UserStatus status\\n    }\\n    class Product {\\n        +UUID id\\n        +String name\\n        +Float price\\n        +ProductStatus status\\n    }\\n    User \\\"1\\\" --> \\\"*\\\" Product\",\n  \"packageName\": \"com.example.ecommerce\",\n  \"language\": \"django\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/generate/crud",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "generate", "crud"]
+        }
+      }
+    },
+    {
+      "name": "Generate Python FastAPI CRUD",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"umlContent\": \"classDiagram\\n    class Order {\\n        +UUID id\\n        +String customerEmail\\n        +Float total\\n        +OrderStatus status\\n        +calculateTotal()\\n    }\",\n  \"packageName\": \"com.example.orders\",\n  \"language\": \"python\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/generate/crud",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "generate", "crud"]
+        }
+      }
+    },
+    {
+      "name": "Generate Behavioral Code (Classes + Sequences)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"classDiagramContent\": \"classDiagram\\n    class User {\\n        +UUID id\\n        +String username\\n        +String email\\n        +validateEmail()\\n    }\",\n  \"sequenceDiagramContent\": \"sequenceDiagram\\n    Client->>UserController: POST /api/users\\n    UserController->>UserService: createUser(userData)\\n    UserService->>UserRepository: save(user)\\n    UserRepository-->>UserService: User created\\n    UserService-->>UserController: Success\\n    UserController-->>Client: 201 Created\",\n  \"packageName\": \"com.example.behavioral\",\n  \"language\": \"java\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/behavioral/generate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "behavioral", "generate"]
+        }
+      }
+    },
+    {
+      "name": "Generate Comprehensive Code (Classes + Sequences + States)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"classDiagramContent\": \"classDiagram\\n    class Order {\\n        +UUID id\\n        +String customerEmail\\n        +Float total\\n        +OrderStatus status\\n    }\",\n  \"sequenceDiagramContent\": \"sequenceDiagram\\n    Client->>OrderController: POST /api/orders\\n    OrderController->>OrderService: createOrder(orderData)\\n    OrderService->>OrderRepository: save(order)\",\n  \"stateDiagramContent\": \"stateDiagram-v2\\n    [*] --> PENDING\\n    PENDING --> CONFIRMED : confirm()\\n    CONFIRMED --> SHIPPED : ship()\\n    SHIPPED --> DELIVERED : deliver()\",\n  \"packageName\": \"com.example.comprehensive\",\n  \"language\": \"java\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/comprehensive/generate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "comprehensive", "generate"]
+        }
+      }
+    },
+    {
+      "name": "Validate UML Diagram",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "text/plain"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "classDiagram\n    class User {\n        +UUID id\n        +String username\n        +String email\n    }\n    class Post {\n        +UUID id\n        +String title\n        +String content\n    }\n    User \"1\" --> \"*\" Post"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/generate/validate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "generate", "validate"]
+        }
+      }
+    }
+  ]
+}

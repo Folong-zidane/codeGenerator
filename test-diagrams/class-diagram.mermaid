@@ -1,0 +1,51 @@
+classDiagram
+    class User {
+        +UUID id
+        +String username
+        +String email
+        +String password
+        +UserStatus status
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +validateEmail() boolean
+        +changePassword(String newPassword) void
+        +activate() void
+        +suspend() void
+    }
+    
+    class Product {
+        +UUID id
+        +String name
+        +String description
+        +BigDecimal price
+        +Integer stock
+        +ProductCategory category
+        +LocalDateTime createdAt
+        +updateStock(Integer quantity) void
+        +applyDiscount(BigDecimal percentage) void
+    }
+    
+    class Order {
+        +UUID id
+        +UUID userId
+        +OrderStatus status
+        +BigDecimal total
+        +LocalDateTime orderDate
+        +addItem(OrderItem item) void
+        +calculateTotal() BigDecimal
+        +confirm() void
+        +cancel() void
+    }
+    
+    class OrderItem {
+        +UUID id
+        +UUID orderId
+        +UUID productId
+        +Integer quantity
+        +BigDecimal unitPrice
+        +BigDecimal subtotal
+    }
+    
+    User "1" --> "*" Order : places
+    Order "1" --> "*" OrderItem : contains
+    Product "1" --> "*" OrderItem : referenced_by

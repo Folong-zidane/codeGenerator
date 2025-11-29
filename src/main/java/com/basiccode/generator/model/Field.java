@@ -62,4 +62,16 @@ public class Field {
     public boolean isCollection() {
         return type.startsWith("List<") || type.startsWith("Set<") || type.startsWith("Map<") || type.startsWith("Collection<");
     }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public String getType() {
+        return type;
+    }
+    
+    public boolean isNullable() {
+        return nullable;
+    }
 }

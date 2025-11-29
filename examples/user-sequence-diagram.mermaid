@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant Client
+    participant UserController
+    participant UserService
+    participant UserRepository
+    participant Database
+    
+    Client->>UserController: POST /api/users/register
+    UserController->>UserService: createUser(userData)
+    UserService->>UserService: validateUserData(userData)
+    UserService->>UserService: hashPassword(password)
+    UserService->>UserRepository: save(user)
+    UserRepository->>Database: INSERT INTO users
+    Database-->>UserRepository: User created
+    UserRepository-->>UserService: User entity
+    UserService-->>UserController: Created user
+    UserController-->>Client: 201 Created
+    
+    Client->>UserController: POST /api/users/{id}/activate
+    UserController->>UserService: activateUser(id)
+    UserService->>UserRepository: findById(id)
+    UserRepository-->>UserService: User entity
+    UserService->>UserService: validateStateTransition()
+    UserService->>UserRepository: updateStatus(ACTIVE)
+    UserRepository-->>UserService: Updated user
+    UserService-->>UserController: Activated user
+    UserController-->>Client: 200 OK

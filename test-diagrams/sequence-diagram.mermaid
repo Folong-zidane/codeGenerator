@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant Client
+    participant UserController
+    participant UserService
+    participant UserRepository
+    participant EmailService
+    
+    Client->>UserController: POST /api/users/register
+    UserController->>UserService: createUser(userData)
+    UserService->>UserService: validateEmail(email)
+    alt email valid
+        UserService->>UserRepository: save(user)
+        UserRepository-->>UserService: User created
+        UserService->>EmailService: sendWelcomeEmail(user)
+        EmailService-->>UserService: Email sent
+        UserService-->>UserController: Success response
+        UserController-->>Client: 201 Created
+    else email invalid
+        UserService-->>UserController: Validation error
+        UserController-->>Client: 400 Bad Request
+    end
+    
+    Client->>UserController: POST /api/users/{id}/activate
+    UserController->>UserService: activateUser(id)
+    UserService->>UserRepository: findById(id)
+    UserRepository-->>UserService: User found
+    UserService->>UserService: activate()
+    UserService->>UserRepository: save(user)
+    UserRepository-->>UserService: User updated
+    UserService-->>UserController: Success
+    UserController-->>Client: 200 OK

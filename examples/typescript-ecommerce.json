@@ -1,0 +1,7 @@
+{
+  "classDiagram": "class Product {\n  +Long id\n  +String name\n  +Float price\n}\nclass Order {\n  +Long id\n  +Long productId\n  +Integer quantity\n}",
+  "sequenceDiagram": "Client->>OrderService: createOrder(orderData)\nOrderService->>ProductService: validateProduct(productId)\nProductService-->>OrderService: Product valid\nOrderService->>OrderRepository: save(order)",
+  "stateDiagram": "[*] --> PENDING\nPENDING --> CONFIRMED\nCONFIRMED --> SHIPPED\nSHIPPED --> DELIVERED",
+  "packageName": "ecommerce-api",
+  "language": "typescript"
+}

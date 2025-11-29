@@ -1,0 +1,58 @@
+stateDiagram-v2
+    [*] --> INACTIVE : User created
+    
+    INACTIVE --> PENDING : activate()
+    note right of INACTIVE : User account created but not activated
+    
+    PENDING --> ACTIVE : email_verified
+    PENDING --> SUSPENDED : verification_failed
+    note right of PENDING : Waiting for email verification
+    
+    ACTIVE --> SUSPENDED : suspend() [admin_action]
+    ACTIVE --> LOCKED : failed_login_attempts >= 3
+    ACTIVE --> DELETED : delete() [soft_delete]
+    note right of ACTIVE : User can perform all operations
+    
+    SUSPENDED --> ACTIVE : reactivate() [admin_approval]
+    SUSPENDED --> DELETED : delete() [admin_action]
+    note right of SUSPENDED : Account temporarily disabled
+    
+    LOCKED --> ACTIVE : unlock() [password_reset]
+    LOCKED --> DELETED : delete() [security_policy]
+    note right of LOCKED : Account locked due to security
+    
+    DELETED --> [*]
+    note right of DELETED : Account permanently deleted
+    
+    %% Composite state for ACTIVE user
+    state ACTIVE {
+        [*] --> LOGGED_OUT
+        LOGGED_OUT --> LOGGED_IN : login()
+        LOGGED_IN --> LOGGED_OUT : logout()
+        LOGGED_IN --> LOGGED_OUT : session_timeout
+        
+        state LOGGED_IN {
+            [*] --> BROWSING
+            BROWSING --> EDITING_PROFILE : edit_profile()
+            EDITING_PROFILE --> BROWSING : save_profile()
+            BROWSING --> MAKING_ORDER : create_order()
+            MAKING_ORDER --> BROWSING : order_completed
+        }
+    }
+    
+    %% Choice point for verification
+    state verification_choice <<choice>>
+    PENDING --> verification_choice : verify_email()
+    verification_choice --> ACTIVE : [email_valid]
+    verification_choice --> SUSPENDED : [email_invalid]
+    
+    %% Fork for parallel processes
+    state parallel_activation <<fork>>
+    state join_activation <<join>>
+    
+    INACTIVE --> parallel_activation : start_activation()
+    parallel_activation --> send_email
+    parallel_activation --> create_profile
+    send_email --> join_activation
+    create_profile --> join_activation
+    join_activation --> PENDING

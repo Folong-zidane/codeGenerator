@@ -1,0 +1,25 @@
+stateDiagram-v2
+    [*] --> INACTIVE : User created
+    
+    INACTIVE --> ACTIVE : activate()
+    INACTIVE --> DELETED : delete()
+    
+    ACTIVE --> SUSPENDED : suspend()
+    ACTIVE --> DELETED : delete()
+    ACTIVE --> ACTIVE : updateProfile()
+    
+    SUSPENDED --> ACTIVE : reactivate()
+    SUSPENDED --> DELETED : delete()
+    
+    DELETED --> [*]
+    
+    state ACTIVE {
+        [*] --> ONLINE
+        ONLINE --> OFFLINE : logout()
+        OFFLINE --> ONLINE : login()
+    }
+    
+    note right of INACTIVE : New users start here
+    note right of ACTIVE : Can perform all operations
+    note right of SUSPENDED : Temporary restriction
+    note right of DELETED : Soft delete, can be restored

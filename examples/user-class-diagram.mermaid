@@ -1,0 +1,38 @@
+classDiagram
+    class User {
+        +UUID id
+        +String username
+        +String email
+        +String password
+        +UserStatus status
+        +DateTime createdAt
+        +DateTime updatedAt
+        +validateEmail()
+        +hashPassword()
+        +isActive()
+    }
+    
+    class Profile {
+        +UUID id
+        +UUID userId
+        +String firstName
+        +String lastName
+        +String bio
+        +String avatar
+        +DateTime updatedAt
+    }
+    
+    class Post {
+        +UUID id
+        +UUID authorId
+        +String title
+        +String content
+        +PostStatus status
+        +DateTime publishedAt
+        +DateTime createdAt
+        +publish()
+        +archive()
+    }
+    
+    User "1" --> "1" Profile : has
+    User "1" --> "*" Post : creates

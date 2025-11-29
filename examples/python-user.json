@@ -1,0 +1,7 @@
+{
+  "classDiagram": "class User {\n  +Long id\n  +String username\n  +String email\n}",
+  "sequenceDiagram": "Client->>UserService: createUser(userData)\nUserService->>UserRepository: save(user)\nUserRepository-->>UserService: User created",
+  "stateDiagram": "[*] --> ACTIVE\nACTIVE --> SUSPENDED\nSUSPENDED --> ACTIVE",
+  "packageName": "com.example.user",
+  "language": "python"
+}

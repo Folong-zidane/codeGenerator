@@ -1,0 +1,39 @@
+package com.basiccode.generator.parser;
+
+import com.basiccode.generator.model.Diagram;
+import org.springframework.stereotype.Component;
+
+/**
+ * Mermaid-specific class diagram parser
+ */
+@Component
+public class MermaidClassParser implements UmlParser<Diagram> {
+    
+    @Override
+    public Diagram parse(String content) throws ParseException {
+        // Basic implementation - create empty diagram for now
+        Diagram diagram = new Diagram();
+        // TODO: Implement actual parsing logic
+        return diagram;
+    }
+    
+    @Override
+    public boolean validate(String content) {
+        try {
+            parse(content);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+    
+    @Override
+    public DiagramType getSupportedType() {
+        return DiagramType.CLASS;
+    }
+    
+    @Override
+    public String getFormat() {
+        return "mermaid";
+    }
+}

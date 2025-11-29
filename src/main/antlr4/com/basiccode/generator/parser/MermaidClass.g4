@@ -2,15 +2,80 @@ grammar MermaidClass;
 
 // ========== PARSER RULES ==========
 
+// Support for YAML front matter and directives
 classDiagram
-    : 'classDiagram' statement* EOF
+    : frontMatter? directive* 'classDiagram' statement* EOF
     ;
 
-// Design Pattern: Tagged Alternatives
+frontMatter
+    : '---' yamlContent '---'
+    ;
+
+yamlContent
+    : (~('---'))* 
+    ;
+
+directive
+    : '%%{' directiveContent '}%%'
+    | 'direction' directionValue
+    | 'title:' STRING
+    ;
+
+directiveContent
+    : (~('}%%'))*
+    ;
+
+directionValue
+    : 'TB' | 'TD' | 'BT' | 'RL' | 'LR'
+    ;
+
+// Design Pattern: Tagged Alternatives - Extended
 statement
     : classDeclaration          # ClassDeclStmt
     | relationship              # RelationshipStmt
     | note                      # NoteStmt
+    | styleStatement            # StyleStmt
+    | interactionStatement      # InteractionStmt
+    | namespaceStatement        # NamespaceStmt
+    ;
+
+// Style statements for Mermaid styling
+styleStatement
+    : 'style' className styleProperties
+    | 'classDef' classDefName styleProperties
+    | 'cssClass' STRING className
+    ;
+
+styleProperties
+    : styleProperty (',' styleProperty)*
+    ;
+
+styleProperty
+    : IDENTIFIER ':' styleValue
+    ;
+
+styleValue
+    : STRING | IDENTIFIER | COLOR | NUMBER
+    ;
+
+classDefName
+    : IDENTIFIER | 'default'
+    ;
+
+// Interaction statements
+interactionStatement
+    : 'click' className actionType STRING STRING?
+    | 'link' className STRING STRING?
+    | 'callback' className STRING STRING?
+    ;
+
+actionType
+    : 'href' | 'call'
+    ;
+
+// Namespace support
+namespaceStatement
+    : 'namespace' IDENTIFIER '{' classDeclaration* '}'
     ;
 
 // Design Pattern: Optional Components
@@ -23,13 +88,18 @@ stereotype
     : '<<' stereotypeType '>>'
     ;
 
+// More flexible stereotype types
 stereotypeType
     : 'abstract' | 'interface' | 'enumeration' | 'service' 
-    | 'repository' | 'controller' | 'entity' | IDENTIFIER
+    | 'repository' | 'controller' | 'entity' | 'enum'
+    | IDENTIFIER                    # CustomStereotype
     ;
 
+// Enhanced className with labels and special characters
 className
-    : IDENTIFIER
+    : IDENTIFIER                    # SimpleClassName
+    | IDENTIFIER '[' STRING ']'     # ClassWithLabel
+    | BACKTICK_STRING               # EscapedClassName
     ;
 
 classBody
@@ -112,7 +182,7 @@ typeArgs
     ;
 
 multiplicity
-    : '[' min=NUMBER '..' max=(NUMBER | '*') ']'
+    : '[' min=NUMBER DOTDOT max=(NUMBER | '*') ']'
     | '[' exact=NUMBER ']'
     ;
 
@@ -129,44 +199,68 @@ parameterList
     : parameter (',' parameter)*
     ;
 
+// Simplified parameter - single format to avoid ambiguity
 parameter
-    : paramName=IDENTIFIER ':' type
-    | type paramName=IDENTIFIER
+    : type paramName=IDENTIFIER
+    | paramName=IDENTIFIER ':' type
     ;
 
+// Unambiguous return type - prioritize colon form
 returnType
-    : ':' type
-    | type
+    : ':' type                  # ColonReturnType
+    | type                      # DirectReturnType
     ;
 
+// Enhanced enum values supporting constants
 enumValue
-    : IDENTIFIER
+    : ENUM_CONSTANT
+    | IDENTIFIER
     ;
 
-// Simplified relationships
+// Enhanced relationships with full cardinality support
 relationship
-    : className relType className label?
+    : className cardinality? relType cardinality? className label?  # CardinalityRelationship
+    | className relType className label?                            # SimpleRelationship
     ;
 
 relType
-    : '<|--'                    # InheritanceRel
-    | '-->'                     # AssociationRel
-    | '"' cardinality '"' '-->' '"' cardinality '"'  # CardinalityRel
-    | '*--'                     # CompositionLeft
-    | '--*'                     # CompositionRight
-    | 'o--'                     # AggregationLeft
-    | '--o'                     # AggregationRight
+    : INHERIT                   # InheritanceRel
+    | ASSOC_RIGHT               # AssociationRel
+    | BIDIRECTIONAL             # BiDirectionalRel
+    | COMPO_LEFT                # CompositionLeft
+    | COMPO_RIGHT               # CompositionRight
+    | AGGREG_LEFT               # AggregationLeft
+    | AGGREG_RIGHT              # AggregationRight
+    | LINK_SOLID                # LinkSolid
+    | DEPENDENCY                # Dependency
+    | REALIZATION               # Realization
+    | LINK_DASHED               # LinkDashed
+    | LOLLIPOP_LEFT             # LollipopLeft
+    | LOLLIPOP_RIGHT            # LollipopRight
     ;
 
+// Enhanced cardinality with all Mermaid formats
 cardinality
-    : NUMBER | '*' | NUMBER '..' NUMBER | NUMBER '..' '*'
+    : STRING                    # QuotedCardinality
+    | NUMBER                    # NumericCardinality
+    | '*'                       # ManyCardinality
+    | NUMBER DOTDOT NUMBER      # RangeCardinality
+    | NUMBER DOTDOT '*'         # OpenRangeCardinality
+    | '0' DOTDOT '1'           # ZeroToOneCardinality
+    | 'many'                    # ManyTextCardinality
     ;
 
+// Flexible labels supporting multi-word text
 label
-    : ':' IDENTIFIER
-    | STRING
+    : ':' labelText
     ;
 
+labelText
+    : IDENTIFIER (IDENTIFIER)*  # MultiWordLabel
+    | STRING                    # StringLabel
+    ;
+
+// Enhanced notes with multi-line support
 note
     : 'note' 'for' className STRING     # NoteFor
     | 'note' STRING                      # SimpleNote
@@ -179,14 +273,54 @@ CLASSDIAGRAM    : 'classDiagram';
 CLASS           : 'class';
 NOTE            : 'note';
 FOR             : 'for';
+NAMESPACE       : 'namespace';
+DIRECTION       : 'direction';
+STYLE           : 'style';
+CLASSDEF        : 'classDef';
+CSSCLASS        : 'cssClass';
+CLICK           : 'click';
+LINK            : 'link';
+CALLBACK        : 'callback';
+HREF            : 'href';
+CALL            : 'call';
+TITLE           : 'title:';
+
+// Direction values
+TB              : 'TB';
+TD              : 'TD';
+BT              : 'BT';
+RL              : 'RL';
+LR              : 'LR';
+
+// Stereotype keywords
+ABSTRACT        : 'abstract';
+INTERFACE       : 'interface';
+ENUMERATION     : 'enumeration';
+ENUM            : 'enum';
+SERVICE         : 'service';
+REPOSITORY      : 'repository';
+CONTROLLER      : 'controller';
+ENTITY          : 'entity';
+DEFAULT         : 'default';
+MANY            : 'many';
 
 // Relations (order matters - longest first!)
+BIDIRECTIONAL   : '<-->';
 INHERIT         : '<|--';
+REALIZATION     : '..|>';
+LOLLIPOP_LEFT   : '()--';
+LOLLIPOP_RIGHT  : '--()';
 ASSOC_RIGHT     : '-->';
 COMPO_LEFT      : '*--';
 COMPO_RIGHT     : '--*';
 AGGREG_LEFT     : 'o--';
 AGGREG_RIGHT    : '--o';
+DEPENDENCY      : '..>';
+LINK_SOLID      : '--';
+LINK_DASHED     : '..';
+YAML_DELIM      : '---';
+DIRECTIVE_START : '%%{';
+DIRECTIVE_END   : '}%%';
 
 // Visibility
 PLUS            : '+';
@@ -211,15 +345,21 @@ DOTDOT          : '..';
 STAR            : '*';
 QUOTE           : '"';
 
-// Literals
-IDENTIFIER      : [a-zA-Z_][a-zA-Z0-9_]*;
+// Enhanced literals with international support
+ENUM_CONSTANT   : [A-Z] [A-Z0-9_ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞŸ]*;
+IDENTIFIER      : [a-zA-ZÀ-ſ_] [a-zA-Z0-9À-ſ_]*;
 NUMBER          : [0-9]+('.'[0-9]+)?;
 STRING          : '"' (~["\r\n])* '"';
+BACKTICK_STRING : '`' (~[`\r\n])* '`';
+COLOR           : '#' [0-9a-fA-F]+;
 BOOLEAN         : 'true' | 'false';
 AT              : '@';
 EQUALS          : '=';
 
-// Whitespace and Comments
+// Enhanced whitespace and comments
 WS              : [ \t\r\n]+ -> skip;
 LINE_COMMENT    : '%%' ~[\r\n]* -> skip;
 BLOCK_COMMENT   : '/*' .*? '*/' -> skip;
+
+// Error handling for unknown characters
+UNKNOWN         : . ;

@@ -1,0 +1,69 @@
+classDiagram
+    class User {
+        <<entity>>
+        +UUID id
+        +String email
+        +String password
+        +String firstName
+        +String lastName
+        +String phoneNumber
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +Boolean active
+        +UserRole role
+        +validateEmail()
+        +hashPassword()
+        +checkPassword()
+        +updateProfile()
+    }
+
+    class UserRole {
+        <<enumeration>>
+        ADMIN
+        USER
+        MODERATOR
+    }
+
+    class AuthToken {
+        +UUID id
+        +String token
+        +UUID userId
+        +LocalDateTime expiresAt
+        +LocalDateTime createdAt
+        +Boolean revoked
+        +generateToken()
+        +isExpired()
+        +revoke()
+    }
+
+    class UserProfile {
+        +UUID id
+        +UUID userId
+        +String bio
+        +String avatar
+        +String website
+        +LocalDateTime lastLoginAt
+        +Map~String,String~ preferences
+        +updatePreferences()
+        +getDisplayName()
+    }
+
+    class AuditLog {
+        +UUID id
+        +UUID userId
+        +String action
+        +String entityType
+        +String entityId
+        +JSON oldValues
+        +JSON newValues
+        +LocalDateTime timestamp
+        +String ipAddress
+        +String userAgent
+        +logAction()
+    }
+
+    %% Relationships
+    User "1" --> "0..1" UserProfile : has
+    User "1" --> "*" AuthToken : generates
+    User "1" --> "*" AuditLog : performs
+    User --> UserRole : has
