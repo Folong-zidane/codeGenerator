@@ -69,6 +69,12 @@ public class PhpEntityGenerator implements IEntityGenerator {
         code.append("        'updated_at' => 'datetime',\n");
         code.append("    ];\n\n");
         
+        // Add relationships
+        generatePhpRelationships(code, enhancedClass, className);
+        
+        // Add business methods from UML diagram
+        generateBusinessMethods(code, enhancedClass, className);
+        
         // State transition methods if stateful
         if (enhancedClass.isStateful()) {
             generateStateTransitionMethods(code, enhancedClass);
@@ -178,5 +184,147 @@ public class PhpEntityGenerator implements IEntityGenerator {
         code.append("        $this->updated_at = Carbon::now();\n");
         code.append("        $this->save();\n");
         code.append("    }\n\n");
+    }
+    
+    private void generateBusinessMethods(StringBuilder code, EnhancedClass enhancedClass, String className) {
+        // Generate methods from UML diagram
+        if (enhancedClass.getOriginalClass().getMethods() != null) {
+            for (var method : enhancedClass.getOriginalClass().getMethods()) {
+                generateBusinessMethod(code, method, className);
+            }
+        }
+    }
+    
+    private void generateBusinessMethod(StringBuilder code, com.basiccode.generator.model.Method method, String className) {
+        String returnType = method.getReturnType() != null ? mapPhpReturnType(method.getReturnType()) : "void";
+        
+        code.append("    public function ").append(method.getName()).append("(");
+        
+        // Add parameters
+        if (method.getParameters() != null && !method.getParameters().isEmpty()) {
+            for (int i = 0; i < method.getParameters().size(); i++) {
+                var param = method.getParameters().get(i);
+                String paramType = param.getType() != null ? mapPhpType(param.getType()) : "string";
+                code.append(paramType).append(" $").append(param.getName());
+                if (i < method.getParameters().size() - 1) {
+                    code.append(", ");
+                }
+            }
+        }
+        
+        code.append("): ").append(returnType).append("\n");
+        code.append("    {\n");
+        
+        // Generate method body based on method name
+        generatePhpMethodBody(code, method, className, returnType);
+        
+        code.append("    }\n\n");
+    }
+    
+    private String mapPhpType(String javaType) {
+        return switch (javaType.toLowerCase()) {
+            case "string" -> "string";
+            case "long", "integer", "int" -> "int";
+            case "float", "double" -> "float";
+            case "boolean" -> "bool";
+            default -> "string";
+        };
+    }
+    
+    private String mapPhpReturnType(String javaType) {
+        return switch (javaType.toLowerCase()) {
+            case "string" -> "string";
+            case "long", "integer", "int" -> "int";
+            case "float", "double" -> "float";
+            case "boolean" -> "bool";
+            case "void" -> "void";
+            default -> "mixed";
+        };
+    }
+    
+    private void generatePhpMethodBody(StringBuilder code, com.basiccode.generator.model.Method method, String className, String returnType) {
+        String methodName = method.getName().toLowerCase();
+        
+        switch (methodName) {
+            case "authenticate":
+                code.append("        if (empty($password)) {\n");
+                code.append("            return false;\n");
+                code.append("        }\n");
+                code.append("        // TODO: Implement password verification logic\n");
+                code.append("        return true;\n");
+                break;
+                
+            case "updateprofile":
+                code.append("        if (empty($profile)) {\n");
+                code.append("            throw new \\InvalidArgumentException('Profile cannot be empty');\n");
+                code.append("        }\n");
+                code.append("        // TODO: Update user profile fields\n");
+                code.append("        $this->updated_at = Carbon::now();\n");
+                code.append("        $this->save();\n");
+                break;
+                
+            case "calculatetotal":
+                code.append("        // TODO: Calculate order total\n");
+                if (!"void".equals(returnType)) {
+                    code.append("        return 0;\n");
+                }
+                break;
+                
+            default:
+                code.append("        // TODO: Implement ").append(methodName).append(" logic\n");
+                if (!"void".equals(returnType)) {
+                    if ("bool".equals(returnType)) {
+                        code.append("        return false;\n");
+                    } else if ("string".equals(returnType)) {
+                        code.append("        return '';\n");
+                    } else if ("int".equals(returnType) || "float".equals(returnType)) {
+                        code.append("        return 0;\n");
+                    } else {
+                        code.append("        return null;\n");
+                    }
+                }
+                break;
+        }
+    }
+    
+    private void generatePhpRelationships(StringBuilder code, EnhancedClass enhancedClass, String className) {
+        for (UmlAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
+            if (attr.isRelationship()) {
+                generatePhpRelationship(code, attr, className);
+            }
+        }
+    }
+    
+    private void generatePhpRelationship(StringBuilder code, UmlAttribute attr, String currentClassName) {
+        String relationshipType = attr.getRelationshipType();
+        String targetClass = attr.getTargetClass();
+        String methodName = attr.getName();
+        
+        switch (relationshipType) {
+            case "OneToMany":
+                code.append("\n    public function ").append(methodName).append("()\n");
+                code.append("    {\n");
+                code.append("        return $this->hasMany(").append(targetClass).append("::class);\n");
+                code.append("    }\n");
+                break;
+            case "ManyToOne":
+                code.append("\n    public function ").append(methodName).append("()\n");
+                code.append("    {\n");
+                code.append("        return $this->belongsTo(").append(targetClass).append("::class);\n");
+                code.append("    }\n");
+                break;
+            case "OneToOne":
+                code.append("\n    public function ").append(methodName).append("()\n");
+                code.append("    {\n");
+                code.append("        return $this->hasOne(").append(targetClass).append("::class);\n");
+                code.append("    }\n");
+                break;
+            case "ManyToMany":
+                code.append("\n    public function ").append(methodName).append("()\n");
+                code.append("    {\n");
+                code.append("        return $this->belongsToMany(").append(targetClass).append("::class);\n");
+                code.append("    }\n");
+                break;
+        }
     }
 }

@@ -7,17 +7,14 @@ public class PhpRepositoryGenerator implements IRepositoryGenerator {
     
     @Override
     public String generateRepository(EnhancedClass enhancedClass, String packageName) {
-        StringBuilder code = new StringBuilder();
+        // Return only the implementation, interface will be generated separately
         String className = enhancedClass.getOriginalClass().getName();
-        
-        // Generate Repository Interface
-        code.append(generateRepositoryInterface(className, packageName));
-        code.append("\n\n");
-        
-        // Generate Repository Implementation
-        code.append(generateRepositoryImplementation(className, packageName));
-        
-        return code.toString();
+        return generateRepositoryImplementation(className, packageName);
+    }
+    
+    public String generateRepositoryInterface(EnhancedClass enhancedClass, String packageName) {
+        String className = enhancedClass.getOriginalClass().getName();
+        return generateRepositoryInterface(className, packageName);
     }
     
     @Override

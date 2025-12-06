@@ -61,8 +61,11 @@ public class TypeScriptRepositoryGenerator implements IRepositoryGenerator {
         return code.toString();
     }
     
-    @Override
     public String getRepositoryDirectory() {
         return "repositories";
+    }
+    
+    public String getFileExtension() {
+        return ".ts";
     }
 }

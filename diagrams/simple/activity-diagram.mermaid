@@ -1,0 +1,12 @@
+activityDiagram-beta
+    start
+    :User Login;
+    if (Credentials Valid?) then (yes)
+        :Load Dashboard;
+        :Display Menu;
+    else (no)
+        :Show Error;
+        :Retry Login;
+    endif
+    :Log Activity;
+    end

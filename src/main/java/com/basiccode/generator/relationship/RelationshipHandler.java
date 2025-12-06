@@ -20,8 +20,8 @@ public class RelationshipHandler {
         
         if (sourceClass == null || targetClass == null) return;
         
-        CardinalityType sourceCard = parseCardinality(rel.getSourceMultiplicity());
-        CardinalityType targetCard = parseCardinality(rel.getTargetMultiplicity());
+        CardinalityType sourceCard = parseCardinality(String.valueOf(rel.getSourceMultiplicity()));
+        CardinalityType targetCard = parseCardinality(String.valueOf(rel.getTargetMultiplicity()));
         
         if (sourceCard == CardinalityType.ONE && targetCard == CardinalityType.MANY) {
             addOneToManyRelation(sourceClass, targetClass);

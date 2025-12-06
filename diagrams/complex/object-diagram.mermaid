@@ -1,0 +1,90 @@
+objectDiagram
+    class User {
+        id = "U001"
+        username = "john.doe"
+        email = "john@example.com"
+        role = "CUSTOMER"
+        active = true
+    }
+
+    class User {
+        id = "U002"
+        username = "admin.user"
+        email = "admin@example.com"
+        role = "ADMIN"
+        active = true
+    }
+
+    class Order {
+        id = "ORD001"
+        orderNumber = "ORD-2025-001"
+        status = "PROCESSING"
+        totalAmount = 299.99
+    }
+
+    class OrderItem {
+        id = "OI001"
+        quantity = 2
+        unitPrice = 99.99
+        lineTotal = 199.98
+    }
+
+    class OrderItem {
+        id = "OI002"
+        quantity = 1
+        unitPrice = 100.01
+        lineTotal = 100.01
+    }
+
+    class Product {
+        id = "P001"
+        name = "Laptop"
+        sku = "LAPTOP-001"
+        price = 99.99
+        quantity = 150
+    }
+
+    class Product {
+        id = "P002"
+        name = "Mouse"
+        sku = "MOUSE-001"
+        price = 100.01
+        quantity = 500
+    }
+
+    class Review {
+        id = "R001"
+        rating = 5
+        comment = "Excellent product!"
+    }
+
+    class Payment {
+        id = "PAY001"
+        status = "COMPLETED"
+        method = "CREDIT_CARD"
+    }
+
+    user1 : User {
+        id = "U001"
+    }
+
+    user2 : User {
+        id = "U002"
+    }
+
+    order1 : Order {
+        id = "ORD001"
+    }
+
+    product1 : Product {
+        id = "P001"
+    }
+
+    product2 : Product {
+        id = "P002"
+    }
+
+    user1 -- order1 : places
+    order1 -- product1 : contains
+    order1 -- product2 : contains
+    product1 -- review1 : has

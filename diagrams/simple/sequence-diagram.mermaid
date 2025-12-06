@@ -1,0 +1,12 @@
+sequenceDiagram
+    actor User
+    participant Client
+    participant Server
+    participant Database
+    
+    User->>Client: Open Application
+    Client->>Server: GET /api/users/1
+    Server->>Database: Query User
+    Database-->>Server: User Data
+    Server-->>Client: Return JSON
+    Client-->>User: Display Profile

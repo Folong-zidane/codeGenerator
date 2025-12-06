@@ -60,13 +60,17 @@ public class RelationshipGenerator {
     }
     
     private static boolean isOneToMany(Relationship relationship, boolean isOwner) {
-        return (isOwner && relationship.getFromMultiplicity().equals("1") && relationship.getToMultiplicity().equals("*")) ||
-               (!isOwner && relationship.getFromMultiplicity().equals("*") && relationship.getToMultiplicity().equals("1"));
+        String fromMult = String.valueOf(relationship.getFromMultiplicity());
+        String toMult = String.valueOf(relationship.getToMultiplicity());
+        return (isOwner && fromMult.equals("1") && toMult.equals("*")) ||
+               (!isOwner && fromMult.equals("*") && toMult.equals("1"));
     }
     
     private static boolean isManyToOne(Relationship relationship, boolean isOwner) {
-        return (isOwner && relationship.getFromMultiplicity().equals("*") && relationship.getToMultiplicity().equals("1")) ||
-               (!isOwner && relationship.getFromMultiplicity().equals("1") && relationship.getToMultiplicity().equals("*"));
+        String fromMult = String.valueOf(relationship.getFromMultiplicity());
+        String toMult = String.valueOf(relationship.getToMultiplicity());
+        return (isOwner && fromMult.equals("*") && toMult.equals("1")) ||
+               (!isOwner && fromMult.equals("1") && toMult.equals("*"));
     }
     
     private static String pluralize(String word) {

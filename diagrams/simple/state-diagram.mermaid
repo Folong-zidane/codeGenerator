@@ -1,0 +1,13 @@
+stateDiagram-v2
+    [*] --> Pending
+    Pending --> Processing : process()
+    Processing --> Shipped : ship()
+    Shipped --> Delivered : deliver()
+    Delivered --> [*]
+    
+    Pending --> Cancelled : cancel()
+    Processing --> Cancelled : cancel()
+    Cancelled --> [*]
+    
+    Shipped --> Returned : request_return()
+    Returned --> [*]

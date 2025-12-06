@@ -148,10 +148,10 @@ public class EnhancedEntityGenerator {
         
         if (field.hasConstraint("min") || field.hasConstraint("max")) {
             AnnotationSpec.Builder sizeBuilder = AnnotationSpec.builder(ClassName.get("jakarta.validation.constraints", "Size"));
-            if (field.getMinSize() != null) {
+            if (field.getMinSize() > 0) {
                 sizeBuilder.addMember("min", "$L", field.getMinSize());
             }
-            if (field.getMaxSize() != null) {
+            if (field.getMaxSize() > 0) {
                 sizeBuilder.addMember("max", "$L", field.getMaxSize());
             }
             builder.addAnnotation(sizeBuilder.build());
@@ -349,7 +349,7 @@ public class EnhancedEntityGenerator {
             if (field.hasAnnotation("Email")) {
                 csharpCode.append("        [EmailAddress]\n");
             }
-            if (field.getMaxSize() != null) {
+            if (field.getMaxSize() > 0) {
                 csharpCode.append("        [StringLength(").append(field.getMaxSize()).append(")]\n");
             }
             

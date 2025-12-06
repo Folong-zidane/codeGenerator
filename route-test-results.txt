@@ -1,0 +1,135 @@
+ğŸ§ª ANALYSE COMPLÃˆTE DES ROUTES - jeu. 04 dÃ©c. 2025 02:19:21 WAT
+=========================================
+
+ğŸ“š DOCUMENTATION CONTROLLER
+=========================
+ğŸ” GET / - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.186+00:00","status":404,"error":"Not Found","path":"/"}
+
+ğŸ” GET /docs - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.218+00:00","status":404,"error":"Not Found","path":"/docs"}
+
+ğŸ” GET /examples - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.270+00:00","status":404,"error":"Not Found","path":"/examples"}
+
+ğŸ› DEBUG CONTROLLER
+==================
+ğŸ” GET /api/debug/health - 
+   âœ… SUCCESS (200)
+   Response: {"message":"API is running","status":"OK"}
+
+ğŸ” GET /api/debug/languages - 
+   âœ… SUCCESS (200)
+   Response: {"availableFrameworks":["PHP_LARAVEL","NODEJS_TYPESCRIPT","SPRING_BOOT","DOTNET_CORE","FASTAPI","DJANGO"],"availableLanguages":["csharp","python","django","java","php","typescript"]}
+
+ğŸ—ï¸ CODE GENERATOR CONTROLLER
+============================
+ğŸ” GET /api/generate/languages - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.363+00:00","status":404,"error":"Not Found","path":"/api/generate/languages"}
+
+ğŸ” GET /api/generate/versions - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.392+00:00","status":404,"error":"Not Found","path":"/api/generate/versions"}
+
+ğŸ” POST /api/generate/comprehensive - Comprehensive generation
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.425+00:00","status":404,"error":"Not Found","path":"/api/generate/comprehensive"}
+
+ğŸš€ MODERN GENERATOR CONTROLLER
+==============================
+ğŸ” GET /api/modern/example - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.456+00:00","status":404,"error":"Not Found","path":"/api/modern/example"}
+
+ğŸ” GET /api/modern/initializers/status - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.486+00:00","status":404,"error":"Not Found","path":"/api/modern/initializers/status"}
+
+ğŸ” GET /api/modern/initializers/java/available - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.516+00:00","status":404,"error":"Not Found","path":"/api/modern/initializers/java/available"}
+
+ğŸ” POST /api/modern/generate - Modern generation
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.544+00:00","status":404,"error":"Not Found","path":"/api/modern/generate"}
+
+âš¡ OPTIMAL GENERATOR CONTROLLER
+===============================
+ğŸ” POST /api/generate/analyze - Diagram analysis
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.572+00:00","status":404,"error":"Not Found","path":"/api/generate/analyze"}
+
+ğŸ” POST /api/generate - Optimal generation
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.604+00:00","status":404,"error":"Not Found","path":"/api/generate"}
+
+ğŸ“¡ STREAMING GENERATION CONTROLLER
+==================================
+ğŸ” POST /api/v2/stream/generate - Initiate streaming generation
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.634+00:00","status":404,"error":"Not Found","path":"/api/v2/stream/generate"}
+
+ğŸ” GET /api/v2/stream/status/test-id - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.663+00:00","status":404,"error":"Not Found","path":"/api/v2/stream/status/test-id"}
+
+ğŸ” GET /api/v2/stream/download/test-id - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.694+00:00","status":404,"error":"Not Found","path":"/api/v2/stream/download/test-id"}
+
+ğŸ” DELETE /api/v2/stream/cleanup/test-id - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:21.723+00:00","status":404,"error":"Not Found","path":"/api/v2/stream/cleanup/test-id"}
+
+ğŸ”§ CODE GENERATION CONTROLLER V1
+=================================
+ğŸ” POST /api/v1/generate/java - Generate Java code
+   âœ… SUCCESS (200)
+   Response: {"generationId":"e1f336e6-bb27-4026-b85e-7b1516d2953b","language":"java","projectName":"test-project...
+
+ğŸ” POST /api/v1/generate/python - Generate Python code
+   âœ… SUCCESS (200)
+   Response: {"generationId":"4f0fa2ca-f6a6-4e6e-8fd7-3fa7c66daaa4","language":"python","projectName":"test-proje...
+
+ğŸ” POST /api/v1/generate/csharp - Generate C# code
+   âœ… SUCCESS (200)
+   Response: {"generationId":"a3316a95-8644-4bf1-93d9-a513dad0bf08","language":"csharp","projectName":"test-proje...
+
+ğŸ” POST /api/v1/generate/typescript - Generate TypeScript code
+   âœ… SUCCESS (200)
+   Response: {"generationId":"4bcc7536-b583-404f-858e-fabc755b9d65","language":"typescript","projectName":"test-p...
+
+ğŸ” POST /api/v1/generate/php - Generate PHP code
+   âœ… SUCCESS (200)
+   Response: {"generationId":"dc4a008f-69d3-4469-abf0-8df802462e2f","language":"php","projectName":"test-project"...
+
+ğŸ” POST /api/v1/generate/java/download - Download Java ZIP
+   âœ… SUCCESS (200)
+   Response: PKk„[controller/UserController.java­•ßoÚ0Çßù+,Òi3š´§µ« ÀÚI†
+í»‰u1vj;´ñ¿ïìü†„…©<D&¾ûŞİçÎ...
+
+ğŸ” POST /api/v1/generate/python/download - Download Python ZIP
+   âœ… SUCCESS (200)
+   Response: PKk„[routers/UserController.py½R]kÛ0}÷¯Ğ›m0IVò0l°B{(k·—2Œb]§[òt¯KCÙß•%'N»Æ²å)–Î=·q¶D’...
+
+ğŸŒ± SPRING BOOT ACTUATOR
+=======================
+ğŸ” GET /actuator/health - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:22.647+00:00","status":404,"error":"Not Found","path":"/actuator/health"}
+
+ğŸ” GET /actuator/info - 
+   âŒ NOT FOUND (404)
+   Response: {"timestamp":"2025-12-04T01:19:22.721+00:00","status":404,"error":"Not Found","path":"/actuator/info"}
+
+
+ğŸ“Š RÃ‰SUMÃ‰ DES TESTS
+==================
+âœ… SuccÃ¨s: 9
+âŒ Erreurs: 18
+ğŸ” Non trouvÃ©es: 18
+âš ï¸  RequÃªtes invalides: 0

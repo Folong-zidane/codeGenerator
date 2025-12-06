@@ -1,5 +1,6 @@
 package com.basiccode.generator.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,29 @@ public class EnhancedClass {
     
     public EnhancedClass(UmlClass originalClass) {
         this.originalClass = originalClass;
+    }
+    
+    public EnhancedClass(ClassModel classModel) {
+        // Convert ClassModel to UmlClass
+        this.originalClass = convertToUmlClass(classModel);
+    }
+    
+    private UmlClass convertToUmlClass(ClassModel classModel) {
+        UmlClass umlClass = new UmlClass(classModel.getName());
+        
+        // Convert fields to attributes
+        List<UmlAttribute> attributes = new ArrayList<>();
+        if (classModel.getFields() != null) {
+            for (Field field : classModel.getFields()) {
+                UmlAttribute attr = new UmlAttribute();
+                attr.setName(field.getName());
+                attr.setType(field.getType());
+                attributes.add(attr);
+            }
+        }
+        umlClass.setAttributes(attributes);
+        
+        return umlClass;
     }
     
     public UmlClass getOriginalClass() {
@@ -65,5 +89,13 @@ public class EnhancedClass {
     
     public void setStateful(boolean stateful) {
         this.stateful = stateful;
+    }
+    
+    public List<UmlRelationship> getRelationships() {
+        return originalClass != null ? originalClass.getRelationships() : null;
+    }
+    
+    public List<BusinessMethod> getSequenceMethods() {
+        return behavioralMethods;
     }
 }

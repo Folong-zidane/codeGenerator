@@ -5,7 +5,8 @@ import com.basiccode.generator.generator.*;
 public class DjangoGeneratorFactory {
     
     public static IEntityGenerator createEntityGenerator() {
-        return new DjangoEntityGenerator();
+        // 🚀 PHASE 1: Utiliser le générateur avancé DjangoModelGenerator
+        return new DjangoModelGeneratorAdapter();
     }
     
     public static IRepositoryGenerator createRepositoryGenerator() {
@@ -25,6 +26,12 @@ public class DjangoGeneratorFactory {
     }
     
     public static IMigrationGenerator createMigrationGenerator() {
-        return new DjangoMigrationGenerator();
+        // 🚀 PHASE 1: Utiliser le générateur de migrations amélioré
+        return new DjangoMigrationGeneratorEnhanced();
+    }
+    
+    public static IRepositoryGenerator createSerializerGenerator() {
+        // 🚀 PHASE 1: Utiliser le générateur de sérializers DRF
+        return new DjangoSerializerGenerator();
     }
 }

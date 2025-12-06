@@ -1,0 +1,13 @@
+classDiagram
+    class User {
+        +UUID id
+        +String username
+        +String email
+        +validateEmail()
+    }
+    class Product {
+        +UUID id
+        +String name
+        +Float price
+    }
+    User "1" --> "*" Product

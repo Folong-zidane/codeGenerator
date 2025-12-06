@@ -1,0 +1,129 @@
+{
+  "info": {
+    "name": "Code Generation Quality Testing",
+    "description": "Test suite for validating generated code quality across all languages",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Java - E-Commerce Domain",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"projectName\": \"ecommerce-java\",\n  \"packageName\": \"com.ecommerce\",\n  \"description\": \"E-commerce platform with product catalog, shopping cart, and order management\",\n  \"includeTests\": true,\n  \"generateDocs\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/generate/java",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "generate", "java"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Python - Django Models",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"projectName\": \"ecommerce-django\",\n  \"packageName\": \"ecommerce.apps\",\n  \"description\": \"Django REST Framework API with PostgreSQL, Redis caching, and Celery tasks\",\n  \"includeTests\": true,\n  \"generateDocs\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/generate/python",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "generate", "python"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "C# - ASP.NET Core Entities",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"projectName\": \"ecommerce-aspnet\",\n  \"packageName\": \"Ecommerce.Models\",\n  \"description\": \"ASP.NET Core with Entity Framework Core, SQL Server, and dependency injection\",\n  \"includeTests\": true,\n  \"generateDocs\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/generate/csharp",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "generate", "csharp"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TypeScript - Node.js API",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"projectName\": \"ecommerce-nodejs\",\n  \"packageName\": \"ecommerce\",\n  \"description\": \"Node.js + Express + TypeScript with PostgreSQL and JWT authentication\",\n  \"includeTests\": true,\n  \"generateDocs\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/generate/typescript",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "generate", "typescript"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PHP - Laravel Models",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"projectName\": \"ecommerce-laravel\",\n  \"packageName\": \"App\\\\Models\",\n  \"description\": \"Laravel with Eloquent ORM, MySQL, and Redis caching\",\n  \"includeTests\": true,\n  \"generateDocs\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/generate/php",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "generate", "php"]
+        }
+      },
+      "response": []
+    }
+  ]
+}

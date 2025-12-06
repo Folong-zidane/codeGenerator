@@ -22,30 +22,12 @@ public class PhpFileWriter implements IFileWriter {
     
     @Override
     public void writeFile(String fileName, String content, String outputPath) {
+        writeFile(outputPath + "/" + fileName, content);
+    }
+    
+    public void writeFile(String fullPath, String content) {
         try {
-            Path basePath = Paths.get(outputPath);
-            Path filePath;
-            
-            // Determine the correct file path based on content type
-            if (content.contains("class") && content.contains("extends Model")) {
-                filePath = basePath.resolve("app/Models").resolve(ensurePhpExtension(fileName));
-            } else if (content.contains("Controller")) {
-                filePath = basePath.resolve("app/Http/Controllers/Api").resolve(ensurePhpExtension(fileName));
-            } else if (content.contains("Service")) {
-                filePath = basePath.resolve("app/Services").resolve(ensurePhpExtension(fileName));
-            } else if (content.contains("Repository")) {
-                filePath = basePath.resolve("app/Repositories").resolve(ensurePhpExtension(fileName));
-            } else if (content.contains("enum")) {
-                filePath = basePath.resolve("app/Enums").resolve(ensurePhpExtension(fileName));
-            } else if (content.contains("Migration")) {
-                filePath = basePath.resolve("database/migrations").resolve(ensurePhpExtension(fileName));
-            } else if (content.contains("ServiceProvider")) {
-                filePath = basePath.resolve("app/Providers").resolve(ensurePhpExtension(fileName));
-            } else if (content.contains("Route::")) {
-                filePath = basePath.resolve("routes").resolve(ensurePhpExtension(fileName));
-            } else {
-                filePath = basePath.resolve(ensurePhpExtension(fileName));
-            }
+            Path filePath = Paths.get(fullPath);
             
             // Create directories if they don't exist
             Files.createDirectories(filePath.getParent());
@@ -54,7 +36,7 @@ public class PhpFileWriter implements IFileWriter {
             Files.writeString(filePath, content);
             
         } catch (IOException e) {
-            throw new RuntimeException("Failed to write PHP file: " + fileName, e);
+            throw new RuntimeException("Failed to write PHP file: " + fullPath, e);
         }
     }
     

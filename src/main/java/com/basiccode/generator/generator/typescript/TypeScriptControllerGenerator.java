@@ -111,9 +111,12 @@ public class TypeScriptControllerGenerator implements IControllerGenerator {
         return code.toString();
     }
     
-    @Override
     public String getControllerDirectory() {
         return "controllers";
+    }
+    
+    public String getFileExtension() {
+        return ".ts";
     }
     
     private void generateStateManagementEndpoints(StringBuilder code, String className) {

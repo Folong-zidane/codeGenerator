@@ -1,0 +1,16 @@
+sequenceDiagram
+    Client->>UserController: POST /api/users/register
+    UserController->>UserService: createUser(userData)
+    UserService->>UserRepository: save(user)
+    UserRepository-->>UserService: User created
+    UserService-->>UserController: Success
+    UserController-->>Client: 201 Created
+    
+    Client->>OrderController: POST /api/orders
+    OrderController->>OrderService: createOrder(orderData)
+    OrderService->>UserService: validateUser(userId)
+    UserService-->>OrderService: User valid
+    OrderService->>OrderRepository: save(order)
+    OrderRepository-->>OrderService: Order created
+    OrderService-->>OrderController: Success
+    OrderController-->>Client: 201 Created

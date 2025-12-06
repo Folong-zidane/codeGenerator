@@ -1,17 +1,19 @@
 package com.basiccode.generator.generator.python;
 
 import com.basiccode.generator.generator.IEntityGenerator;
+import com.basiccode.generator.generator.InheritanceAwareEntityGenerator;
 import com.basiccode.generator.model.EnhancedClass;
 import com.basiccode.generator.model.UmlAttribute;
 
-public class PythonEntityGenerator implements IEntityGenerator {
+public class PythonEntityGenerator implements InheritanceAwareEntityGenerator {
     
     @Override
     public String generateEntity(EnhancedClass enhancedClass, String packageName) {
         StringBuilder code = new StringBuilder();
         String className = enhancedClass.getOriginalClass().getName();
         
-        code.append("from sqlalchemy import Column, Integer, String, DateTime, Enum\n");
+        code.append("from sqlalchemy import Column, Integer, String, DateTime, Enum, ForeignKey\n");
+        code.append("from sqlalchemy.orm import relationship\n");
         code.append("from sqlalchemy.ext.declarative import declarative_base\n");
         code.append("from datetime import datetime\n");
         code.append("from enum import Enum as PyEnum\n\n");
@@ -33,17 +35,43 @@ public class PythonEntityGenerator implements IEntityGenerator {
             code.append("\n");
         }
         
-        code.append("Base = declarative_base()\n\n");
-        code.append("class ").append(className).append("(Base):\n");
-        code.append("    __tablename__ = '").append(className.toLowerCase()).append("s'\n\n");
+        // Handle inheritance
+        if (enhancedClass.getOriginalClass().isInterface()) {
+            // Python doesn't have interfaces, use ABC
+            code.append("from abc import ABC, abstractmethod\n\n");
+            code.append("class ").append(className).append("(ABC):\n");
+            generatePythonInterfaceMethods(code, enhancedClass);
+            return code.toString();
+        }
         
-        // Generate fields
+        code.append("Base = declarative_base()\n\n");
+        
+        String inheritanceDecl = generateInheritanceDeclaration(enhancedClass, className);
+        code.append(inheritanceDecl).append("\n");
+        
+        if (!enhancedClass.getOriginalClass().isAbstract()) {
+            code.append("    __tablename__ = '").append(className.toLowerCase()).append("s'\n\n");
+        }
+        
+        // Generate fields (skip inherited ones)
+        boolean hasInheritedFields = shouldSkipInheritedFields(enhancedClass);
+        
         for (UmlAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
-            String pythonType = mapToPythonType(attr.getType());
-            if ("id".equals(attr.getName())) {
-                code.append("    ").append(attr.getName()).append(" = Column(Integer, primary_key=True, autoincrement=True)\n");
+            // Skip inherited fields
+            if (hasInheritedFields && isInheritedField(attr.getName())) {
+                continue;
+            }
+            
+            // Generate SQLAlchemy relationship or column
+            if (attr.isRelationship()) {
+                generatePythonRelationship(code, attr, className);
             } else {
-                code.append("    ").append(attr.getName()).append(" = Column(").append(pythonType).append(")\n");
+                String pythonType = mapToPythonType(attr.getType());
+                if ("id".equals(attr.getName())) {
+                    code.append("    ").append(attr.getName()).append(" = Column(Integer, primary_key=True, autoincrement=True)\n");
+                } else {
+                    code.append("    ").append(attr.getName()).append(" = Column(").append(pythonType).append(")\n");
+                }
             }
         }
         
@@ -55,8 +83,11 @@ public class PythonEntityGenerator implements IEntityGenerator {
                 .append(enumName).append(".ACTIVE)\n");
         }
         
-        code.append("    created_at = Column(DateTime, default=datetime.utcnow)\n");
-        code.append("    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)\n\n");
+        // Add audit fields only if not inherited
+        if (!shouldSkipInheritedFields(enhancedClass)) {
+            code.append("    created_at = Column(DateTime, default=datetime.utcnow)\n");
+            code.append("    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)\n\n");
+        }
         
         // Generate state methods if stateful
         if (enhancedClass.isStateful()) {
@@ -90,6 +121,61 @@ public class PythonEntityGenerator implements IEntityGenerator {
     @Override
     public String getEntityDirectory() {
         return "models";
+    }
+    
+    @Override
+    public String generateInheritanceDeclaration(EnhancedClass enhancedClass, String className) {
+        if (enhancedClass.getOriginalClass().isInterface()) {
+            return "class " + className + "(ABC):";
+        } else if (enhancedClass.getOriginalClass().isAbstract()) {
+            return "class " + className + "(Base):";
+        } else {
+            String superClass = enhancedClass.getOriginalClass().getSuperClass();
+            if (superClass != null && !superClass.isEmpty()) {
+                return "class " + className + "(" + superClass + "):";
+            } else {
+                return "class " + className + "(Base):";
+            }
+        }
+    }
+    
+    private void generatePythonInterfaceMethods(StringBuilder code, EnhancedClass enhancedClass) {
+        if (enhancedClass.getOriginalClass().getMethods() != null) {
+            for (var method : enhancedClass.getOriginalClass().getMethods()) {
+                code.append("    @abstractmethod\n");
+                code.append("    def ").append(method.getName()).append("(self");
+                if (method.getParameters() != null && !method.getParameters().isEmpty()) {
+                    for (var param : method.getParameters()) {
+                        code.append(", ").append(param.getName());
+                    }
+                }
+                code.append("):\n");
+                code.append("        pass\n\n");
+            }
+        }
+    }
+    
+    private void generatePythonRelationship(StringBuilder code, UmlAttribute attr, String currentClassName) {
+        String relationshipType = attr.getRelationshipType();
+        String targetClass = attr.getTargetClass();
+        
+        switch (relationshipType) {
+            case "OneToMany":
+                code.append("    ").append(attr.getName()).append(" = relationship('").append(targetClass).append("', back_populates='").append(currentClassName.toLowerCase()).append("')\n");
+                break;
+            case "ManyToOne":
+                code.append("    ").append(targetClass.toLowerCase()).append("_id = Column(Integer, ForeignKey('").append(targetClass.toLowerCase()).append("s.id'))\n");
+                code.append("    ").append(attr.getName()).append(" = relationship('").append(targetClass).append("', back_populates='").append(attr.getName()).append("s')\n");
+                break;
+            case "OneToOne":
+                code.append("    ").append(targetClass.toLowerCase()).append("_id = Column(Integer, ForeignKey('").append(targetClass.toLowerCase()).append("s.id'), unique=True)\n");
+                code.append("    ").append(attr.getName()).append(" = relationship('").append(targetClass).append("', uselist=False)\n");
+                break;
+            case "ManyToMany":
+                String tableName = currentClassName.toLowerCase() + "_" + targetClass.toLowerCase();
+                code.append("    ").append(attr.getName()).append(" = relationship('").append(targetClass).append("', secondary='").append(tableName).append("', back_populates='").append(currentClassName.toLowerCase()).append("s')\n");
+                break;
+        }
     }
     
     private String mapToPythonType(String javaType) {

@@ -7,6 +7,9 @@ public class UmlClass {
     private String name;
     private List<UmlAttribute> attributes = new ArrayList<>();
     private List<Method> methods = new ArrayList<>();
+    private String superClass;
+    private boolean isAbstract = false;
+    private boolean isInterface = false;
     
     public UmlClass() {}
     
@@ -22,4 +25,15 @@ public class UmlClass {
     
     public List<Method> getMethods() { return methods; }
     public void setMethods(List<Method> methods) { this.methods = methods; }
+    
+    public String getSuperClass() { return superClass; }
+    public void setSuperClass(String superClass) { this.superClass = superClass; }
+    
+    public boolean isAbstract() { return isAbstract; }
+    public void setAbstract(boolean isAbstract) { this.isAbstract = isAbstract; }
+    
+    public boolean isInterface() { return isInterface; }
+    public void setInterface(boolean isInterface) { this.isInterface = isInterface; }
+    
+    public List<UmlRelationship> getRelationships() { return new ArrayList<>(); }
 }

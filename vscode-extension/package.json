@@ -1,0 +1,76 @@
+{
+  "name": "basiccode-generator",
+  "displayName": "basicCode Generator",
+  "description": "Generate complete applications from UML diagrams",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:basiccode.generate"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "basiccode.generate",
+        "title": "Generate Project",
+        "category": "basicCode"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "basiccode.generate",
+        "key": "ctrl+shift+g",
+        "mac": "cmd+shift+g"
+      }
+    ],
+    "configuration": {
+      "title": "basicCode",
+      "properties": {
+        "basiccode.backend": {
+          "type": "string",
+          "default": "http://localhost:8080",
+          "description": "Backend URL"
+        },
+        "basiccode.language": {
+          "type": "string",
+          "default": "java",
+          "enum": [
+            "java",
+            "python",
+            "django",
+            "csharp",
+            "typescript",
+            "php"
+          ]
+        },
+        "basiccode.packageName": {
+          "type": "string",
+          "default": "com.example",
+          "description": "Package name"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/node": "^16.18.126",
+    "@types/vscode": "^1.74.0",
+    "@types/ws": "^8.18.1",
+    "typescript": "^4.9.4",
+    "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.10",
+    "axios": "^1.6.0",
+    "ws": "^8.14.0"
+  }
+}

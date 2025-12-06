@@ -1,0 +1,109 @@
+classDiagram
+    class Entity {
+        <<abstract>>
+        #Long id
+        #LocalDateTime createdAt
+        #LocalDateTime updatedAt
+        +getId() Long
+        +getCreatedAt() LocalDateTime
+    }
+
+    class User {
+        -String username
+        -String email
+        -String passwordHash
+        -UserRole role
+        -LocalDateTime lastLogin
+        -boolean active
+        +authenticate(password) boolean
+        +updateProfile(profile) void
+        +getOrders() List~Order~
+        +isActive() boolean
+    }
+
+    class Order {
+        -String orderNumber
+        -OrderStatus status
+        -LocalDateTime orderDate
+        -BigDecimal totalAmount
+        -String shippingAddress
+        +calculateTotal() BigDecimal
+        +updateStatus(status) void
+        +getOrderItems() List~OrderItem~
+        +cancel() boolean
+    }
+
+    class Product {
+        -String name
+        -String description
+        -BigDecimal price
+        -int quantity
+        -String sku
+        -ProductCategory category
+        -List~Review~ reviews
+        +decreaseStock(amount) void
+        +increaseStock(amount) void
+        +getAverageRating() Double
+        +isInStock() boolean
+    }
+
+    class OrderItem {
+        -int quantity
+        -BigDecimal unitPrice
+        -BigDecimal lineTotal
+        +calculateLineTotal() BigDecimal
+        +getProduct() Product
+    }
+
+    class Review {
+        -int rating
+        -String comment
+        -User author
+        -int helpfulCount
+        +getRating() int
+        +isValid() boolean
+    }
+
+    class Payment {
+        <<interface>>
+        +processPayment() boolean
+        +refund() boolean
+        +getStatus() PaymentStatus
+    }
+
+    class CreditCardPayment {
+        -String cardNumber
+        -String expiryDate
+        -String cvv
+        +processPayment() boolean
+        +refund() boolean
+    }
+
+    class PayPalPayment {
+        -String email
+        -String transactionId
+        +processPayment() boolean
+        +refund() boolean
+    }
+
+    class Inventory {
+        -Map~String, Product~ products
+        +addProduct(product) void
+        +removeProduct(productId) void
+        +getProduct(productId) Product
+        +updateStock(productId, quantity) void
+    }
+
+    Entity <|-- User
+    Entity <|-- Order
+    Entity <|-- Product
+    Entity <|-- OrderItem
+    User "1" --> "*" Order : places
+    Order "1" --> "*" OrderItem : contains
+    OrderItem "*" --> "1" Product : references
+    Product "1" --> "*" Review : has
+    Review "*" --> "1" User : writtenBy
+    Order "1" --> "1" Payment : uses
+    Payment <|.. CreditCardPayment : implements
+    Payment <|.. PayPalPayment : implements
+    Inventory "1" --> "*" Product : manages

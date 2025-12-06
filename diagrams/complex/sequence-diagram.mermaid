@@ -1,0 +1,42 @@
+sequenceDiagram
+    actor User
+    participant Client
+    participant AuthService
+    participant OrderService
+    participant PaymentGateway
+    participant Database
+    participant NotificationService
+
+    User->>Client: Login with credentials
+    Client->>AuthService: POST /auth/login
+    AuthService->>Database: Verify credentials
+    Database-->>AuthService: User found
+    AuthService-->>Client: JWT token
+    Client-->>User: Login success
+
+    User->>Client: Browse products
+    Client->>OrderService: GET /products
+    OrderService->>Database: Query products
+    Database-->>OrderService: Product list
+    OrderService-->>Client: JSON response
+    Client-->>User: Display products
+
+    User->>Client: Place order
+    Client->>OrderService: POST /orders
+
+    alt Order validation fails
+        OrderService->>Database: Check inventory
+        Database-->>OrderService: Insufficient stock
+        OrderService-->>Client: 400 Bad Request
+        Client-->>User: Show error
+    else Order validation succeeds
+        OrderService->>Database: Save order
+        Database-->>OrderService: Order ID
+        OrderService->>PaymentGateway: Process payment
+        PaymentGateway-->>OrderService: Payment confirmed
+        OrderService->>Database: Update order status
+        OrderService->>NotificationService: Send confirmation
+        NotificationService-->>User: Email confirmation
+        OrderService-->>Client: 201 Created
+        Client-->>User: Order confirmed
+    end

@@ -1,0 +1,59 @@
+activityDiagram-beta
+    start
+    :Process Order;
+    partition "Order Processing" {
+        :Validate Order Data;
+        if (Data Valid?) then (no)
+            :Log Error;
+            :Send Error Notification;
+            end
+        else (yes)
+            :Check Inventory;
+        endif
+    }
+    
+    if (Stock Available?) then (no)
+        :Update Stock Alert;
+        :Notify Supplier;
+        end
+    else (yes)
+        partition "Payment Processing" {
+            :Initiate Payment;
+            if (Payment Gateway Available?) then (no)
+                :Queue Payment;
+            else (yes)
+                :Process Payment;
+            endif
+            
+            if (Payment Successful?) then (yes)
+                :Confirm Payment;
+            else (no)
+                :Rollback Order;
+                end
+            endif
+        }
+    endif
+    
+    partition "Fulfillment" {
+        :Create Packing List;
+        :Reserve Stock;
+        :Generate Shipping Label;
+        if (Shipping Address Valid?) then (no)
+            :Request Address Correction;
+        else (yes)
+            :Schedule Pickup;
+        endif
+    }
+    
+    partition "Notifications" {
+        fork
+            :Send Order Confirmation;
+        fork again
+            :Send Tracking Info;
+        fork again
+            :Update Dashboard;
+        join
+    }
+    
+    :Archive Order;
+    end

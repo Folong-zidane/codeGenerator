@@ -152,10 +152,10 @@ public class OpenAPIGenerator {
             schema.append("        ").append(field.getName()).append(":\n");
             schema.append("          type: ").append(getOpenAPIType(field.getType())).append("\n");
             
-            if (field.getType().equals("String") && field.getMaxSize() != null) {
+            if (field.getType().equals("String") && field.getMaxSize() > 0) {
                 schema.append("          maxLength: ").append(field.getMaxSize()).append("\n");
             }
-            if (field.getType().equals("String") && field.getMinSize() != null) {
+            if (field.getType().equals("String") && field.getMinSize() > 0) {
                 schema.append("          minLength: ").append(field.getMinSize()).append("\n");
             }
             if (!field.isNullable()) {

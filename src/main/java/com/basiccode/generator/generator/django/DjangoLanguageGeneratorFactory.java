@@ -9,7 +9,8 @@ public class DjangoLanguageGeneratorFactory implements LanguageGeneratorFactory 
     
     @Override
     public IEntityGenerator createEntityGenerator() {
-        return new DjangoEntityGenerator();
+        // 🚀 PHASE 1: Utiliser le générateur avancé DjangoModelGenerator
+        return new DjangoModelGeneratorAdapter();
     }
     
     @Override

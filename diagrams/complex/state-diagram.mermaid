@@ -1,0 +1,45 @@
+stateDiagram-v2
+    [*] --> New
+
+    state Order {
+        [*] --> Pending
+        
+        Pending --> Processing : process()
+        Processing --> Confirmed : confirm()
+        
+        state PaymentProcessing {
+            [*] --> WaitingPayment
+            WaitingPayment --> PaymentVerified : paymentReceived()
+            PaymentVerified --> [*]
+        }
+        
+        Confirmed --> PaymentProcessing : initiatePayment()
+        PaymentProcessing --> Paid : paymentSuccess()
+        
+        Paid --> Packing : startPacking()
+        Packing --> Shipped : ship()
+        
+        state Shipping {
+            [*] --> InTransit
+            InTransit --> OutForDelivery : nearDestination()
+            OutForDelivery --> [*]
+        }
+        
+        Shipped --> Shipping : trackShipment()
+        Shipping --> Delivered : deliver()
+        
+        Pending --> Cancelled : cancel()
+        Processing --> Cancelled : cancel()
+        Confirmed --> Cancelled : cancel()
+        
+        Delivered --> Returned : requestReturn()
+        Returned --> ReturnProcessing : processReturn()
+        ReturnProcessing --> RefundInitiated : approveReturn()
+        RefundInitiated --> [*]
+        
+        Cancelled --> [*]
+    }
+
+    New --> Order : validateOrder()
+    Order --> Archived : archiveOrder()
+    Archived --> [*]

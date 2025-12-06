@@ -66,6 +66,8 @@ public class CodeGenerationOrchestrator {
         String documentation = generateDocumentation(model);
         allFiles.put("README.md", documentation);
         
+        // Files are returned in memory for ZIP creation
+        
         result.setFiles(allFiles);
         return result;
     }
@@ -79,15 +81,28 @@ public class CodeGenerationOrchestrator {
     }
     
     private String getRepositoryPath(String className, IRepositoryGenerator generator) {
-        return generator.getRepositoryDirectory() + "/" + className + "Repository.java";
+        return generator.getRepositoryDirectory() + "/" + className + "Repository" + getFileExtension(generator);
     }
     
     private String getServicePath(String className, IServiceGenerator generator) {
-        return generator.getServiceDirectory() + "/" + className + "Service.java";
+        return generator.getServiceDirectory() + "/" + className + "Service" + getFileExtension(generator);
     }
     
     private String getControllerPath(String className, IControllerGenerator generator) {
-        return generator.getControllerDirectory() + "/" + className + "Controller.java";
+        return generator.getControllerDirectory() + "/" + className + "Controller" + getFileExtension(generator);
+    }
+    
+    private String getFileExtension(Object generator) {
+        if (generator.getClass().getPackage().getName().contains("python")) {
+            return ".py";
+        } else if (generator.getClass().getPackage().getName().contains("csharp")) {
+            return ".cs";
+        } else if (generator.getClass().getPackage().getName().contains("typescript")) {
+            return ".ts";
+        } else if (generator.getClass().getPackage().getName().contains("php")) {
+            return ".php";
+        }
+        return ".java";
     }
     
     private String getMigrationPath(IMigrationGenerator generator) {

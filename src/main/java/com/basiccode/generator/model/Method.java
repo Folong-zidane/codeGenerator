@@ -1,67 +1,33 @@
 package com.basiccode.generator.model;
 
-import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+/**
+ * Représente une méthode
+ */
 public class Method {
     private String name;
     private String returnType;
     private Visibility visibility = Visibility.PUBLIC;
     private List<Parameter> parameters = new ArrayList<>();
-    private List<Annotation> annotations = new ArrayList<>();
-    private List<String> modifiers = new ArrayList<>();
-    private BusinessPattern businessPattern;
     
-    public void addAnnotation(Annotation annotation) {
-        annotations.add(annotation);
+    public Method() {}
+    
+    public Method(String name, String returnType) {
+        this.name = name;
+        this.returnType = returnType;
     }
     
-    public void addModifier(String modifier) {
-        modifiers.add(modifier);
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
     
-    public boolean hasAnnotation(String type) {
-        return annotations.stream().anyMatch(a -> a.getType().equals(type));
-    }
+    public String getReturnType() { return returnType; }
+    public void setReturnType(String returnType) { this.returnType = returnType; }
     
-    public Annotation getAnnotation(String type) {
-        return annotations.stream()
-            .filter(a -> a.getType().equals(type))
-            .findFirst()
-            .orElse(null);
-    }
+    public Visibility getVisibility() { return visibility; }
+    public void setVisibility(Visibility visibility) { this.visibility = visibility; }
     
-    public boolean isAbstract() {
-        return modifiers.contains("abstract");
-    }
-    
-    public boolean isStatic() {
-        return modifiers.contains("static");
-    }
-    
-    public boolean isFinal() {
-        return modifiers.contains("final");
-    }
-    
-    public BusinessPattern getBusinessPattern() {
-        if (businessPattern == null) {
-            businessPattern = BusinessPattern.detectPattern(name);
-        }
-        return businessPattern;
-    }
-    
-    public String generateImplementation() {
-        return switch (getBusinessPattern()) {
-            case CALCULATION -> "// TODO: Implement calculation logic\nreturn null;";
-            case VALIDATION -> "// TODO: Implement validation logic\nreturn true;";
-            case WORKFLOW -> "// TODO: Implement workflow logic";
-            case FACTORY -> "// TODO: Implement factory logic\nreturn new " + returnType + "();";
-            case NOTIFICATION -> "// TODO: Implement notification logic";
-            case QUERY -> "// TODO: Implement query logic\nreturn null;";
-            case COMMAND -> "// TODO: Implement command logic";
-            default -> "// TODO: Implement business logic";
-        };
-    }
+    public List<Parameter> getParameters() { return parameters; }
+    public void setParameters(List<Parameter> parameters) { this.parameters = parameters; }
 }

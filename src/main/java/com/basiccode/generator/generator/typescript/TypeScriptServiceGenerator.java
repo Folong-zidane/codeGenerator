@@ -101,9 +101,12 @@ public class TypeScriptServiceGenerator implements IServiceGenerator {
         return code.toString();
     }
     
-    @Override
     public String getServiceDirectory() {
         return "services";
+    }
+    
+    public String getFileExtension() {
+        return ".ts";
     }
     
     private void generateStateManagementMethods(StringBuilder code, String className) {

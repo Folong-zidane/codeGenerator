@@ -1,0 +1,29 @@
+classDiagram
+    class User {
+        id: String
+        name: String
+        email: String
+        +getProfile()
+        +updateProfile()
+    }
+    
+    class Order {
+        id: String
+        userId: String
+        date: Date
+        total: Double
+        +calculateTotal()
+        +getStatus()
+    }
+    
+    class Product {
+        id: String
+        name: String
+        price: Double
+        stock: Integer
+        +decreaseStock()
+        +isAvailable()
+    }
+    
+    User "1" -- "*" Order : places
+    Order "*" -- "*" Product : contains
