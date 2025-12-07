@@ -10,3 +10,5 @@ target/
 generated*/
 test-output/
 *.log
+vscode-extension/node_modules/
+node_modules/
