@@ -1,0 +1,44 @@
+classDiagram
+    class User {
+        +UUID id
+        +String username
+        +String email
+        +String password
+        +UserStatus status
+        +Date createdAt
+        +validateEmail()
+        +changePassword()
+    }
+    
+    class Post {
+        +UUID id
+        +String title
+        +String content
+        +UUID authorId
+        +PostStatus status
+        +Date publishedAt
+        +Integer viewCount
+        +publish()
+        +incrementViews()
+    }
+    
+    class Comment {
+        +UUID id
+        +String content
+        +UUID postId
+        +UUID userId
+        +Date createdAt
+        +Boolean approved
+        +approve()
+    }
+    
+    class Category {
+        +UUID id
+        +String name
+        +String description
+    }
+    
+    User "1" --> "*" Post : writes
+    User "1" --> "*" Comment : writes
+    Post "1" --> "*" Comment : has
+    Post "*" --> "*" Category : belongsTo

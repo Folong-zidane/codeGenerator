@@ -1,0 +1,225 @@
+# 📦 Exemple de Projet Blog - Extension VSCode basicCode
+
+Projet d'exemple complet pour tester l'extension VSCode basicCode Generator.
+
+## 🎯 Description
+
+Application de blog avec :
+- **Users** : Gestion des utilisateurs
+- **Posts** : Articles de blog avec statuts
+- **Comments** : Commentaires sur les articles
+- **Categories** : Catégorisation des articles
+
+## 🚀 Utilisation
+
+### 1. Ouvrir dans VSCode
+
+```bash
+cd /home/folongzidane/Documents/Projet/basicCode/exemple-projet-vscode
+code .
+```
+
+### 2. Générer le Projet
+
+**Méthode 1 : Raccourci**
+```
+Ctrl+Shift+G
+```
+
+**Méthode 2 : Palette**
+```
+Ctrl+Shift+P → "basicCode: Generate Project"
+```
+
+### 3. Attendre la Génération
+
+La barre de progression affichera :
+- ✅ Uploading diagrams...
+- ✅ Processing on server...
+- ✅ Downloading...
+- ✅ Extracting...
+- ✅ Complete!
+
+### 4. Lancer l'Application
+
+```bash
+# Java Spring Boot
+./mvnw spring-boot:run
+
+# Accéder à l'API
+open http://localhost:8080/swagger-ui.html
+```
+
+## 📋 Diagrammes Inclus
+
+### 1. Diagramme de Classes
+- 4 entités : User, Post, Comment, Category
+- Relations : OneToMany, ManyToMany
+- Méthodes métier
+
+### 2. Diagramme de Séquence
+- Workflow de création de post
+- Validation utilisateur
+- Gestion d'erreurs
+
+### 3. Diagramme d'État
+- Cycle de vie d'un post
+- États : DRAFT → PENDING_REVIEW → APPROVED → PUBLISHED → ARCHIVED
+
+## 🎨 Configuration
+
+Voir `.vscode/settings.json` :
+
+```json
+{
+  "basiccode.backend": "https://codegenerator-cpyh.onrender.com",
+  "basiccode.language": "java",
+  "basiccode.packageName": "com.example.blog"
+}
+```
+
+### Changer le Langage
+
+Modifier `basiccode.language` :
+- `"java"` → Spring Boot
+- `"python"` → FastAPI
+- `"django"` → Django REST
+- `"csharp"` → .NET Core
+- `"typescript"` → Express + TypeORM
+- `"php"` → Slim + Eloquent
+
+## 📊 Résultat Attendu
+
+Après génération :
+
+```
+exemple-projet-vscode/
+├── src/
+│   ├── main/
+│   │   └── java/
+│   │       └── com/example/blog/
+│   │           ├── entities/
+│   │           │   ├── User.java
+│   │           │   ├── Post.java
+│   │           │   ├── Comment.java
+│   │           │   └── Category.java
+│   │           ├── repositories/
+│   │           │   ├── UserRepository.java
+│   │           │   ├── PostRepository.java
+│   │           │   ├── CommentRepository.java
+│   │           │   └── CategoryRepository.java
+│   │           ├── services/
+│   │           │   ├── UserService.java
+│   │           │   ├── PostService.java
+│   │           │   ├── CommentService.java
+│   │           │   └── CategoryService.java
+│   │           └── controllers/
+│   │               ├── UserController.java
+│   │               ├── PostController.java
+│   │               ├── CommentController.java
+│   │               └── CategoryController.java
+│   └── diagrams/
+├── pom.xml
+└── README.md
+```
+
+## 🔍 Endpoints Générés
+
+### Users
+```
+GET    /api/users          # Liste
+POST   /api/users          # Créer
+GET    /api/users/{id}     # Détail
+PUT    /api/users/{id}     # Modifier
+DELETE /api/users/{id}     # Supprimer
+```
+
+### Posts
+```
+GET    /api/posts          # Liste
+POST   /api/posts          # Créer
+GET    /api/posts/{id}     # Détail
+PUT    /api/posts/{id}     # Modifier
+DELETE /api/posts/{id}     # Supprimer
+POST   /api/posts/{id}/publish    # Publier
+```
+
+### Comments
+```
+GET    /api/comments       # Liste
+POST   /api/comments       # Créer
+GET    /api/comments/{id}  # Détail
+PUT    /api/comments/{id}  # Modifier
+DELETE /api/comments/{id}  # Supprimer
+POST   /api/comments/{id}/approve # Approuver
+```
+
+### Categories
+```
+GET    /api/categories     # Liste
+POST   /api/categories     # Créer
+GET    /api/categories/{id} # Détail
+PUT    /api/categories/{id} # Modifier
+DELETE /api/categories/{id} # Supprimer
+```
+
+## 🧪 Tester l'API
+
+### Créer un utilisateur
+
+```bash
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "john_doe",
+    "email": "john@example.com",
+    "password": "secret123"
+  }'
+```
+
+### Créer un post
+
+```bash
+curl -X POST http://localhost:8080/api/posts \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Mon premier article",
+    "content": "Contenu de l'article...",
+    "authorId": "USER_ID_HERE"
+  }'
+```
+
+### Publier un post
+
+```bash
+curl -X POST http://localhost:8080/api/posts/{postId}/publish
+```
+
+## 📚 Documentation
+
+- **Swagger UI** : http://localhost:8080/swagger-ui.html
+- **API Docs** : http://localhost:8080/v3/api-docs
+
+## 🎓 Apprendre Plus
+
+- [Guide Complet Extension](../GUIDE-UTILISATION-EXTENSION.md)
+- [Démarrage Rapide](../QUICK-START-EXTENSION.md)
+- [Documentation API](../API-USAGE-DEPLOYED.md)
+
+## ✅ Checklist
+
+Avant de générer :
+- [ ] Extension installée
+- [ ] VSCode ouvert dans ce dossier
+- [ ] Backend accessible
+- [ ] Diagrammes présents dans `src/diagrams/`
+
+Après génération :
+- [ ] Fichiers Java générés
+- [ ] Compilation réussie (`./mvnw compile`)
+- [ ] Application démarre (`./mvnw spring-boot:run`)
+- [ ] Swagger accessible (http://localhost:8080/swagger-ui.html)
+
+## 🚀 Prêt !
+
+Appuyez sur `Ctrl+Shift+G` pour générer votre projet !

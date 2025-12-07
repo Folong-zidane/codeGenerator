@@ -1,0 +1,96 @@
+-- ============================================
+-- Flyway Migration: V001__Initial_Schema.sql
+-- ============================================
+-- Description: Create initial database schema
+-- Date: 2025-12-07 09:18:42
+-- Version: 1.0.0
+-- ============================================
+
+-- Set charset for database compatibility
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+SET COLLATION_CONNECTION = utf8mb4_unicode_ci;
+
+-- ============================================
+-- Table: user (User)
+-- ============================================
+CREATE TABLE IF NOT EXISTS user (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary Key',
+    username VARCHAR(255) NOT NULL UNIQUE COMMENT 'username field',
+    email VARCHAR(255) NOT NULL UNIQUE COMMENT 'email field',
+    password VARCHAR(255) NOT NULL COMMENT 'password field',
+    status VARCHAR(255) COMMENT 'status field',
+    createdAt TIMESTAMP COMMENT 'createdAt field',
+    "*"s VARCHAR(255) COMMENT '"*"s field',
+    "*"s VARCHAR(255) COMMENT '"*"s field',
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE' COMMENT 'Entity status (ACTIVE, INACTIVE, SUSPENDED)',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+    version BIGINT NOT NULL DEFAULT 0 COMMENT 'Optimistic locking version'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User entity table';
+
+CREATE INDEX IF NOT EXISTS idx_user_created_at ON user (created_at) COMMENT 'Index for time-based queries';
+CREATE INDEX IF NOT EXISTS idx_user_status ON user (status) COMMENT 'Index for status filtering';
+CREATE INDEX IF NOT EXISTS idx_user_email ON user (email) COMMENT 'Index for email lookups';
+CREATE INDEX IF NOT EXISTS idx_user_username ON user (username) COMMENT 'Index for username lookups';
+CREATE INDEX IF NOT EXISTS idx_user_status_created_at ON user (status, created_at) COMMENT 'Composite index for filtering by status and date';
+
+-- ============================================
+-- Table: post (Post)
+-- ============================================
+CREATE TABLE IF NOT EXISTS post (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary Key',
+    title VARCHAR(255) NOT NULL COMMENT 'title field',
+    content VARCHAR(255) NOT NULL COMMENT 'content field',
+    authorId VARCHAR(255) COMMENT 'authorId field',
+    status VARCHAR(255) COMMENT 'status field',
+    publishedAt TIMESTAMP COMMENT 'publishedAt field',
+    viewCount INT COMMENT 'viewCount field',
+    "*"s VARCHAR(255) COMMENT '"*"s field',
+    "*"s VARCHAR(255) COMMENT '"*"s field',
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE' COMMENT 'Entity status (ACTIVE, INACTIVE, SUSPENDED)',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+    version BIGINT NOT NULL DEFAULT 0 COMMENT 'Optimistic locking version'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Post entity table';
+
+CREATE INDEX IF NOT EXISTS idx_post_created_at ON post (created_at) COMMENT 'Index for time-based queries';
+CREATE INDEX IF NOT EXISTS idx_post_status ON post (status) COMMENT 'Index for status filtering';
+CREATE INDEX IF NOT EXISTS idx_post_status_created_at ON post (status, created_at) COMMENT 'Composite index for filtering by status and date';
+
+-- ============================================
+-- Table: comment (Comment)
+-- ============================================
+CREATE TABLE IF NOT EXISTS comment (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary Key',
+    content VARCHAR(255) NOT NULL COMMENT 'content field',
+    postId VARCHAR(255) COMMENT 'postId field',
+    userId VARCHAR(255) COMMENT 'userId field',
+    createdAt TIMESTAMP COMMENT 'createdAt field',
+    approved BOOLEAN COMMENT 'approved field',
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE' COMMENT 'Entity status (ACTIVE, INACTIVE, SUSPENDED)',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+    version BIGINT NOT NULL DEFAULT 0 COMMENT 'Optimistic locking version'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Comment entity table';
+
+CREATE INDEX IF NOT EXISTS idx_comment_created_at ON comment (created_at) COMMENT 'Index for time-based queries';
+CREATE INDEX IF NOT EXISTS idx_comment_status ON comment (status) COMMENT 'Index for status filtering';
+
+-- ============================================
+-- Table: category (Category)
+-- ============================================
+CREATE TABLE IF NOT EXISTS category (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary Key',
+    name VARCHAR(255) NOT NULL COMMENT 'name field',
+    description VARCHAR(255) NOT NULL COMMENT 'description field',
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE' COMMENT 'Entity status (ACTIVE, INACTIVE, SUSPENDED)',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+    version BIGINT NOT NULL DEFAULT 0 COMMENT 'Optimistic locking version'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Category entity table';
+
+CREATE INDEX IF NOT EXISTS idx_category_created_at ON category (created_at) COMMENT 'Index for time-based queries';
+CREATE INDEX IF NOT EXISTS idx_category_status ON category (status) COMMENT 'Index for status filtering';
+CREATE FULLTEXT INDEX IF NOT EXISTS idx_category_name ON category (name) COMMENT 'Fulltext index for name search';
+

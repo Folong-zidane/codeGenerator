@@ -1,0 +1,10 @@
+stateDiagram-v2
+    [*] --> DRAFT
+    DRAFT --> PENDING_REVIEW : submit()
+    PENDING_REVIEW --> APPROVED : approve()
+    PENDING_REVIEW --> REJECTED : reject()
+    REJECTED --> DRAFT : revise()
+    APPROVED --> PUBLISHED : publish()
+    PUBLISHED --> ARCHIVED : archive()
+    ARCHIVED --> PUBLISHED : restore()
+    PUBLISHED --> [*]
