@@ -213,6 +213,7 @@ public class EnhancedSequenceDiagramParser implements UmlParser {
      * Represents a sequence diagram containing multiple method calls
      */
     @Data
+    @lombok.EqualsAndHashCode(callSuper=false)
     public static class SequenceDiagram extends Diagram {
         private List<SequenceMethod> methods = new ArrayList<>();
         

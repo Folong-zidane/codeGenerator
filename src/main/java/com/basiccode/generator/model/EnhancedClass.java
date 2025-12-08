@@ -98,4 +98,8 @@ public class EnhancedClass {
     public List<BusinessMethod> getSequenceMethods() {
         return behavioralMethods;
     }
+    
+    public List<StateTransitionMethod> getStateTransitionMethods() {
+        return transitionMethods;
+    }
 }

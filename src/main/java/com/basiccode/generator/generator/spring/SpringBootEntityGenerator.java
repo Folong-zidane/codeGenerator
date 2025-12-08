@@ -437,7 +437,7 @@ public class SpringBootEntityGenerator implements InheritanceAwareEntityGenerato
             .anyMatch(attr -> fieldName.equalsIgnoreCase(attr.getName()));
     }
     
-    private boolean isInheritedField(String fieldName) {
+    public boolean isInheritedField(String fieldName) {
         // Common fields that are typically inherited
         Set<String> inheritedFields = Set.of("id", "createdAt", "updatedAt", "version");
         return inheritedFields.contains(fieldName);

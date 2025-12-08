@@ -4,6 +4,8 @@ import com.basiccode.generator.generator.IEntityGenerator;
 import com.basiccode.generator.model.EnhancedClass;
 import com.basiccode.generator.model.UmlClass;
 import com.basiccode.generator.model.UmlAttribute;
+import java.util.Set;
+import java.util.HashSet;
 
 public class DjangoEntityGenerator implements IEntityGenerator {
     

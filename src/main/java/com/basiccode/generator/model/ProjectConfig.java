@@ -18,7 +18,9 @@ public class ProjectConfig {
     private String packageManager; // npm, yarn, pnpm, maven, gradle
     private boolean useDocker;
     private boolean useCI;
+    @Builder.Default
     private String targetNodeVersion = "18.0.0";
+    @Builder.Default
     private String targetEsVersion = "ES2020";
     private String language; // java, python, php, typescript, csharp
     private String packageName;
