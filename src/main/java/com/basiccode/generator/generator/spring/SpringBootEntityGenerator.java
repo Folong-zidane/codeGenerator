@@ -14,8 +14,14 @@ import java.util.UUID;
  */
 public class SpringBootEntityGenerator implements InheritanceAwareEntityGenerator {
     
+    // Track generated fields to avoid duplications
+    private Set<String> generatedFields;
+    
     @Override
     public String generateEntity(EnhancedClass enhancedClass, String packageName) {
+        // Initialize field tracker for each entity generation
+        generatedFields = new HashSet<>();
+        
         StringBuilder code = new StringBuilder();
         String className = enhancedClass.getOriginalClass().getName();
         
@@ -46,7 +52,7 @@ public class SpringBootEntityGenerator implements InheritanceAwareEntityGenerato
         } else {
             // Generate concrete entity
             code.append("@Entity\n");
-            code.append("@Table(name = \"").append(className.toLowerCase()).append("s\")\n");
+            code.append("@Table(name = \"").append(pluralize(className.toLowerCase())).append("\")\n");
             
             String superClass = enhancedClass.getOriginalClass().getSuperClass();
             if (superClass != null && !superClass.isEmpty()) {
@@ -61,10 +67,18 @@ public class SpringBootEntityGenerator implements InheritanceAwareEntityGenerato
         boolean hasInheritedFields = superClass != null && !superClass.isEmpty();
         
         for (UmlAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
+            // Skip duplicates
+            if (generatedFields.contains(attr.getName())) {
+                continue;
+            }
+            
             // Skip common inherited fields
             if (hasInheritedFields && isInheritedField(attr.getName())) {
                 continue;
             }
+            
+            // Mark field as generated
+            generatedFields.add(attr.getName());
             
             if ("id".equals(attr.getName())) {
                 code.append("    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n");
@@ -82,17 +96,19 @@ public class SpringBootEntityGenerator implements InheritanceAwareEntityGenerato
             }
             
             // Generate JPA relationship annotations
-            if (attr.isRelationship()) {
+            if (isRelationshipField(attr)) {
+                generateJpaRelationField(code, attr, packageName);
+            } else if (attr.isRelationship()) {
                 generateJpaRelationshipAnnotation(code, attr, className);
             } else {
                 code.append("    @Column\n");
+                code.append("    private ").append(attr.getType()).append(" ").append(attr.getName()).append(";\n\n");
             }
-            
-            code.append("    private ").append(attr.getType()).append(" ").append(attr.getName()).append(";\n\n");
         }
         
-        // Add state field if stateful (FIXED: no duplication)
-        if (enhancedClass.isStateful()) {
+        // Add state field if stateful (check for duplicates)
+        if (enhancedClass.isStateful() && !generatedFields.contains("status")) {
+            generatedFields.add("status");
             String enumName = enhancedClass.getStateEnum() != null 
                 ? enhancedClass.getStateEnum().getName() 
                 : className + "Status";
@@ -101,8 +117,10 @@ public class SpringBootEntityGenerator implements InheritanceAwareEntityGenerato
             code.append("    private ").append(enumName).append(" status;\n\n");
         }
         
-        // Add audit fields only if not inherited
-        if (!hasInheritedFields) {
+        // Add audit fields only if not inherited and not already generated
+        if (!hasInheritedFields && !generatedFields.contains("createdAt")) {
+            generatedFields.add("createdAt");
+            generatedFields.add("updatedAt");
             code.append("    @Column(name = \"created_at\")\n");
             code.append("    private LocalDateTime createdAt;\n\n");
             code.append("    @Column(name = \"updated_at\")\n");
@@ -196,25 +214,61 @@ public class SpringBootEntityGenerator implements InheritanceAwareEntityGenerato
     }
     
     private void generateStateTransitionMethods(StringBuilder code, EnhancedClass enhancedClass) {
-        String enumName = enhancedClass.getStateEnum() != null 
-            ? enhancedClass.getStateEnum().getName() 
-            : enhancedClass.getOriginalClass().getName() + "Status";
-        
-        // Add suspend method
-        code.append("    public void suspend() {\n");
-        code.append("        if (this.status != ").append(enumName).append(".ACTIVE) {\n");
-        code.append("            throw new IllegalStateException(\"Cannot suspend user in state: \" + this.status);\n");
-        code.append("        }\n");
-        code.append("        this.status = ").append(enumName).append(".SUSPENDED;\n");
-        code.append("    }\n\n");
-        
-        // Add activate method
-        code.append("    public void activate() {\n");
-        code.append("        if (this.status != ").append(enumName).append(".SUSPENDED) {\n");
-        code.append("            throw new IllegalStateException(\"Cannot activate user in state: \" + this.status);\n");
-        code.append("        }\n");
-        code.append("        this.status = ").append(enumName).append(".ACTIVE;\n");
-        code.append("    }\n\n");
+        // Generate methods from state diagram if available
+        if (enhancedClass.getStateTransitionMethods() != null && !enhancedClass.getStateTransitionMethods().isEmpty()) {
+            String enumName = enhancedClass.getStateEnum() != null 
+                ? enhancedClass.getStateEnum().getName() 
+                : enhancedClass.getOriginalClass().getName() + "Status";
+            
+            for (com.basiccode.generator.model.StateTransitionMethod transitionMethod : enhancedClass.getStateTransitionMethods()) {
+                String methodName = transitionMethod.getName();
+                var transitions = transitionMethod.getTransitions();
+                
+                code.append("    public void ").append(methodName).append("() {\n");
+                
+                if (transitions != null && transitions.size() == 1) {
+                    var transition = transitions.get(0);
+                    code.append("        if (this.status != ").append(enumName).append(".").append(transition.getFromState()).append(") {\n");
+                    code.append("            throw new IllegalStateException(\"Cannot ").append(methodName).append(" from state: \" + this.status);\n");
+                    code.append("        }\n");
+                    code.append("        this.status = ").append(enumName).append(".").append(transition.getToState()).append(";\n");
+                } else if (transitions != null && transitions.size() > 1) {
+                    code.append("        switch (this.status) {\n");
+                    for (var transition : transitions) {
+                        code.append("            case ").append(transition.getFromState()).append(":\n");
+                        code.append("                this.status = ").append(enumName).append(".").append(transition.getToState()).append(";\n");
+                        code.append("                break;\n");
+                    }
+                    code.append("            default:\n");
+                    code.append("                throw new IllegalStateException(\"Cannot ").append(methodName).append(" from state: \" + this.status);\n");
+                    code.append("        }\n");
+                }
+                
+                code.append("        this.updatedAt = LocalDateTime.now();\n");
+                code.append("    }\n\n");
+            }
+        } else {
+            // Fallback to default methods if no state diagram
+            String enumName = enhancedClass.getStateEnum() != null 
+                ? enhancedClass.getStateEnum().getName() 
+                : enhancedClass.getOriginalClass().getName() + "Status";
+            
+            code.append("    public void suspend() {\n");
+            code.append("        if (this.status != ").append(enumName).append(".ACTIVE) {\n");
+            code.append("            throw new IllegalStateException(\"Cannot suspend from state: \" + this.status);\n");
+            code.append("        }\n");
+            code.append("        this.status = ").append(enumName).append(".SUSPENDED;\n");
+            code.append("        this.updatedAt = LocalDateTime.now();\n");
+            code.append("    }\n\n");
+            
+            code.append("    public void activate() {\n");
+            code.append("        if (this.status != ").append(enumName).append(".SUSPENDED) {\n");
+            code.append("            throw new IllegalStateException(\"Cannot activate from state: \" + this.status);\n");
+            code.append("        }\n");
+            code.append("        this.status = ").append(enumName).append(".ACTIVE;\n");
+            code.append("        this.updatedAt = LocalDateTime.now();\n");
+            code.append("    }\n\n");
+        }
     }
     
     private void generateBusinessMethods(StringBuilder code, EnhancedClass enhancedClass, String className) {
@@ -381,6 +435,76 @@ public class SpringBootEntityGenerator implements InheritanceAwareEntityGenerato
     private boolean hasField(EnhancedClass enhancedClass, String fieldName) {
         return enhancedClass.getOriginalClass().getAttributes().stream()
             .anyMatch(attr -> fieldName.equalsIgnoreCase(attr.getName()));
+    }
+    
+    private boolean isInheritedField(String fieldName) {
+        // Common fields that are typically inherited
+        Set<String> inheritedFields = Set.of("id", "createdAt", "updatedAt", "version");
+        return inheritedFields.contains(fieldName);
+    }
+    
+    private boolean isRelationshipField(UmlAttribute attr) {
+        // Detect UUID fields with _id suffix as relationships
+        return (attr.getType().equals("UUID") && attr.getName().endsWith("_id")) ||
+               (attr.getType().equals("UUID") && attr.getName().endsWith("Id"));
+    }
+    
+    private void generateJpaRelationField(StringBuilder code, UmlAttribute attr, String packageName) {
+        String fieldName = attr.getName();
+        String entityName;
+        
+        // Handle both userId and user_id formats
+        if (fieldName.endsWith("_id")) {
+            entityName = fieldName.substring(0, fieldName.length() - 3);
+        } else if (fieldName.endsWith("Id")) {
+            entityName = fieldName.substring(0, fieldName.length() - 2);
+        } else {
+            return; // Not a relationship field
+        }
+        
+        String targetClass = toPascalCase(entityName);
+        
+        // Generate JPA relationship
+        code.append("    @ManyToOne(fetch = FetchType.LAZY)\n");
+        code.append("    @JoinColumn(name = \"").append(fieldName).append("\")\n");
+        code.append("    private ").append(targetClass).append(" ").append(entityName).append(";\n\n");
+    }
+    
+    private String toPascalCase(String snakeCase) {
+        if (snakeCase == null || snakeCase.isEmpty()) return snakeCase;
+        
+        String[] parts = snakeCase.split("_");
+        StringBuilder result = new StringBuilder();
+        for (String part : parts) {
+            if (!part.isEmpty()) {
+                result.append(capitalize(part));
+            }
+        }
+        return result.toString();
+    }
+    
+    private String pluralize(String word) {
+        if (word == null || word.isEmpty()) return word;
+        
+        word = word.toLowerCase();
+        
+        // English pluralization rules
+        if (word.endsWith("y") && !isVowel(word.charAt(word.length() - 2))) {
+            return word.substring(0, word.length() - 1) + "ies"; // category -> categories
+        } else if (word.endsWith("s") || word.endsWith("x") || word.endsWith("z") || 
+                   word.endsWith("ch") || word.endsWith("sh")) {
+            return word + "es"; // class -> classes
+        } else if (word.endsWith("f")) {
+            return word.substring(0, word.length() - 1) + "ves"; // leaf -> leaves
+        } else if (word.endsWith("fe")) {
+            return word.substring(0, word.length() - 2) + "ves"; // knife -> knives
+        } else {
+            return word + "s"; // user -> users
+        }
+    }
+    
+    private boolean isVowel(char c) {
+        return "aeiou".indexOf(Character.toLowerCase(c)) >= 0;
     }
     
     @Override

@@ -2,7 +2,7 @@
 -- Flyway Migration: V001__Initial_Schema.sql
 -- ============================================
 -- Description: Create initial database schema
--- Date: 2025-12-07 09:18:42
+-- Date: 2025-12-07 16:19:00
 -- Version: 1.0.0
 -- ============================================
 

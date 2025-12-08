@@ -3,8 +3,8 @@ package com.example.blog.entity;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import java.util.List;
 import javax.validation.constraints.*;
+
 import com.example.blog.enums.UserStatus;
 
 @Entity
@@ -12,49 +12,44 @@ import com.example.blog.enums.UserStatus;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column
     private UUID id;
 
     @NotBlank
-    @Column(nullable = false, unique = true)
+    @Column
     private String username;
 
     @NotBlank
     @Email
-    @Column(nullable = false, unique = true)
+    @Column
     private String email;
 
-    @Column(nullable = false)
+    @Column
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private UserStatus status = UserStatus.DRAFT;
+    @Column
+    private UserStatus status;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column
+    private Date createdAt;
+
+    @Column
+    private List<"*"> "*"s;
+
+    @Column
+    private List<"*"> "*"s;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private UserStatus status;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    // Getters and Setters
     public UUID getId() {
         return id;
     }
@@ -95,6 +90,38 @@ public class User {
         this.status = status;
     }
 
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public List<"*"> get"*"s() {
+        return "*"s;
+    }
+
+    public void set"*"s(List<"*"> "*"s) {
+        this."*"s = "*"s;
+    }
+
+    public List<"*"> get"*"s() {
+        return "*"s;
+    }
+
+    public void set"*"s(List<"*"> "*"s) {
+        this."*"s = "*"s;
+    }
+
+    public UserStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -111,23 +138,6 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
-    public List<Post> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(List<Post> posts) {
-        this.posts = posts;
-    }
-
-    public List<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(List<Comment> comments) {
-        this.comments = comments;
-    }
-
-    // Business methods from class-diagram
     public boolean validateEmail() {
         if (this.email == null || this.email.isBlank()) {
             throw new IllegalArgumentException("Email cannot be empty");
@@ -140,57 +150,22 @@ public class User {
         if (newPassword == null || newPassword.length() < 8) {
             throw new IllegalArgumentException("Password must be at least 8 characters");
         }
-        this.password = newPassword; // TODO: Hash with BCrypt
-        this.updatedAt = LocalDateTime.now();
+        // TODO: Hash password with BCrypt
+        this.updatedAt = java.time.LocalDateTime.now();
     }
 
-    // State transition methods from state-diagram
-    public void submit() {
-        if (this.status != UserStatus.DRAFT) {
-            throw new IllegalStateException("Cannot submit user in state: " + this.status);
+    public void suspend() {
+        if (this.status != UserStatus.ACTIVE) {
+            throw new IllegalStateException("Cannot suspend user in state: " + this.status);
         }
-        this.status = UserStatus.PENDING_REVIEW;
+        this.status = UserStatus.SUSPENDED;
     }
 
-    public void approve() {
-        if (this.status != UserStatus.PENDING_REVIEW) {
-            throw new IllegalStateException("Cannot approve user in state: " + this.status);
+    public void activate() {
+        if (this.status != UserStatus.SUSPENDED) {
+            throw new IllegalStateException("Cannot activate user in state: " + this.status);
         }
-        this.status = UserStatus.APPROVED;
+        this.status = UserStatus.ACTIVE;
     }
 
-    public void reject() {
-        if (this.status != UserStatus.PENDING_REVIEW) {
-            throw new IllegalStateException("Cannot reject user in state: " + this.status);
-        }
-        this.status = UserStatus.REJECTED;
-    }
-
-    public void revise() {
-        if (this.status != UserStatus.REJECTED) {
-            throw new IllegalStateException("Cannot revise user in state: " + this.status);
-        }
-        this.status = UserStatus.DRAFT;
-    }
-
-    public void publish() {
-        if (this.status != UserStatus.APPROVED) {
-            throw new IllegalStateException("Cannot publish user in state: " + this.status);
-        }
-        this.status = UserStatus.PUBLISHED;
-    }
-
-    public void archive() {
-        if (this.status != UserStatus.PUBLISHED) {
-            throw new IllegalStateException("Cannot archive user in state: " + this.status);
-        }
-        this.status = UserStatus.ARCHIVED;
-    }
-
-    public void restore() {
-        if (this.status != UserStatus.ARCHIVED) {
-            throw new IllegalStateException("Cannot restore user in state: " + this.status);
-        }
-        this.status = UserStatus.PUBLISHED;
-    }
 }

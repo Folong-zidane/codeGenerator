@@ -1,10 +1,18 @@
 package com.example.blog.enums;
 
 public enum UserStatus {
+    APPROVED : APPROVE(),
     DRAFT,
+    INITIAL,
+    PUBLISHED : RESTORE(),
+    REJECTED : REJECT(),
+    DRAFT : REVISE(),
     PENDING_REVIEW,
-    APPROVED,
-    REJECTED,
     PUBLISHED,
-    ARCHIVED
+    PENDING_REVIEW : SUBMIT(),
+    ARCHIVED : ARCHIVE(),
+    ARCHIVED,
+    APPROVED,
+    PUBLISHED : PUBLISH(),
+    REJECTED
 }

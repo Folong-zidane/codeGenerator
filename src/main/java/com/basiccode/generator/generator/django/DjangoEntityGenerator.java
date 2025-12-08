@@ -7,6 +7,9 @@ import com.basiccode.generator.model.UmlAttribute;
 
 public class DjangoEntityGenerator implements IEntityGenerator {
     
+    // Track generated fields to avoid duplications
+    private Set<String> generatedFields;
+    
     @Override
     public String getFileExtension() {
         return ".py";
@@ -24,6 +27,9 @@ public class DjangoEntityGenerator implements IEntityGenerator {
     
     @Override
     public String generateEntity(EnhancedClass enhancedClass, String packageName) {
+        // Initialize field tracker
+        generatedFields = new java.util.HashSet<>();
+        
         UmlClass umlClass = enhancedClass.getOriginalClass();
         StringBuilder code = new StringBuilder();
         
@@ -38,7 +44,16 @@ public class DjangoEntityGenerator implements IEntityGenerator {
         code.append("class ").append(umlClass.getName()).append("(models.Model):\n");
         
         for (UmlAttribute attr : umlClass.getAttributes()) {
-            if (attr.isRelationship()) {
+            // Skip duplicates
+            if (generatedFields.contains(attr.getName())) {
+                continue;
+            }
+            generatedFields.add(attr.getName());
+            
+            // Detect UUID fields with _id as ForeignKey
+            if (isRelationshipField(attr)) {
+                code.append("    ").append(generateDjangoForeignKey(attr)).append("\n");
+            } else if (attr.isRelationship()) {
                 code.append("    ").append(generateDjangoRelationship(attr, umlClass.getName())).append("\n");
             } else {
                 code.append("    ").append(generateField(attr, enhancedClass.isStateful() && attr.getName().equals("status"))).append("\n");
@@ -47,7 +62,7 @@ public class DjangoEntityGenerator implements IEntityGenerator {
         
         code.append("\n");
         code.append("    class Meta:\n");
-        code.append("        db_table = '").append(umlClass.getName().toLowerCase()).append("s'\n");
+        code.append("        db_table = '").append(pluralize(umlClass.getName().toLowerCase())).append("'\n");
         code.append("        ordering = ['-id']\n\n");
         
         code.append("    def __str__(self):\n");
@@ -226,5 +241,52 @@ public class DjangoEntityGenerator implements IEntityGenerator {
             default:
                 return fieldName + " = models.CharField(max_length=255)";
         }
+    }
+    
+    private boolean isRelationshipField(UmlAttribute attr) {
+        return (attr.getType().equals("UUID") && attr.getName().endsWith("_id")) ||
+               (attr.getType().equals("UUID") && attr.getName().endsWith("Id"));
+    }
+    
+    private String generateDjangoForeignKey(UmlAttribute attr) {
+        String fieldName = attr.getName();
+        String entityName;
+        
+        if (fieldName.endsWith("_id")) {
+            entityName = fieldName.substring(0, fieldName.length() - 3);
+        } else if (fieldName.endsWith("Id")) {
+            entityName = fieldName.substring(0, fieldName.length() - 2);
+        } else {
+            return fieldName + " = models.UUIDField()";
+        }
+        
+        String targetClass = toPascalCase(entityName);
+        return entityName + " = models.ForeignKey('" + targetClass + "', on_delete=models.CASCADE, db_column='" + fieldName + "')";
+    }
+    
+    private String pluralize(String word) {
+        if (word.endsWith("y") && !isVowel(word.charAt(word.length() - 2))) {
+            return word.substring(0, word.length() - 1) + "ies";
+        } else if (word.endsWith("s") || word.endsWith("x") || word.endsWith("z") || 
+                   word.endsWith("ch") || word.endsWith("sh")) {
+            return word + "es";
+        } else {
+            return word + "s";
+        }
+    }
+    
+    private boolean isVowel(char c) {
+        return "aeiou".indexOf(Character.toLowerCase(c)) >= 0;
+    }
+    
+    private String toPascalCase(String snakeCase) {
+        String[] parts = snakeCase.split("_");
+        StringBuilder result = new StringBuilder();
+        for (String part : parts) {
+            if (!part.isEmpty()) {
+                result.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+            }
+        }
+        return result.toString();
     }
 }

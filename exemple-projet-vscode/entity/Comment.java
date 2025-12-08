@@ -4,6 +4,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import javax.validation.constraints.*;
+
 import com.example.blog.enums.CommentStatus;
 
 @Entity
@@ -11,51 +12,35 @@ import com.example.blog.enums.CommentStatus;
 public class Comment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column
     private UUID id;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column
     private String content;
 
-    @Column(name = "post_id", nullable = false)
+    @Column
     private UUID postId;
 
-    @Column(name = "user_id", nullable = false)
+    @Column
     private UUID userId;
 
-    @Column(name = "approved")
-    private Boolean approved = false;
+    @Column
+    private Date createdAt;
+
+    @Column
+    private Boolean approved;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private CommentStatus status = CommentStatus.DRAFT;
+    @Column(name = "status")
+    private CommentStatus status;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", insertable = false, updatable = false)
-    private Post post;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
-    private User user;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    // Getters and Setters
     public UUID getId() {
         return id;
     }
@@ -86,6 +71,14 @@ public class Comment {
 
     public void setUserId(UUID userId) {
         this.userId = userId;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Boolean getApproved() {
@@ -120,69 +113,18 @@ public class Comment {
         this.updatedAt = updatedAt;
     }
 
-    public Post getPost() {
-        return post;
-    }
-
-    public void setPost(Post post) {
-        this.post = post;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    // Business method from class-diagram
-    public void approve() {
-        this.approved = true;
-        this.status = CommentStatus.APPROVED;
-    }
-
-    // State transition methods from state-diagram
-    public void submit() {
-        if (this.status != CommentStatus.DRAFT) {
-            throw new IllegalStateException("Cannot submit comment in state: " + this.status);
+    public void suspend() {
+        if (this.status != CommentStatus.ACTIVE) {
+            throw new IllegalStateException("Cannot suspend user in state: " + this.status);
         }
-        this.status = CommentStatus.PENDING_REVIEW;
+        this.status = CommentStatus.SUSPENDED;
     }
 
-    public void reject() {
-        if (this.status != CommentStatus.PENDING_REVIEW) {
-            throw new IllegalStateException("Cannot reject comment in state: " + this.status);
+    public void activate() {
+        if (this.status != CommentStatus.SUSPENDED) {
+            throw new IllegalStateException("Cannot activate user in state: " + this.status);
         }
-        this.status = CommentStatus.REJECTED;
-        this.approved = false;
+        this.status = CommentStatus.ACTIVE;
     }
 
-    public void revise() {
-        if (this.status != CommentStatus.REJECTED) {
-            throw new IllegalStateException("Cannot revise comment in state: " + this.status);
-        }
-        this.status = CommentStatus.DRAFT;
-    }
-
-    public void publish() {
-        if (this.status != CommentStatus.APPROVED) {
-            throw new IllegalStateException("Cannot publish comment in state: " + this.status);
-        }
-        this.status = CommentStatus.PUBLISHED;
-    }
-
-    public void archive() {
-        if (this.status != CommentStatus.PUBLISHED) {
-            throw new IllegalStateException("Cannot archive comment in state: " + this.status);
-        }
-        this.status = CommentStatus.ARCHIVED;
-    }
-
-    public void restore() {
-        if (this.status != CommentStatus.ARCHIVED) {
-            throw new IllegalStateException("Cannot restore comment in state: " + this.status);
-        }
-        this.status = CommentStatus.PUBLISHED;
-    }
 }

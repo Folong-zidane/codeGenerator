@@ -2,7 +2,7 @@
   "name": "basiccode-generator",
   "displayName": "basicCode Generator",
   "description": "Generate complete applications from UML diagrams",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -18,7 +18,26 @@
       {
         "command": "basiccode.generate",
         "title": "Generate Project",
-        "category": "basicCode"
+        "category": "basicCode",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "basiccode.configure",
+        "title": "Configure",
+        "category": "basicCode",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "basiccode.toggleWatch",
+        "title": "Toggle Watch Mode",
+        "category": "basicCode",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "basiccode.generateWithCommit",
+        "title": "Generate and Commit",
+        "category": "basicCode",
+        "icon": "$(git-commit)"
       }
     ],
     "keybindings": [
@@ -28,12 +47,28 @@
         "mac": "cmd+shift+g"
       }
     ],
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "explorerResourceIsFolder && resourceFilename == diagrams",
+          "command": "basiccode.generate",
+          "group": "basiccode@1"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "resourceExtname == .mmd",
+          "command": "basiccode.generate",
+          "group": "basiccode@1"
+        }
+      ]
+    },
     "configuration": {
       "title": "basicCode",
       "properties": {
         "basiccode.backend": {
           "type": "string",
-          "default": "http://localhost:8080",
+          "default": "https://codegenerator-cpyh.onrender.com",
           "description": "Backend URL"
         },
         "basiccode.language": {
@@ -65,6 +100,7 @@
     "@types/node": "^16.18.126",
     "@types/vscode": "^1.74.0",
     "@types/ws": "^8.18.1",
+    "@vscode/vsce": "^3.7.1",
     "typescript": "^4.9.4",
     "vsce": "^2.15.0"
   },
