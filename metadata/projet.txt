@@ -1,0 +1,34 @@
+%% ============================================
+%% IDENTIFICATION DU PROJET
+%% ============================================
+%% @project
+%% name: blog-cms-api
+%% version: 1.0.0
+%% description: Blog CMS avec système de publication
+%% project-type: web-application|mobile-app|desktop-app|library|microservice
+%% architecture-style: monolith|microservices|serverless|modular-monolith
+%% @end-project
+
+%% ============================================
+%% STACK TECHNIQUE
+%% ============================================
+%% @tech-stack
+%% backend-language: java|python|csharp|typescript|go|php|rust|kotlin
+%% backend-framework: spring-boot|django|dotnet|nestjs|express|fastapi|laravel
+%% backend-version: 21|3.12|9.0|6.0|20|11
+%% orm-framework: jpa|hibernate|entity-framework|sequelize|sqlalchemy|eloquent
+%% database-type: postgresql|mysql|mongodb|sqlite|oracle|sqlserver|dynamodb
+%% database-version: 16|8.4|7.0|3.45|23c
+%% cache-layer: redis|memcached|hazelcast|none
+%% message-queue: rabbitmq|kafka|sqs|redis-streams|none
+%% @end-tech-stack
+
+%% ============================================
+%% STANDARDS UML
+%% ============================================
+%% @uml-standard
+%% uml-version: 2.5.1
+%% interchange-format: xmi-2.5.1|json|yaml
+%% diagram-notation: standard|custom
+%% stereotype-profile: custom|sysml|marte|none
+%% @end-uml-standard

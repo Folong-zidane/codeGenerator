@@ -36,105 +36,25 @@ public class PhpConfigGenerator {
             defaultConnection = "sqlite";
         }
         
-        return String.format("""
-            <?php
-            
-            return [
-                /*
-                |--------------------------------------------------------------------------
-                | Default Database Connection Name
-                |--------------------------------------------------------------------------
-                |
-                | Here you may specify which of the database connections below you wish
-                | to use as your default connection for all database work.
-                |
-                */
-                'default' => env('DB_CONNECTION', '%s'),
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Database Connections
-                |--------------------------------------------------------------------------
-                |
-                | Here are each of the database connections setup for your application.
-                |
-                */
-                'connections' => [
-                    'sqlite' => [
-                        'driver' => 'sqlite',
-                        'url' => env('DATABASE_URL'),
-                        'database' => env('DB_DATABASE', database_path('database.sqlite')),
-                        'prefix' => '',
-                        'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-                    ],
-            
-                    'mysql' => [
-                        'driver' => 'mysql',
-                        'url' => env('DATABASE_URL'),
-                        'host' => env('DB_HOST', '127.0.0.1'),
-                        'port' => env('DB_PORT', 3306),
-                        'database' => env('DB_DATABASE', 'laravel'),
-                        'username' => env('DB_USERNAME', 'root'),
-                        'password' => env('DB_PASSWORD', ''),
-                        'unix_socket' => env('DB_SOCKET', ''),
-                        'charset' => 'utf8mb4',
-                        'collation' => 'utf8mb4_unicode_ci',
-                        'prefix' => '',
-                        'prefix_indexes' => true,
-                        'strict' => true,
-                        'engine' => null,
-                        'options' => extension_loaded('pdo_mysql') ? array_filter([
-                            PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-                        ]) : [],
-                    ],
-            
-                    'pgsql' => [
-                        'driver' => 'pgsql',
-                        'url' => env('DATABASE_URL'),
-                        'host' => env('DB_HOST', '127.0.0.1'),
-                        'port' => env('DB_PORT', 5432),
-                        'database' => env('DB_DATABASE', 'laravel'),
-                        'username' => env('DB_USERNAME', 'root'),
-                        'password' => env('DB_PASSWORD', ''),
-                        'charset' => 'utf8',
-                        'prefix' => '',
-                        'prefix_indexes' => true,
-                        'search_path' => 'public',
-                        'sslmode' => 'prefer',
-                    ],
-                ],
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Migration Repository Table
-                |--------------------------------------------------------------------------
-                */
-                'migrations' => 'migrations',
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Redis Databases
-                |--------------------------------------------------------------------------
-                */
-                'redis' => [
-                    'client' => env('REDIS_CLIENT', 'phpredis'),
-                    
-                    'default' => [
-                        'host' => env('REDIS_HOST', '127.0.0.1'),
-                        'password' => env('REDIS_PASSWORD', null),
-                        'port' => env('REDIS_PORT', 6379),
-                        'database' => env('REDIS_DB', 0),
-                    ],
-                    
-                    'cache' => [
-                        'host' => env('REDIS_HOST', '127.0.0.1'),
-                        'password' => env('REDIS_PASSWORD', null),
-                        'port' => env('REDIS_PORT', 6379),
-                        'database' => env('REDIS_CACHE_DB', 1),
-                    ],
-                ],
-            ];
-            """,
+        return String.format(
+            "<?php\n\n" +
+            "return [\n" +
+            "    'default' => env('DB_CONNECTION', '%s'),\n\n" +
+            "    'connections' => [\n" +
+            "        'sqlite' => [\n" +
+            "            'driver' => 'sqlite',\n" +
+            "            'database' => env('DB_DATABASE', database_path('database.sqlite')),\n" +
+            "        ],\n" +
+            "        'mysql' => [\n" +
+            "            'driver' => 'mysql',\n" +
+            "            'host' => env('DB_HOST', '127.0.0.1'),\n" +
+            "            'port' => env('DB_PORT', 3306),\n" +
+            "            'database' => env('DB_DATABASE', 'laravel'),\n" +
+            "            'username' => env('DB_USERNAME', 'root'),\n" +
+            "            'password' => env('DB_PASSWORD', ''),\n" +
+            "        ],\n" +
+            "    ],\n" +
+            "];\n",
             defaultConnection
         );
     }
@@ -143,150 +63,29 @@ public class PhpConfigGenerator {
      * Generate cache configuration
      */
     public String generateCacheConfig() {
-        return """
-            <?php
-            
-            return [
-                /*
-                |--------------------------------------------------------------------------
-                | Default Cache Store
-                |--------------------------------------------------------------------------
-                */
-                'default' => env('CACHE_DRIVER', 'file'),
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Cache Stores
-                |--------------------------------------------------------------------------
-                */
-                'stores' => [
-                    'array' => [
-                        'driver' => 'array',
-                        'serialize' => false,
-                    ],
-            
-                    'database' => [
-                        'driver' => 'database',
-                        'connection' => env('CACHE_DB_CONNECTION'),
-                        'table' => env('CACHE_DB_TABLE', 'cache'),
-                    ],
-            
-                    'file' => [
-                        'driver' => 'file',
-                        'path' => storage_path('framework/cache/data'),
-                    ],
-            
-                    'memcached' => [
-                        'driver' => 'memcached',
-                        'persistent_id' => env('MEMCACHED_PERSISTENT_ID'),
-                        'sasl' => [
-                            env('MEMCACHED_USERNAME'),
-                            env('MEMCACHED_PASSWORD'),
-                        ],
-                        'options' => [
-                            // Memcached::OPT_CONNECT_TIMEOUT  => 2000,
-                        ],
-                        'servers' => [
-                            [
-                                'host' => env('MEMCACHED_HOST', '127.0.0.1'),
-                                'port' => env('MEMCACHED_PORT', 11211),
-                                'weight' => 100,
-                            ],
-                        ],
-                    ],
-            
-                    'redis' => [
-                        'driver' => 'redis',
-                        'connection' => 'cache',
-                        'lock_connection' => 'default',
-                    ],
-            
-                    'dynamodb' => [
-                        'driver' => 'dynamodb',
-                        'key' => env('AWS_ACCESS_KEY_ID'),
-                        'secret' => env('AWS_SECRET_ACCESS_KEY'),
-                        'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
-                        'table' => env('DYNAMODB_CACHE_TABLE', 'cache'),
-                        'expires' => 36000,
-                    ],
-                ],
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Cache Key Prefix
-                |--------------------------------------------------------------------------
-                */
-                'prefix' => env('CACHE_PREFIX', 'laravel_cache_'),
-            ];
-            """;
+        return "<?php\n\n" +
+            "return [\n" +
+            "    'default' => env('CACHE_DRIVER', 'file'),\n" +
+            "    'stores' => [\n" +
+            "        'array' => ['driver' => 'array'],\n" +
+            "        'file' => ['driver' => 'file'],\n" +
+            "        'redis' => ['driver' => 'redis'],\n" +
+            "    ],\n" +
+            "];\n";
     }
     
     /**
      * Generate queue configuration
      */
     public String generateQueueConfig() {
-        return """
-            <?php
-            
-            return [
-                /*
-                |--------------------------------------------------------------------------
-                | Default Queue Connection Name
-                |--------------------------------------------------------------------------
-                */
-                'default' => env('QUEUE_CONNECTION', 'sync'),
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Queue Connections
-                |--------------------------------------------------------------------------
-                */
-                'connections' => [
-                    'sync' => [
-                        'driver' => 'sync',
-                    ],
-            
-                    'database' => [
-                        'driver' => 'database',
-                        'connection' => env('QUEUE_DB_CONNECTION'),
-                        'table' => env('QUEUE_TABLE', 'jobs'),
-                    ],
-            
-                    'beanstalkd' => [
-                        'driver' => 'beanstalkd',
-                        'host' => 'localhost',
-                        'queue' => 'default',
-                        'retry_after' => 90,
-                        'block_for' => 0,
-                        'after_commit' => false,
-                    ],
-            
-                    'null' => [
-                        'driver' => 'null',
-                    ],
-                ],
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Batching
-                |--------------------------------------------------------------------------
-                */
-                'batching' => [
-                    'database' => env('QUEUE_BATCH_DATABASE', 'default'),
-                    'table' => 'job_batches',
-                ],
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Failed Queue Jobs
-                |--------------------------------------------------------------------------
-                */
-                'failed' => [
-                    'database' => env('QUEUE_FAILED_DATABASE', 'default'),
-                    'table' => 'failed_jobs',
-                ],
-            ];
-            """;
+        return "<?php\n\n" +
+            "return [\n" +
+            "    'default' => env('QUEUE_CONNECTION', 'sync'),\n" +
+            "    'connections' => [\n" +
+            "        'sync' => ['driver' => 'sync'],\n" +
+            "        'database' => ['driver' => 'database'],\n" +
+            "    ],\n" +
+            "];\n";
     }
     
     /**
@@ -374,74 +173,18 @@ public class PhpConfigGenerator {
      * Generate application configuration
      */
     public String generateAppConfig() {
-        return String.format("""
-            <?php
-            
-            return [
-                /*
-                |--------------------------------------------------------------------------
-                | Application Name
-                |--------------------------------------------------------------------------
-                */
-                'name' => env('APP_NAME', '%s'),
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Application Environment
-                |--------------------------------------------------------------------------
-                */
-                'env' => env('APP_ENV', 'production'),
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Application Debug Mode
-                |--------------------------------------------------------------------------
-                */
-                'debug' => (bool) env('APP_DEBUG', false),
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Application URL
-                |--------------------------------------------------------------------------
-                */
-                'url' => env('APP_URL', 'http://localhost'),
-                
-                'asset_url' => env('ASSET_URL'),
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Application Timezone
-                |--------------------------------------------------------------------------
-                */
-                'timezone' => 'UTC',
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Application Locale Configuration
-                |--------------------------------------------------------------------------
-                */
-                'locale' => 'en',
-                'fallback_locale' => 'en',
-                'faker_locale' => 'en_US',
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Encryption Key
-                |--------------------------------------------------------------------------
-                */
-                'key' => env('APP_KEY'),
-                'cipher' => 'AES-256-CBC',
-            
-                /*
-                |--------------------------------------------------------------------------
-                | Maintenance Mode Driver
-                |--------------------------------------------------------------------------
-                */
-                'maintenance' => [
-                    'driver' => 'file',
-                ],
-            ];
-            """,
+        return String.format(
+            "<?php\n\n" +
+            "return [\n" +
+            "    'name' => env('APP_NAME', '%s'),\n" +
+            "    'env' => env('APP_ENV', 'production'),\n" +
+            "    'debug' => (bool) env('APP_DEBUG', false),\n" +
+            "    'url' => env('APP_URL', 'http://localhost'),\n" +
+            "    'timezone' => 'UTC',\n" +
+            "    'locale' => 'en',\n" +
+            "    'key' => env('APP_KEY'),\n" +
+            "    'cipher' => 'AES-256-CBC',\n" +
+            "];\n",
             projectName
         );
     }

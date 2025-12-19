@@ -2,7 +2,6 @@ package com.basiccode.generator.generator.php;
 
 import com.basiccode.generator.generator.IEntityGenerator;
 import com.basiccode.generator.model.EnhancedClass;
-import com.basiccode.generator.model.UmlAttribute;
 
 public class PhpEntityGenerator implements IEntityGenerator {
     
@@ -33,7 +32,7 @@ public class PhpEntityGenerator implements IEntityGenerator {
         // Fillable fields
         code.append("    protected $fillable = [\n");
         for (int i = 0; i < enhancedClass.getOriginalClass().getAttributes().size(); i++) {
-            UmlAttribute attr = enhancedClass.getOriginalClass().getAttributes().get(i);
+            com.basiccode.generator.model.UMLAttribute attr = enhancedClass.getOriginalClass().getAttributes().get(i);
             if (!"id".equalsIgnoreCase(attr.getName())) {
                 code.append("        '").append(attr.getName()).append("'");
                 if (enhancedClass.isStateful() || i < enhancedClass.getOriginalClass().getAttributes().size() - 1) {
@@ -51,7 +50,7 @@ public class PhpEntityGenerator implements IEntityGenerator {
         
         // Casts
         code.append("    protected $casts = [\n");
-        for (UmlAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
+        for (com.basiccode.generator.model.UMLAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
             String phpType = mapCastType(attr.getType());
             if (!phpType.equals("string")) {
                 code.append("        '").append(attr.getName()).append("' => '").append(phpType).append("',\n");
@@ -141,14 +140,24 @@ public class PhpEntityGenerator implements IEntityGenerator {
     }
     
     private String mapCastType(String javaType) {
-        return switch (javaType.toLowerCase()) {
-            case "string" -> "string";
-            case "long", "integer", "int" -> "integer";
-            case "float", "double" -> "decimal:2";
-            case "boolean" -> "boolean";
-            case "date", "datetime" -> "datetime";
-            default -> "string";
-        };
+        switch (javaType.toLowerCase()) {
+            case "string":
+                return "string";
+            case "long":
+            case "integer":
+            case "int":
+                return "integer";
+            case "float":
+            case "double":
+                return "decimal:2";
+            case "boolean":
+                return "boolean";
+            case "date":
+            case "datetime":
+                return "datetime";
+            default:
+                return "string";
+        }
     }
     
     private String capitalize(String str) {
@@ -195,7 +204,7 @@ public class PhpEntityGenerator implements IEntityGenerator {
         }
     }
     
-    private void generateBusinessMethod(StringBuilder code, com.basiccode.generator.model.Method method, String className) {
+    private void generateBusinessMethod(StringBuilder code, com.basiccode.generator.model.UMLMethod method, String className) {
         String returnType = method.getReturnType() != null ? mapPhpReturnType(method.getReturnType()) : "void";
         
         code.append("    public function ").append(method.getName()).append("(");
@@ -222,27 +231,44 @@ public class PhpEntityGenerator implements IEntityGenerator {
     }
     
     private String mapPhpType(String javaType) {
-        return switch (javaType.toLowerCase()) {
-            case "string" -> "string";
-            case "long", "integer", "int" -> "int";
-            case "float", "double" -> "float";
-            case "boolean" -> "bool";
-            default -> "string";
-        };
+        switch (javaType.toLowerCase()) {
+            case "string":
+                return "string";
+            case "long":
+            case "integer":
+            case "int":
+                return "int";
+            case "float":
+            case "double":
+                return "float";
+            case "boolean":
+                return "bool";
+            default:
+                return "string";
+        }
     }
     
     private String mapPhpReturnType(String javaType) {
-        return switch (javaType.toLowerCase()) {
-            case "string" -> "string";
-            case "long", "integer", "int" -> "int";
-            case "float", "double" -> "float";
-            case "boolean" -> "bool";
-            case "void" -> "void";
-            default -> "mixed";
-        };
+        switch (javaType.toLowerCase()) {
+            case "string":
+                return "string";
+            case "long":
+            case "integer":
+            case "int":
+                return "int";
+            case "float":
+            case "double":
+                return "float";
+            case "boolean":
+                return "bool";
+            case "void":
+                return "void";
+            default:
+                return "mixed";
+        }
     }
     
-    private void generatePhpMethodBody(StringBuilder code, com.basiccode.generator.model.Method method, String className, String returnType) {
+    private void generatePhpMethodBody(StringBuilder code, com.basiccode.generator.model.UMLMethod method, String className, String returnType) {
         String methodName = method.getName().toLowerCase();
         
         switch (methodName) {
@@ -253,7 +279,6 @@ public class PhpEntityGenerator implements IEntityGenerator {
                 code.append("        // TODO: Implement password verification logic\n");
                 code.append("        return true;\n");
                 break;
-                
             case "updateprofile":
                 code.append("        if (empty($profile)) {\n");
                 code.append("            throw new \\InvalidArgumentException('Profile cannot be empty');\n");
@@ -262,14 +287,12 @@ public class PhpEntityGenerator implements IEntityGenerator {
                 code.append("        $this->updated_at = Carbon::now();\n");
                 code.append("        $this->save();\n");
                 break;
-                
             case "calculatetotal":
                 code.append("        // TODO: Calculate order total\n");
                 if (!"void".equals(returnType)) {
                     code.append("        return 0;\n");
                 }
                 break;
-                
             default:
                 code.append("        // TODO: Implement ").append(methodName).append(" logic\n");
                 if (!"void".equals(returnType)) {
@@ -288,14 +311,14 @@ public class PhpEntityGenerator implements IEntityGenerator {
     }
     
     private void generatePhpRelationships(StringBuilder code, EnhancedClass enhancedClass, String className) {
-        for (UmlAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
+        for (com.basiccode.generator.model.UMLAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
             if (attr.isRelationship()) {
                 generatePhpRelationship(code, attr, className);
             }
         }
     }
     
-    private void generatePhpRelationship(StringBuilder code, UmlAttribute attr, String currentClassName) {
+    private void generatePhpRelationship(StringBuilder code, com.basiccode.generator.model.UMLAttribute attr, String currentClassName) {
         String relationshipType = attr.getRelationshipType();
         String targetClass = attr.getTargetClass();
         String methodName = attr.getName();

@@ -1,0 +1,628 @@
+# 🎯 MÉTADONNÉES UML COMPLÈTES - BASÉES SUR LES STANDARDS RÉELS
+
+## 📋 1. FORMAT DU DIAGRAMME (Détection Automatique)
+
+```yaml
+%% @diagram-format
+%% format: mermaid|plantuml|xmi|visual-paradigm
+%% version: 10.0|2.5.1
+%% auto-detect: true
+%% @end-diagram-format
+```
+
+---
+
+## 🏗️ 2. ARCHITECTURE MODULAIRE (BASÉE SUR LES FRAMEWORKS)
+
+```yaml
+%% ============================================
+%% ARCHITECTURE & MODULES
+%% ============================================
+%% @project-architecture
+%% 
+%% ===== STRATÉGIE GLOBALE =====
+%% organization-strategy: package-by-feature|package-by-layer|hybrid|domain-driven
+%% base-package: com.example.blog
+%% 
+%% ===== MODULE DISCOVERY (AUTO) =====
+%% module-detection: auto|manual
+%% module-strategy: aggregate-root|feature-bounded-context|class-hierarchy|dependency-graph
+%% 
+%% --- Stratégies de détection automatique ---
+%% aggregate-root: true              # Classe racine d'agrégat DDD
+%% class-hierarchy: true             # Classe parent + enfants = 1 module
+%% feature-boundary: true            # Bounded context (User, Order, Payment)
+%% shared-module-name: common|core|shared
+%% 
+%% ===== JAVA/SPRING BOOT =====
+%% spring-structure: feature|layer|hybrid
+%% 
+%% --- Si package-by-feature (RECOMMANDÉ) ---
+%% feature-packages: auto-detect|manual
+%% per-feature-structure: controller,service,repository,entity,dto,mapper,exception,config
+%% feature-visibility: package-private     # Classes non publiques par défaut
+%% 
+%% --- Si package-by-layer (LEGACY) ---
+%% layer-packages: controller,service,repository,entity,dto,mapper,config,exception
+%% 
+%% ===== PYTHON/DJANGO =====
+%% django-apps: auto-detect|manual
+%% app-detection-strategy: aggregate-root|feature-bounded-context
+%% per-app-structure: models,views,serializers,services,urls,admin,tests,migrations
+%% shared-app-name: common|core
+%% 
+%% ===== C#/.NET =====
+%% dotnet-solution-structure: vertical-slices|clean-architecture|layered
+%% projects: Api,Application,Domain,Infrastructure,Tests
+%% 
+%% ===== TYPESCRIPT/NEST.JS =====
+%% nestjs-structure: modules
+%% module-detection: feature-bounded-context
+%% per-module-structure: controller,service,dto,entity
+%% 
+%% ===== PHP/LARAVEL =====
+%% laravel-structure: modular
+%% module-detection: feature-bounded-context
+%% per-module-structure: Controllers,Models,Services,Resources,Requests
+%% 
+%% @end-project-architecture
+```
+
+### **Exemple de Détection Automatique de Modules**
+
+```
+Diagramme UML avec:
+- User (classe parent)
+  ├─ Author (hérite)
+  └─ Admin (hérite)
+- Article (Aggregate Root DDD)
+  ├─ BlocContenu (Composition - lifecycle dépendant)
+- Tag (Entité indépendante)
+- Commentaire (Relation avec User + Article)
+
+Modules Auto-Détectés:
+1. user/ (User + Author + Admin car hiérarchie)
+2. article/ (Article + BlocContenu car composition forte)
+3. tag/ (Tag indépendant)
+4. comment/ (Commentaire car relation multiple)
+```
+
+---
+
+## 🔗 3. RELATIONS UML (BASÉES SUR NOTATIONS STANDARDS)
+
+```yaml
+%% ============================================
+%% RELATIONS UML → CODE
+%% ============================================
+%% @class-relationships
+%% 
+%% ===== NOTATION STANDARD DÉTECTÉE =====
+%% --- Mermaid ---
+%% inheritance-notation: <|--              # Héritage
+%% composition-notation: *--               # Composition (losange plein)
+%% aggregation-notation: o--               # Agrégation (losange vide)
+%% association-notation: --                # Association simple
+%% dependency-notation: ..>                # Dépendance
+%% realization-notation: ..|>              # Réalisation
+%% 
+%% --- PlantUML ---
+%% inheritance-notation: <|--
+%% composition-notation: *--
+%% aggregation-notation: o--
+%% association-notation: --
+%% dependency-notation: ..>
+%% realization-notation: <|..
+%% 
+%% ============================================
+%% HÉRITAGE (Notation: A <|-- B)
+%% ============================================
+%% inheritance-enabled: true
+%% multiple-inheritance: false
+%% abstract-classes: true
+%% interfaces: true
+%% 
+%% --- JPA/Hibernate (Java) ---
+%% jpa-inheritance-strategy: JOINED|SINGLE_TABLE|TABLE_PER_CLASS
+%% discriminator-column: dtype
+%% discriminator-type: STRING
+%% 
+%% --- Django ORM (Python) ---
+%% django-inheritance: multi-table|abstract|proxy
+%% 
+%% --- Entity Framework (C#) ---
+%% ef-inheritance: table-per-hierarchy|table-per-type|table-per-concrete
+%% 
+%% --- Génération de code ---
+%% generate-abstract-methods: true
+%% override-annotations: true
+%% 
+%% ============================================
+%% COMPOSITION (Notation: Article *-- "1..*" BlocContenu)
+%% ============================================
+%% composition-enabled: true
+%% composition-semantics: strong-ownership
+%% lifecycle-dependency: dependent          # Enfant détruit avec parent
+%% 
+%% --- Parsing de la multiplicité ---
+%% multiplicity-parsing: auto
+%% multiplicity-source: 1|0..1|1..*
+%% multiplicity-target: 1|0..*|1..*|5..10
+%% 
+%% --- Mapping ORM ---
+%% cascade-operations: ALL|PERSIST,MERGE,REMOVE
+%% orphan-removal: true                     # Si parent supprimé → enfant supprimé
+%% fetch-strategy: LAZY|EAGER
+%% nullable: false                          # Enfant ne peut exister sans parent
+%% 
+%% --- Génération de code ---
+%% generate-add-remove-methods: true        # addBloc(), removeBloc()
+%% generate-bidirectional-sync: true        # Synchronisation automatique
+%% field-initialization: constructor|setter
+%% 
+%% ============================================
+%% AGRÉGATION (Notation: Article o-- "0..*" Tag)
+%% ============================================
+%% aggregation-enabled: true
+%% aggregation-semantics: weak-ownership
+%% lifecycle-dependency: independent        # Tag existe sans Article
+%% 
+%% --- Mapping ORM ---
+%% cascade-operations: PERSIST,MERGE       # PAS de REMOVE !
+%% orphan-removal: false                    # Tag reste si Article supprimé
+%% fetch-strategy: LAZY
+%% nullable: true                           # Peut être null
+%% 
+%% --- Many-to-Many Join Table ---
+%% join-table-generation: auto
+%% join-table-name: {source}_{target}      # article_tags
+%% 
+%% --- Génération de code ---
+%% collection-type: Set|List
+%% generate-add-remove-methods: true
+%% 
+%% ============================================
+%% ASSOCIATION (Notation: Article "1" -- "0..*" Commentaire)
+%% ============================================
+%% association-enabled: true
+%% bidirectional-support: true
+%% 
+%% --- Parsing de la direction ---
+%% direction: unidirectional|bidirectional
+%% owner-side: source|target|auto           # Qui possède la FK ?
+%% 
+%% --- Bidirectionnelle ---
+%% inverse-mapping: mappedBy                # JPA
+%% related-name: auto                       # Django
+%% navigation-property: auto                # C#
+%% 
+%% --- Multiplicités détectées ---
+%% one-to-one: 1 -- 1
+%% one-to-many: 1 -- 0..*
+%% many-to-one: 0..* -- 1
+%% many-to-many: 0..* -- 0..*
+%% 
+%% ============================================
+%% DÉPENDANCE (Notation: ArticleService ..> EmailService)
+%% ============================================
+%% dependency-enabled: true
+%% dependency-type: use|instantiate
+%% 
+%% --- Injection de dépendances ---
+%% di-enabled: true
+%% di-type: constructor|setter|field
+%% di-framework: spring|cdi|guice|autofac
+%% 
+%% @end-class-relationships
+```
+
+---
+
+## 🔄 4. DIAGRAMME DE SÉQUENCE (BASÉ SUR STANDARD UML 2.x)
+
+```yaml
+%% ============================================
+%% DIAGRAMME DE SÉQUENCE
+%% ============================================
+%% @sequence-diagram
+%% diagram-type: sequence
+%% 
+%% ===== FRAGMENTS COMBINÉS (UML 2.x) =====
+%% combined-fragments: true
+%% 
+%% --- Types de fragments détectés ---
+%% alt-fragment: true                # Alternative (if/else)
+%% opt-fragment: true                # Optionnel (if)
+%% loop-fragment: true               # Boucle
+%% par-fragment: true                # Parallèle
+%% break-fragment: true              # Interruption
+%% critical-fragment: false          # Section critique
+%% 
+%% --- Parsing des conditions ---
+%% guard-condition-syntax: [condition]|{condition}
+%% guard-language: natural|java|python|typescript
+%% 
+%% --- Génération de code pour alt/opt ---
+%% generate-if-else: true
+%% generate-try-catch: true
+%% exception-handling: checked|unchecked
+%% 
+%% --- Génération de code pour loop ---
+%% loop-type: while|for|foreach
+%% loop-bounds: auto-detect          # loop(1,10)
+%% generate-loop-code: true
+%% 
+%% --- Génération de code pour par ---
+%% async-framework: completable-future|async-await|goroutines|promises
+%% thread-pool: true
+%% 
+%% ===== MESSAGES =====
+%% synchronous-call: solid-arrow     # →
+%% asynchronous-call: open-arrow     # ->>
+%% return-message: dashed-arrow      # -->>
+%% self-call: true
+%% 
+%% ===== TRANSACTIONS =====
+%% transaction-support: true
+%% transaction-scope: method|class
+%% transaction-annotation: @Transactional|@transactional
+%% 
+%% ===== ERROR HANDLING =====
+%% error-handling: try-catch|result-pattern|either
+%% retry-policy: exponential-backoff|fixed-delay
+%% circuit-breaker: resilience4j|hystrix|polly
+%% 
+%% ===== LOGGING & MONITORING =====
+%% log-method-calls: true
+%% log-parameters: true
+%% distributed-tracing: zipkin|jaeger|opentelemetry
+%% 
+%% @end-sequence-diagram
+```
+
+---
+
+## 📊 5. DIAGRAMME D'ÉTAT (STATE MACHINE)
+
+```yaml
+%% ============================================
+%% DIAGRAMME D'ÉTAT
+%% ============================================
+%% @state-diagram
+%% diagram-type: state
+%% 
+%% ===== TYPE DE MACHINE =====
+%% state-machine-type: finite|hierarchical|concurrent
+%% state-machine-framework: spring-statemachine|stateless|xstate
+%% 
+%% ===== ÉTATS HIÉRARCHIQUES =====
+%% hierarchical-states: true
+%% sub-states: true
+%% history-states: shallow|deep
+%% 
+%% ===== ACTIONS =====
+%% entry-actions: true              # entry / action
+%% exit-actions: true               # exit / action
+%% do-actions: true                 # do / activity
+%% transition-actions: true
+%% 
+%% ===== ÉVÉNEMENTS =====
+%% event-driven: true
+%% event-sourcing: true
+%% event-store: kafka|eventstore|postgres
+%% 
+%% ===== TRANSITIONS =====
+%% guard-conditions: true           # [guard] / action
+%% automatic-transitions: true
+%% 
+%% ===== PERSISTENCE =====
+%% state-persistence: database|redis|memory
+%% audit-trail: true
+%% 
+%% @end-state-diagram
+```
+
+---
+
+## 🔗 6. RELATIONS INTER-DIAGRAMMES
+
+```yaml
+%% ============================================
+%% TRAÇABILITÉ INTER-DIAGRAMMES
+%% ============================================
+%% @diagram-relationships
+%% 
+%% ===== CAS D'UTILISATION → CLASSES =====
+%% usecase-to-class-mapping: true
+%% usecase-generates: controller,service,dto
+%% 
+%% Exemple:
+%% UseCase "Créer Article" → 
+%%   - ArticleController.createArticle()
+%%   - ArticleService.createArticle()
+%%   - Article (entity)
+%% 
+%% ===== SÉQUENCE → MÉTHODES =====
+%% sequence-to-method-mapping: true
+%% sequence-generates: method-signatures
+%% 
+%% Exemple:
+%% Séquence: Client → ArticleService: createArticle(title)
+%% Génère: public Article createArticle(String title)
+%% 
+%% ===== CLASSES → ÉTATS =====
+%% class-to-state-mapping: true
+%% state-field-name: status|state|statut
+%% 
+%% Exemple:
+%% Article (classe) → ArticleStateMachine
+%% Article.status → DRAFT|PUBLISHED|ARCHIVED
+%% 
+%% ===== COMPOSANTS → CLASSES =====
+%% component-to-class-mapping: true
+%% component-groups-classes: true
+%% 
+%% Exemple:
+%% Component "UserService" contient:
+%%   - User, Author, Admin (entities)
+%%   - UserController, UserService, UserRepository
+%% 
+%% @end-diagram-relationships
+```
+
+---
+
+## 📋 7. EXEMPLE COMPLET - DIAGRAMME DE CLASSES AVEC MÉTADONNÉES
+
+```mermaid
+%% ============================================
+%% MÉTADONNÉES PROJET
+%% ============================================
+%% @project
+%% name: blog-cms-platform
+%% version: 1.0.0
+%% @end-project
+
+%% @tech-stack
+%% backend-language: java
+%% backend-framework: spring-boot
+%% backend-version: 3.2.0
+%% database-type: postgresql
+%% orm-framework: jpa
+%% @end-tech-stack
+
+%% ============================================
+%% ARCHITECTURE MODULAIRE
+%% ============================================
+%% @project-architecture
+%% organization-strategy: package-by-feature
+%% base-package: com.example.blog
+%% module-detection: auto
+%% module-strategy: class-hierarchy,aggregate-root
+%% spring-structure: feature
+%% per-feature-structure: controller,service,repository,entity,dto,mapper
+%% shared-module-name: common
+%% @end-project-architecture
+
+%% ============================================
+%% DIAGRAMME & RELATIONS
+%% ============================================
+%% @diagram-format
+%% format: mermaid
+%% @end-diagram-format
+
+%% @class-diagram
+%% persistence-layer: jpa
+%% id-generation-strategy: uuid
+%% audit-fields: true
+%% soft-delete: true
+%% @end-class-diagram
+
+%% @class-relationships
+%% inheritance-notation: <|--
+%% composition-notation: *--
+%% aggregation-notation: o--
+%% association-notation: --
+%% jpa-inheritance-strategy: JOINED
+%% composition-cascade: ALL
+%% composition-orphan-removal: true
+%% aggregation-cascade: PERSIST,MERGE
+%% aggregation-orphan-removal: false
+%% bidirectional-support: true
+%% owner-side: auto
+%% generate-add-remove-methods: true
+%% @end-class-relationships
+
+%% ============================================
+%% DIAGRAMME UML
+%% ============================================
+classDiagram
+    %% MODULE USER (détecté par hiérarchie)
+    class User {
+        <<Entity>>
+        +UUID id
+        +String username
+        +String email
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+    }
+    
+    class Author {
+        <<Entity>>
+        +String bio
+        +String website
+    }
+    
+    class Admin {
+        <<Entity>>
+        +String permissions
+    }
+    
+    %% HÉRITAGE (JOINED strategy)
+    User <|-- Author
+    User <|-- Admin
+    
+    %% MODULE ARTICLE (détecté par aggregate root + composition)
+    class Article {
+        <<AggregateRoot>>
+        +UUID id
+        +String titre
+        +String contenu
+        +LocalDateTime createdAt
+    }
+    
+    class BlocContenu {
+        <<Entity>>
+        +UUID id
+        +String contenu
+        +Integer ordre
+    }
+    
+    %% COMPOSITION (lifecycle dépendant)
+    %% Génère: cascade=ALL, orphanRemoval=true
+    Article *-- "0..*" BlocContenu : contient
+    
+    %% MODULE TAG (entité indépendante)
+    class Tag {
+        <<Entity>>
+        +UUID id
+        +String nom
+    }
+    
+    %% AGRÉGATION (lifecycle indépendant)
+    %% Génère: cascade=PERSIST,MERGE, orphanRemoval=false
+    Article o-- "0..*" Tag : utilise
+    
+    %% MODULE COMMENT (relations multiples)
+    class Commentaire {
+        <<Entity>>
+        +UUID id
+        +String texte
+        +LocalDateTime date
+    }
+    
+    %% ASSOCIATIONS BIDIRECTIONNELLES
+    Article "1" -- "0..*" Commentaire : a des commentaires
+    User "1" -- "0..*" Commentaire : écrit
+    
+    %% DÉPENDANCE (injection)
+    class ArticleService {
+        <<Service>>
+        +createArticle()
+        +publishArticle()
+    }
+    
+    class EmailService {
+        <<Service>>
+        +sendNotification()
+    }
+    
+    ArticleService ..> EmailService : uses
+```
+
+---
+
+## 📂 8. STRUCTURE GÉNÉRÉE AUTOMATIQUEMENT
+
+### **Java/Spring Boot (Package-by-Feature)**
+
+```
+com.example.blog/
+├── BlogApplication.java
+├── common/
+│   ├── exception/
+│   ├── util/
+│   └── config/
+├── user/                           # Module AUTO-DÉTECTÉ (hiérarchie)
+│   ├── entity/
+│   │   ├── User.java              # @Entity, @Inheritance(JOINED)
+│   │   ├── Author.java            # extends User
+│   │   └── Admin.java             # extends User
+│   ├── dto/
+│   ├── mapper/
+│   ├── repository/
+│   ├── service/
+│   └── controller/
+├── article/                        # Module AUTO-DÉTECTÉ (aggregate root)
+│   ├── entity/
+│   │   ├── Article.java           # @Entity, aggregate root
+│   │   └── BlocContenu.java       # cascade=ALL, orphanRemoval=true
+│   ├── dto/
+│   ├── repository/
+│   ├── service/
+│   │   ├── ArticleService.java
+│   │   └── EmailService.java
+│   └── controller/
+├── tag/                            # Module AUTO-DÉTECTÉ (indépendant)
+│   ├── entity/
+│   │   └── Tag.java
+│   ├── repository/
+│   ├── service/
+│   └── controller/
+└── comment/                        # Module AUTO-DÉTECTÉ (relations)
+    ├── entity/
+    │   └── Commentaire.java
+    ├── repository/
+    ├── service/
+    └── controller/
+```
+
+### **Django (Apps Auto-Détectées)**
+
+```
+blog_project/
+├── manage.py
+├── blog_project/
+│   ├── settings.py
+│   └── urls.py
+├── common/
+│   └── utils.py
+├── users/                          # App AUTO-DÉTECTÉE
+│   ├── models.py                   # User, Author, Admin
+│   ├── views.py
+│   ├── serializers.py
+│   └── migrations/
+├── articles/                       # App AUTO-DÉTECTÉE
+│   ├── models.py                   # Article, BlocContenu
+│   ├── views.py
+│   └── migrations/
+├── tags/                           # App AUTO-DÉTECTÉE
+│   └── models.py                   # Tag
+└── comments/                       # App AUTO-DÉTECTÉE
+    └── models.py                   # Commentaire
+```
+
+---
+
+## ✅ DIFFÉRENCES CLÉS VS MÉTADONNÉES PRÉCÉDENTES
+
+### **1. Basé sur Standards UML Réels**
+- ✅ Notations Mermaid/PlantUML natives (`*--`, `o--`, `<|--`)
+- ✅ Parsing automatique des multiplicités (`1`, `0..*`, `1..*`)
+- ❌ Avant: métadonnées inventées non alignées
+
+### **2. Modules Auto-Détectés (Non Arbitraires)**
+- ✅ Stratégies: hiérarchie de classes, aggregate root DDD, bounded context
+- ✅ Basé sur recherches Django/Spring Boot
+- ❌ Avant: modules définis manuellement
+
+### **3. Relations → Code Matérialisées**
+- ✅ Composition → `cascade=ALL + orphanRemoval=true`
+- ✅ Agrégation → `cascade=PERSIST,MERGE` (PAS de REMOVE)
+- ✅ Association → `mappedBy` / `related_name`
+- ❌ Avant: pas de lien clair avec le code généré
+
+### **4. Relations Inter-Diagrammes**
+- ✅ UseCase → Controller/Service
+- ✅ Sequence → Signatures de méthodes
+- ✅ Class → State Machine
+- ❌ Avant: diagrammes isolés
+
+---
+
+## 🎯 PROCHAINES ÉTAPES
+
+Voulez-vous que je :
+1. Génère le **parser complet** en Python/TypeScript ?
+2. Crée un **exemple de code généré** (Java/Django) à partir de ces métadonnées ?
+3. Développe les **métadonnées pour les autres diagrammes** (activité, composants) ?

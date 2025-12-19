@@ -1,0 +1,46 @@
+%% @activity-diagram
+%% diagram-id: user-workflow-001
+%% diagram-type: activity
+%% diagram-purpose: business-process|workflow|use-case
+%% 
+%% ===== WORKFLOW ENGINE =====
+%% workflow-engine: activiti|camunda|zeebe|custom
+%% process-definition-format: bpmn|json|xml
+%% async-processing: true
+%% parallel-execution: true
+%% 
+%% ===== TRANSACTION MANAGEMENT =====
+%% transaction-boundary: method-level|class-level|process-level
+%% transaction-isolation: read-committed|serializable
+%% rollback-strategy: compensate|abort|retry
+%% 
+%% ===== ERROR HANDLING =====
+%% error-handling: retry|compensate|abort|escalate
+%% retry-attempts: 3
+%% retry-delay: exponential-backoff
+%% timeout-seconds: 30
+%% 
+%% ===== MONITORING =====
+%% activity-logging: true
+%% performance-metrics: true
+%% business-metrics: true
+%% 
+%% ===== INTEGRATION =====
+%% external-services: rest|soap|messaging
+%% service-discovery: true
+%% circuit-breaker: true
+%% @end-activity-diagram
+
+flowchart TD
+    A[Start Process] --> B{Validate Input}
+    B -->|Valid| C[Process User Data]
+    B -->|Invalid| D[Return Validation Error]
+    C --> E[Save to Database]
+    E --> F{Save Successful?}
+    F -->|Yes| G[Send Welcome Email]
+    F -->|No| H[Log Error]
+    G --> I[Update User Status]
+    H --> J[Notify Admin]
+    I --> K[End Success]
+    J --> L[End Error]
+    D --> L

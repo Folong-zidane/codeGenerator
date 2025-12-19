@@ -1,0 +1,130 @@
+%% @project
+%% name: E-commerce Metadata-Aware
+%% version: 1.0.0
+%% description: E-commerce application with UML metadata
+%% project-type: web-application
+%% architecture-style: modular-monolith
+%% @end-project
+
+%% @tech-stack
+%% backend-language: java
+%% backend-framework: spring-boot
+%% backend-version: 3.2.0
+%% orm-framework: jpa
+%% database-type: postgresql
+%% database-version: 16
+%% cache-layer: redis
+%% @end-tech-stack
+
+%% @project-architecture
+%% organization-strategy: package-by-feature
+%% base-package: com.ecommerce.metadata
+%% module-detection: auto
+%% module-strategy: class-hierarchy,aggregate-root,feature-bounded-context
+%% spring-structure: feature
+%% per-feature-structure: entity,repository,service,controller
+%% shared-module-name: common
+%% feature-visibility: package-private
+%% @end-project-architecture
+
+%% @class-diagram
+%% persistence-layer: jpa
+%% id-generation-strategy: uuid
+%% id-type: UUID
+%% table-naming-convention: snake_case
+%% column-naming-convention: snake_case
+%% audit-fields: true
+%% created-at-field: createdAt
+%% updated-at-field: updatedAt
+%% soft-delete: true
+%% soft-delete-field: deletedAt
+%% validation-framework: jakarta-validation
+%% validation-level: strict
+%% cache-strategy: redis
+%% cache-ttl-seconds: 3600
+%% @end-class-diagram
+
+%% @sequence-diagram
+%% transaction-scope: method
+%% error-handling-strategy: try-catch
+%% logging-level: info
+%% retry-enabled: true
+%% max-retry-attempts: 3
+%% retry-strategy: exponential-backoff
+%% timeout-enabled: true
+%% default-timeout-ms: 30000
+%% circuit-breaker-enabled: true
+%% failure-rate-threshold: 50
+%% async-execution: false
+%% async-pattern: completable-future
+%% @end-sequence-diagram
+
+%% @class-relationships
+%% inheritance-notation: <|--
+%% composition-notation: *--
+%% aggregation-notation: o--
+%% association-notation: --
+%% dependency-notation: ..>
+%% jpa-inheritance-strategy: JOINED
+%% composition-cascade: ALL
+%% composition-orphan-removal: true
+%% aggregation-cascade: PERSIST,MERGE
+%% aggregation-orphan-removal: false
+%% bidirectional-support: true
+%% owner-side: auto
+%% generate-add-remove-methods: true
+%% @end-class-relationships
+
+classDiagram
+    class User {
+        +UUID id
+        +String username
+        +String email
+        +String firstName
+        +String lastName
+        +UserStatus status
+        +validateEmail()
+        +changePassword(String newPassword)
+        +activate()
+        +suspend()
+    }
+    
+    class Product {
+        +UUID id
+        +String name
+        +String description
+        +Float price
+        +Integer stock
+        +String category
+        +ProductStatus status
+        +updateStock(Integer quantity)
+        +applyDiscount(Float percentage)
+    }
+    
+    class Order {
+        +UUID id
+        +UUID userId
+        +Float total
+        +OrderStatus status
+        +LocalDateTime orderDate
+        +calculateTotal()
+        +addProduct(Product product, Integer quantity)
+        +confirm()
+        +ship()
+        +deliver()
+        +cancel()
+    }
+    
+    class OrderItem {
+        +UUID id
+        +UUID orderId
+        +UUID productId
+        +Integer quantity
+        +Float unitPrice
+        +Float subtotal
+        +calculateSubtotal()
+    }
+    
+    User "1" --> "*" Order : places
+    Order "1" *-- "*" OrderItem : contains
+    Product "1" --> "*" OrderItem : referenced_in

@@ -1,0 +1,173 @@
+%% @class-diagram
+%% diagram-id: domain-model-001
+%% diagram-type: class
+%% diagram-purpose: domain-model|data-model|api-model|view-model
+%% 
+%% ===== IDENTIFICATION & PARSING =====
+%% parser-strategy: mermaid|plantuml|xmi|visual-paradigm
+%% auto-detect: true
+%% fallback-defaults: true
+%% 
+%% ===== PERSISTANCE & ORM =====
+%% persistence-layer: jpa|hibernate|entity-framework-core|sqlalchemy|prisma|eloquent
+%% orm-version: 3.2.5|6.5.2|8.0|2.0.31
+%% orm-annotations: jakarta|hibernate|ef-core|typeorm
+%% table-naming-convention: snake_case|camelCase|PascalCase|kebab-case
+%% column-naming-convention: snake_case|camelCase|PascalCase
+%% schema-name: public|custom-schema
+%% table-prefix: true
+%% table-prefix-value: tbl_
+%% 
+%% ===== IDENTIFIANTS & CLÉS =====
+%% id-generation-strategy: uuid|auto-increment|sequence|ulid|snowflake|custom
+%% id-type: UUID|Long|String|Integer|GUID
+%% id-column-name: id|{entity}_id|{entity}_uuid
+%% composite-keys-support: true
+%% natural-keys-support: true
+%% sequence-name-pattern: seq_{table_name}
+%% 
+%% ===== STÉRÉOTYPES UML (STANDARD) =====
+%% use-stereotypes: true
+%% stereotype-mapping: entity=@Entity,repository=@Repository,service=@Service,controller=@RestController
+%% custom-stereotypes: <<ValueObject>>,<<AggregateRoot>>,<<Factory>>
+%% stereotype-inheritance: true
+%% 
+%% ===== TAGGED VALUES =====
+%% tagged-values-support: true
+%% tagged-values-format: key=value|json
+%% common-tags: tableName,schema,cacheable,transactional,auditable
+%% 
+%% ===== RELATIONS UML (SÉMANTIQUE COMPLÈTE) =====
+%% association-semantic: true
+%% composition-ownership: strong
+%% aggregation-ownership: weak
+%% dependency-type: use|instantiate|import
+%% realization-type: interface-implementation
+%% generalization-strategy: single-table|joined-table|table-per-class
+%% 
+%% ===== MULTIPLICITÉS =====
+%% multiplicity-notation: uml-standard
+%% multiplicity-validation: strict|permissive
+%% default-multiplicity: 0..*
+%% bidirectional-mapping: true
+%% inverse-relationship-naming: auto|manual
+%% 
+%% ===== AUDIT & VERSIONING =====
+%% audit-fields: true
+%% audit-strategy: created-updated|full-history|event-sourcing|cdc
+%% created-at-field: createdAt|created_at|dateCreated
+%% updated-at-field: updatedAt|updated_at|dateModified
+%% created-by-field: createdBy|created_by_user_id
+%% updated-by-field: updatedBy|updated_by_user_id
+%% version-field: version|rowVersion|etag
+%% version-strategy: numeric|timestamp|hash
+%% 
+%% ===== SOFT DELETE =====
+%% soft-delete: true
+%% soft-delete-strategy: flag|timestamp
+%% soft-delete-field: deletedAt|deleted_at|isDeleted|is_deleted
+%% soft-delete-filter: global|manual
+%% cascade-soft-delete: true
+%% 
+%% ===== VALIDATION =====
+%% validation-framework: jakarta-validation|hibernate-validator|class-validator|pydantic|fluent-validation
+%% validation-level: strict|permissive|custom
+%% null-safety: true
+%% constraint-annotations: true
+%% custom-validators: true
+%% validation-groups: true
+%% 
+%% ===== SÉRIALISATION =====
+%% serialization-format: json|xml|protobuf|avro|messagepack
+%% serialization-library: jackson|gson|system-text-json|pydantic|marshmallow
+%% property-naming-strategy: camelCase|snake_case|PascalCase|kebab-case
+%% exclude-null-fields: true
+%% exclude-default-values: false
+%% date-serialization-format: iso8601|unix-timestamp|custom
+%% custom-date-pattern: yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+%% circular-reference-handling: ignore|error|serialize-once
+%% 
+%% ===== CACHE =====
+%% cache-strategy: redis|memcached|ehcache|caffeine|distributed|none
+%% cache-ttl-seconds: 3600
+%% cache-key-strategy: id|composite|custom
+%% cache-regions: true
+%% second-level-cache: true
+%% query-cache: true
+%% cache-eviction-policy: lru|lfu|fifo
+%% 
+%% ===== LAZY LOADING & FETCH =====
+%% lazy-loading-default: true
+%% eager-loading-strategy: select|join|subselect|batch
+%% fetch-type-default: lazy|eager
+%% n-plus-one-detection: true
+%% batch-size: 10
+%% 
+%% ===== CASCADE & ORPHAN REMOVAL =====
+%% cascade-operations: persist|merge|remove|refresh|detach|all
+%% cascade-type-default: none
+%% orphan-removal: true
+%% orphan-removal-default: false
+%% 
+%% ===== HÉRITAGE =====
+%% inheritance-strategy: single-table|joined|table-per-class|mapped-superclass
+%% discriminator-column-name: dtype|entity_type
+%% discriminator-type: string|integer|char
+%% discriminator-value-pattern: {class-name}|{class-name-uppercase}
+%% polymorphic-queries: true
+%% 
+%% ===== INDICES & PERFORMANCE =====
+%% auto-index-foreign-keys: true
+%% auto-index-unique-constraints: true
+%% composite-indices: true
+%% full-text-index: false
+%% spatial-index: false
+%% index-naming-pattern: idx_{table}_{column}
+%% unique-constraint-naming: uk_{table}_{column}
+%% 
+%% ===== SÉCURITÉ =====
+%% field-level-encryption: false
+%% sensitive-fields: password,ssn,creditCard,apiKey
+%% encryption-algorithm: AES-256-GCM|RSA-4096
+%% encryption-key-management: vault|kms|config
+%% pii-fields-detection: auto|manual
+%% gdpr-compliance: true
+%% 
+%% ===== GÉNÉRATION DE CODE =====
+%% generate-getters-setters: true
+%% generate-constructors: no-args|all-args|required-args|builder
+%% generate-builders: true
+%% generate-equals-hashcode: true
+%% generate-tostring: true
+%% generate-copy-constructor: false
+%% use-lombok: true
+%% lombok-annotations: @Data|@Value|@Builder|@Getter|@Setter
+%% immutable-classes: false
+%% record-classes: false
+%% sealed-classes: false
+%% 
+%% ===== DOCUMENTATION =====
+%% javadoc-generation: true
+%% swagger-annotations: true
+%% json-schema-generation: true
+%% api-documentation-format: openapi-3.0|swagger-2.0
+%% include-examples: true
+%% 
+%% ===== CONTRAINTES MÉTIER =====
+%% business-rules-validation: true
+%% domain-invariants: true
+%% value-objects-immutable: true
+%% aggregate-boundaries: true
+%% @end-class-diagram
+
+classDiagram
+    class User {
+        <<Entity>>
+        {tableName=users, cacheable=true}
+        +UUID id
+        +String username
+        +String email
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +Long version
+    }

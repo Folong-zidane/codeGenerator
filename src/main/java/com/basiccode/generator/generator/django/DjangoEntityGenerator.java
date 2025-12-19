@@ -2,15 +2,283 @@ package com.basiccode.generator.generator.django;
 
 import com.basiccode.generator.generator.IEntityGenerator;
 import com.basiccode.generator.model.EnhancedClass;
-import com.basiccode.generator.model.UmlClass;
-import com.basiccode.generator.model.UmlAttribute;
-import java.util.Set;
-import java.util.HashSet;
+import com.basiccode.generator.model.UMLAttribute;
+import java.util.Map;
 
+/**
+ * Générateur d'entités Django fonctionnel
+ */
 public class DjangoEntityGenerator implements IEntityGenerator {
     
-    // Track generated fields to avoid duplications
-    private Set<String> generatedFields;
+    @Override
+    public String generateEntity(EnhancedClass enhancedClass, String packageName) {
+        return generateEntity(enhancedClass, packageName, null);
+    }
+    
+    public String generateEntity(EnhancedClass enhancedClass, String packageName, Map<String, String> metadata) {
+        if (enhancedClass == null || enhancedClass.getOriginalClass() == null) {
+            throw new IllegalArgumentException("EnhancedClass and originalClass cannot be null");
+        }
+        
+        StringBuilder model = new StringBuilder();
+        String className = enhancedClass.getOriginalClass().getName();
+        
+        // Imports based on metadata
+        model.append(generateImportsFromMetadata(metadata));
+        
+        // Class definition
+        model.append("class ").append(className).append("(models.Model):\n");
+        
+        // ID field
+        model.append("    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)\n");
+        
+        // Generate fields from attributes with metadata
+        if (enhancedClass.getOriginalClass().getAttributes() != null) {
+            for (UMLAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
+                if (!"id".equals(attr.getName())) {
+                    model.append(generateDjangoField(attr, metadata));
+                }
+            }
+        }
+        
+        // Timestamps
+        model.append("    created_at = models.DateTimeField(auto_now_add=True)\n");
+        model.append("    updated_at = models.DateTimeField(auto_now=True)\n\n");
+        
+        // Meta class with metadata
+        model.append(generateMetaClassFromMetadata(className, metadata, enhancedClass));
+        
+        // String representation
+        model.append("    def __str__(self):\n");
+        model.append("        return f'").append(className).append(" {self.id}'\n\n");
+        
+        // Save method
+        model.append("    def save(self, *args, **kwargs):\n");
+        model.append("        super().save(*args, **kwargs)\n");
+        
+        return model.toString();
+    }
+    
+    @Override
+    public String generateStateEnum(EnhancedClass enhancedClass, String packageName) {
+        if (enhancedClass == null) {
+            return "";
+        }
+        
+        StringBuilder enumCode = new StringBuilder();
+        enumCode.append("from django.db import models\n\n");
+        
+        String className = enhancedClass.getOriginalClass() != null ? 
+            enhancedClass.getOriginalClass().getName() : "State";
+        
+        enumCode.append("class ").append(className).append("Status(models.TextChoices):\n");
+        enumCode.append("    ACTIVE = 'ACTIVE', 'Active'\n");
+        enumCode.append("    INACTIVE = 'INACTIVE', 'Inactive'\n");
+        enumCode.append("    PENDING = 'PENDING', 'Pending'\n");
+        enumCode.append("    COMPLETED = 'COMPLETED', 'Completed'\n");
+        
+        return enumCode.toString();
+    }
+    
+    private String generateDjangoField(UMLAttribute attr) {
+        return generateDjangoField(attr, null);
+    }
+    
+    private String generateDjangoField(UMLAttribute attr, Map<String, String> metadata) {
+        StringBuilder field = new StringBuilder();
+        
+        // Skip auto-timestamp fields to avoid duplication
+        if (isAutoTimestamp(attr.getName(), metadata)) {
+            return "";
+        }
+        
+        // Apply naming convention from metadata
+        String fieldName = applyNamingConvention(attr.getName(), metadata);
+        field.append("    ").append(fieldName).append(" = ");
+        
+        String fieldType = mapToDjangoFieldAdvanced(attr, metadata);
+        field.append(fieldType);
+        
+        field.append("\n");
+        return field.toString();
+    }
+    
+    private boolean isAutoTimestamp(String fieldName) {
+        return isAutoTimestamp(fieldName, null);
+    }
+    
+    private boolean isAutoTimestamp(String fieldName, Map<String, String> metadata) {
+        if (metadata != null) {
+            String createdAtField = metadata.getOrDefault("created-at-field", "createdAt");
+            String updatedAtField = metadata.getOrDefault("updated-at-field", "updatedAt");
+            return fieldName.equals(createdAtField) || fieldName.equals(updatedAtField);
+        }
+        
+        String lowerName = fieldName.toLowerCase();
+        return lowerName.equals("createdat") || lowerName.equals("updatedat") ||
+               lowerName.equals("created_at") || lowerName.equals("updated_at");
+    }
+    
+    private String applyNamingConvention(String fieldName, Map<String, String> metadata) {
+        if (metadata == null) {
+            return toSnakeCase(fieldName);
+        }
+        
+        String convention = metadata.getOrDefault("column-naming-convention", "snake_case");
+        switch (convention) {
+            case "snake_case":
+                return toSnakeCase(fieldName);
+            case "camelCase":
+                return fieldName;
+            case "PascalCase":
+                return fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+            default:
+                return toSnakeCase(fieldName);
+        }
+    }
+    
+    private String toSnakeCase(String camelCase) {
+        return camelCase.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+    }
+    
+    private String mapToDjangoFieldAdvanced(UMLAttribute attr) {
+        return mapToDjangoFieldAdvanced(attr, null);
+    }
+    
+    private String mapToDjangoFieldAdvanced(UMLAttribute attr, Map<String, String> metadata) {
+        String umlType = attr.getType();
+        String fieldName = attr.getName().toLowerCase();
+        
+        if (umlType == null) {
+            return "models.CharField(max_length=255, blank=False, null=False)";
+        }
+        
+        switch (umlType.toLowerCase()) {
+            case "string":
+            case "str":
+                if (fieldName.contains("email")) {
+                    return "models.EmailField(unique=True, db_index=True)";
+                } else if (fieldName.contains("name") || fieldName.contains("title")) {
+                    return "models.CharField(max_length=255, blank=False, null=False, db_index=True)";
+                } else if (fieldName.contains("slug")) {
+                    return "models.SlugField(max_length=255, unique=True, db_index=True)";
+                }
+                return "models.CharField(max_length=255, blank=False, null=False)";
+            case "integer":
+            case "int":
+                if (fieldName.contains("price") || fieldName.contains("amount")) {
+                    return "models.PositiveIntegerField(validators=[MinValueValidator(0)])";
+                } else if (fieldName.contains("stock") || fieldName.contains("quantity")) {
+                    return "models.PositiveIntegerField(default=0, validators=[MinValueValidator(0)])";
+                }
+                return "models.IntegerField()";
+            case "long":
+                return "models.BigIntegerField()";
+            case "float":
+            case "double":
+                return "models.FloatField(validators=[MinValueValidator(0.0)])";
+            case "boolean":
+            case "bool":
+                if (fieldName.contains("active") || fieldName.contains("enabled")) {
+                    return "models.BooleanField(default=True, db_index=True)";
+                }
+                return "models.BooleanField(default=False)";
+            case "bigdecimal":
+            case "decimal":
+                return "models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])";
+            case "localdatetime":
+            case "datetime":
+                return "models.DateTimeField(db_index=True)";
+            case "localdate":
+            case "date":
+                return "models.DateField(db_index=True)";
+            case "text":
+                return "models.TextField(blank=True, null=True)";
+            case "email":
+                return "models.EmailField(unique=True, db_index=True)";
+            case "url":
+                return "models.URLField(blank=True, null=True)";
+            case "uuid":
+                return "models.UUIDField(default=uuid.uuid4, editable=False, unique=True)";
+            default:
+                return "models.CharField(max_length=255, blank=False, null=False)";
+        }
+    }
+    
+    private String generateImportsFromMetadata(Map<String, String> metadata) {
+        StringBuilder imports = new StringBuilder();
+        imports.append("from django.db import models\n");
+        
+        // Add imports based on metadata
+        if (metadata != null) {
+            String validationFramework = metadata.getOrDefault("validation-framework", "django");
+            if (validationFramework.contains("pydantic")) {
+                imports.append("from pydantic import BaseModel, validator\n");
+            }
+            
+            String cacheStrategy = metadata.getOrDefault("cache-strategy", "none");
+            if (!"none".equals(cacheStrategy)) {
+                imports.append("from django.core.cache import cache\n");
+            }
+            
+            boolean auditFields = Boolean.parseBoolean(metadata.getOrDefault("audit-fields", "true"));
+            if (auditFields) {
+                imports.append("from django.contrib.auth.models import User\n");
+            }
+        }
+        
+        imports.append("from django.core.validators import MinValueValidator, MaxValueValidator\n");
+        imports.append("from django.utils.translation import gettext_lazy as _\n");
+        imports.append("import uuid\n\n");
+        
+        return imports.toString();
+    }
+    
+    private String generateMetaClassFromMetadata(String className, Map<String, String> metadata, EnhancedClass enhancedClass) {
+        StringBuilder meta = new StringBuilder();
+        meta.append("    class Meta:\n");
+        
+        // Table name from metadata or entity metadata
+        String tableName = className.toLowerCase();
+        if (metadata != null) {
+            String tableNaming = metadata.getOrDefault("table-naming-convention", "snake_case");
+            if ("snake_case".equals(tableNaming)) {
+                tableName = toSnakeCase(className);
+            }
+            
+            boolean tablePrefix = Boolean.parseBoolean(metadata.getOrDefault("table-prefix", "false"));
+            if (tablePrefix) {
+                String prefix = metadata.getOrDefault("table-prefix-value", "tbl_");
+                tableName = prefix + tableName;
+            }
+        }
+        
+        // Check entity-specific metadata from UMLClass
+        if (enhancedClass.getOriginalClass().getMetadata() != null && enhancedClass.getOriginalClass().getMetadata().containsKey("tableName")) {
+            tableName = enhancedClass.getOriginalClass().getMetadata().get("tableName");
+        }
+        
+        meta.append("        db_table = '").append(tableName).append("'\n");
+        meta.append("        ordering = ['-created_at']\n");
+        meta.append("        verbose_name = _('").append(className).append("')\n");
+        meta.append("        verbose_name_plural = _('").append(className).append("s')\n");
+        
+        // Indexes from metadata
+        meta.append("        indexes = [\n");
+        meta.append("            models.Index(fields=['created_at']),\n");
+        meta.append("            models.Index(fields=['updated_at']),\n");
+        
+        if (metadata != null) {
+            boolean autoIndexForeignKeys = Boolean.parseBoolean(metadata.getOrDefault("auto-index-foreign-keys", "true"));
+            if (autoIndexForeignKeys) {
+                meta.append("            # Auto-generated foreign key indexes\n");
+            }
+        }
+        
+        meta.append("        ]\n\n");
+        
+        return meta.toString();
+    }
     
     @Override
     public String getFileExtension() {
@@ -20,275 +288,5 @@ public class DjangoEntityGenerator implements IEntityGenerator {
     @Override
     public String getEntityDirectory() {
         return "models";
-    }
-    
-    @Override
-    public String generateStateEnum(EnhancedClass enhancedClass, String packageName) {
-        return ""; // Django enums are included in models
-    }
-    
-    @Override
-    public String generateEntity(EnhancedClass enhancedClass, String packageName) {
-        // Initialize field tracker
-        generatedFields = new java.util.HashSet<>();
-        
-        UmlClass umlClass = enhancedClass.getOriginalClass();
-        StringBuilder code = new StringBuilder();
-        
-        code.append("from django.db import models\n");
-        code.append("from django.core.validators import MinValueValidator, MaxValueValidator\n");
-        code.append("import uuid\n\n");
-        
-        if (enhancedClass.isStateful()) {
-            code.append("from .enums import ").append(umlClass.getName()).append("Status\n\n");
-        }
-        
-        code.append("class ").append(umlClass.getName()).append("(models.Model):\n");
-        
-        for (UmlAttribute attr : umlClass.getAttributes()) {
-            // Skip duplicates
-            if (generatedFields.contains(attr.getName())) {
-                continue;
-            }
-            generatedFields.add(attr.getName());
-            
-            // Detect UUID fields with _id as ForeignKey
-            if (isRelationshipField(attr)) {
-                code.append("    ").append(generateDjangoForeignKey(attr)).append("\n");
-            } else if (attr.isRelationship()) {
-                code.append("    ").append(generateDjangoRelationship(attr, umlClass.getName())).append("\n");
-            } else {
-                code.append("    ").append(generateField(attr, enhancedClass.isStateful() && attr.getName().equals("status"))).append("\n");
-            }
-        }
-        
-        code.append("\n");
-        code.append("    class Meta:\n");
-        code.append("        db_table = '").append(pluralize(umlClass.getName().toLowerCase())).append("'\n");
-        code.append("        ordering = ['-id']\n\n");
-        
-        code.append("    def __str__(self):\n");
-        code.append("        return f\"").append(umlClass.getName()).append("({self.id})\"\n\n");
-        
-        // Add business methods from UML diagram
-        generateUmlMethods(code, enhancedClass, umlClass.getName());
-        
-        // Add predefined business methods
-        generateBusinessMethods(code, umlClass.getName());
-        
-        if (enhancedClass.isStateful()) {
-            code.append("    def can_suspend(self):\n");
-            code.append("        return self.status == ").append(umlClass.getName()).append("Status.ACTIVE\n\n");
-            
-            code.append("    def can_activate(self):\n");
-            code.append("        return self.status in [").append(umlClass.getName()).append("Status.SUSPENDED, ").append(umlClass.getName()).append("Status.INACTIVE]\n");
-        }
-        
-        return code.toString();
-    }
-    
-    private String generateField(UmlAttribute attr, boolean isStatusField) {
-        String fieldName = attr.getName();
-        String fieldType = attr.getType();
-        
-        if (isStatusField) {
-            return fieldName + " = models.CharField(max_length=20, choices=" + 
-                   fieldType.replace("Status", "") + "Status.choices, default=" + 
-                   fieldType.replace("Status", "") + "Status.ACTIVE)";
-        }
-        
-        switch (fieldType.toLowerCase()) {
-            case "uuid":
-                return fieldName + " = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)";
-            case "string":
-                return fieldName + " = models.CharField(max_length=255)";
-            case "int":
-            case "integer":
-                return fieldName + " = models.IntegerField()";
-            case "float":
-            case "double":
-                return fieldName + " = models.FloatField()";
-            case "boolean":
-            case "bool":
-                return fieldName + " = models.BooleanField(default=False)";
-            case "date":
-                return fieldName + " = models.DateField()";
-            case "datetime":
-                return fieldName + " = models.DateTimeField(auto_now_add=True)";
-            case "text":
-                return fieldName + " = models.TextField()";
-            case "email":
-                return fieldName + " = models.EmailField()";
-            default:
-                return fieldName + " = models.CharField(max_length=255)";
-        }
-    }
-    
-    private void generateBusinessMethods(StringBuilder code, String className) {
-        if ("User".equals(className)) {
-            code.append("\n    def validate_email(self):\n");
-            code.append("        import re\n");
-            code.append("        if not self.email:\n");
-            code.append("            raise ValueError('Email cannot be empty')\n");
-            code.append("        pattern = r'^[A-Za-z0-9+_.-]+@(.+)$'\n");
-            code.append("        return bool(re.match(pattern, self.email))\n\n");
-            
-            code.append("    def change_password(self, new_password):\n");
-            code.append("        if not new_password or len(new_password) < 8:\n");
-            code.append("            raise ValueError('Password must be at least 8 characters')\n");
-            code.append("        # TODO: Hash password with Django's make_password\n");
-            code.append("        self.save()\n\n");
-            
-        } else if ("Product".equals(className)) {
-            code.append("\n    def update_stock(self, new_quantity):\n");
-            code.append("        if new_quantity is None or new_quantity < 0:\n");
-            code.append("            raise ValueError('Stock cannot be negative')\n");
-            code.append("        self.stock = new_quantity\n");
-            code.append("        self.save()\n\n");
-            
-        } else if ("Order".equals(className)) {
-            code.append("\n    def calculate_total(self, products):\n");
-            code.append("        if not products:\n");
-            code.append("            raise ValueError('Cannot calculate total: no products')\n");
-            code.append("        total = sum(product.price for product in products)\n");
-            code.append("        self.total = total\n");
-            code.append("        return total\n\n");
-        }
-    }
-    
-    private void generateUmlMethods(StringBuilder code, EnhancedClass enhancedClass, String className) {
-        // Generate methods from UML diagram
-        if (enhancedClass.getOriginalClass().getMethods() != null) {
-            for (var method : enhancedClass.getOriginalClass().getMethods()) {
-                generateUmlMethod(code, method, className);
-            }
-        }
-    }
-    
-    private void generateUmlMethod(StringBuilder code, com.basiccode.generator.model.Method method, String className) {
-        code.append("\n    def ").append(method.getName()).append("(self");
-        
-        // Add parameters
-        if (method.getParameters() != null && !method.getParameters().isEmpty()) {
-            for (var param : method.getParameters()) {
-                code.append(", ").append(param.getName());
-            }
-        }
-        
-        code.append("):\n");
-        
-        // Generate method body based on method name
-        generateDjangoMethodBody(code, method, className);
-        
-        code.append("\n");
-    }
-    
-    private void generateDjangoMethodBody(StringBuilder code, com.basiccode.generator.model.Method method, String className) {
-        String methodName = method.getName().toLowerCase();
-        String returnType = method.getReturnType() != null ? method.getReturnType().toLowerCase() : "none";
-        
-        switch (methodName) {
-            case "authenticate":
-                code.append("        if not password:\n");
-                code.append("            return False\n");
-                code.append("        # TODO: Implement password verification logic\n");
-                code.append("        return True\n");
-                break;
-                
-            case "updateprofile":
-                code.append("        if not profile:\n");
-                code.append("            raise ValueError('Profile cannot be None')\n");
-                code.append("        # TODO: Update user profile fields\n");
-                code.append("        self.save()\n");
-                break;
-                
-            case "calculatetotal":
-                code.append("        # TODO: Calculate order total\n");
-                if (!"void".equals(returnType) && !"none".equals(returnType)) {
-                    code.append("        return 0\n");
-                }
-                break;
-                
-            default:
-                code.append("        # TODO: Implement ").append(methodName).append(" logic\n");
-                if (!"void".equals(returnType) && !"none".equals(returnType)) {
-                    if ("boolean".equals(returnType) || "bool".equals(returnType)) {
-                        code.append("        return False\n");
-                    } else if ("string".equals(returnType) || "str".equals(returnType)) {
-                        code.append("        return ''\n");
-                    } else if (returnType.contains("int") || returnType.contains("float")) {
-                        code.append("        return 0\n");
-                    } else {
-                        code.append("        return None\n");
-                    }
-                }
-                break;
-        }
-    }
-    
-    private String generateDjangoRelationship(UmlAttribute attr, String currentClassName) {
-        String relationshipType = attr.getRelationshipType();
-        String targetClass = attr.getTargetClass();
-        String fieldName = attr.getName();
-        
-        switch (relationshipType) {
-            case "OneToMany":
-                return fieldName + " = models.ForeignKey('" + targetClass + "', on_delete=models.CASCADE, related_name='" + fieldName + "s')";
-            case "ManyToOne":
-                return fieldName + " = models.ForeignKey('" + targetClass + "', on_delete=models.CASCADE)";
-            case "OneToOne":
-                return fieldName + " = models.OneToOneField('" + targetClass + "', on_delete=models.CASCADE)";
-            case "ManyToMany":
-                return fieldName + " = models.ManyToManyField('" + targetClass + "', related_name='" + currentClassName.toLowerCase() + "s')";
-            default:
-                return fieldName + " = models.CharField(max_length=255)";
-        }
-    }
-    
-    private boolean isRelationshipField(UmlAttribute attr) {
-        return (attr.getType().equals("UUID") && attr.getName().endsWith("_id")) ||
-               (attr.getType().equals("UUID") && attr.getName().endsWith("Id"));
-    }
-    
-    private String generateDjangoForeignKey(UmlAttribute attr) {
-        String fieldName = attr.getName();
-        String entityName;
-        
-        if (fieldName.endsWith("_id")) {
-            entityName = fieldName.substring(0, fieldName.length() - 3);
-        } else if (fieldName.endsWith("Id")) {
-            entityName = fieldName.substring(0, fieldName.length() - 2);
-        } else {
-            return fieldName + " = models.UUIDField()";
-        }
-        
-        String targetClass = toPascalCase(entityName);
-        return entityName + " = models.ForeignKey('" + targetClass + "', on_delete=models.CASCADE, db_column='" + fieldName + "')";
-    }
-    
-    private String pluralize(String word) {
-        if (word.endsWith("y") && !isVowel(word.charAt(word.length() - 2))) {
-            return word.substring(0, word.length() - 1) + "ies";
-        } else if (word.endsWith("s") || word.endsWith("x") || word.endsWith("z") || 
-                   word.endsWith("ch") || word.endsWith("sh")) {
-            return word + "es";
-        } else {
-            return word + "s";
-        }
-    }
-    
-    private boolean isVowel(char c) {
-        return "aeiou".indexOf(Character.toLowerCase(c)) >= 0;
-    }
-    
-    private String toPascalCase(String snakeCase) {
-        String[] parts = snakeCase.split("_");
-        StringBuilder result = new StringBuilder();
-        for (String part : parts) {
-            if (!part.isEmpty()) {
-                result.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
-            }
-        }
-        return result.toString();
     }
 }

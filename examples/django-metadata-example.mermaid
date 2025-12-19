@@ -1,0 +1,111 @@
+%% @project
+%% name: Django E-commerce API
+%% version: 1.0.0
+%% description: Django REST API with metadata-aware generation
+%% project-type: web-api
+%% architecture-style: modular-monolith
+%% @end-project
+
+%% @tech-stack
+%% backend-language: python
+%% backend-framework: django
+%% backend-version: 4.2.0
+%% orm-framework: django-orm
+%% database-type: postgresql
+%% database-version: 15
+%% cache-layer: redis
+%% @end-tech-stack
+
+%% @project-architecture
+%% organization-strategy: django-apps
+%% base-package: ecommerce_api
+%% module-detection: auto
+%% module-strategy: feature-bounded-context,aggregate-root
+%% django-structure: apps
+%% per-app-structure: models,views,serializers,services,managers
+%% shared-app-name: common
+%% app-visibility: public
+%% @end-project-architecture
+
+%% @class-diagram
+%% persistence-layer: django-orm
+%% id-generation-strategy: uuid
+%% id-type: UUID
+%% table-naming-convention: snake_case
+%% column-naming-convention: snake_case
+%% audit-fields: true
+%% created-at-field: createdAt
+%% updated-at-field: updatedAt
+%% soft-delete: true
+%% soft-delete-field: deletedAt
+%% validation-framework: django-validators
+%% validation-level: strict
+%% cache-strategy: redis
+%% cache-ttl-seconds: 1800
+%% @end-class-diagram
+
+%% @sequence-diagram
+%% transaction-scope: method
+%% error-handling-strategy: try-catch
+%% logging-level: info
+%% retry-enabled: false
+%% timeout-enabled: true
+%% default-timeout-ms: 30000
+%% async-execution: false
+%% @end-sequence-diagram
+
+classDiagram
+    class User {
+        +UUID id
+        +String username
+        +String email
+        +String firstName
+        +String lastName
+        +Boolean isActive
+        +validateEmail()
+        +changePassword(String newPassword)
+        +activate()
+        +deactivate()
+    }
+    
+    class Product {
+        +UUID id
+        +String name
+        +String description
+        +Float price
+        +Integer stock
+        +String category
+        +Boolean isActive
+        +updateStock(Integer quantity)
+        +applyDiscount(Float percentage)
+        +activate()
+        +deactivate()
+    }
+    
+    class Order {
+        +UUID id
+        +UUID userId
+        +Float total
+        +String status
+        +LocalDateTime orderDate
+        +calculateTotal()
+        +addProduct(Product product, Integer quantity)
+        +confirm()
+        +ship()
+        +deliver()
+        +cancel()
+    }
+    
+    class OrderItem {
+        +UUID id
+        +UUID orderId
+        +UUID productId
+        +Integer quantity
+        +Float unitPrice
+        +Float subtotal
+        +calculateSubtotal()
+    }
+    
+    User "1" --> "*" Order : places
+    Order "1" *-- "*" OrderItem : contains
+    Product "1" --> "*" OrderItem : referenced_in

@@ -1,0 +1,341 @@
+%% ============================================
+%% MÉTADONNÉES BASÉES SUR LES STANDARDS UML RÉELS
+%% ============================================
+
+%% ============================================
+%% FORMAT DU DIAGRAMME (Détection Automatique)
+%% ============================================
+%% @diagram-format
+%% format: mermaid
+%% version: 10.0
+%% auto-detect: true
+%% @end-diagram-format
+
+%% ============================================
+%% PROJET
+%% ============================================
+%% @project
+%% name: blog-cms-platform
+%% version: 1.0.0
+%% description: Blog CMS avec système de publication modulaire
+%% project-type: web-application
+%% architecture-style: modular-monolith
+%% @end-project
+
+%% ============================================
+%% STACK TECHNIQUE
+%% ============================================
+%% @tech-stack
+%% backend-language: java
+%% backend-framework: spring-boot
+%% backend-version: 3.2.0
+%% orm-framework: jpa
+%% database-type: postgresql
+%% database-version: 16
+%% cache-layer: redis
+%% message-queue: rabbitmq
+%% @end-tech-stack
+
+%% ============================================
+%% ARCHITECTURE MODULAIRE (BASÉE SUR LES FRAMEWORKS)
+%% ============================================
+%% @project-architecture
+%% organization-strategy: package-by-feature
+%% base-package: com.example.blog
+%% module-detection: auto
+%% module-strategy: class-hierarchy,aggregate-root,feature-bounded-context
+%% spring-structure: feature
+%% per-feature-structure: controller,service,repository,entity,dto,mapper,exception,config
+%% feature-visibility: package-private
+%% shared-module-name: common
+%% @end-project-architecture
+
+%% ============================================
+%% DIAGRAMME DE CLASSES
+%% ============================================
+%% @class-diagram
+%% diagram-id: blog-domain-model
+%% diagram-type: class
+%% diagram-purpose: domain-model
+%% persistence-layer: jpa
+%% id-generation-strategy: uuid
+%% id-type: UUID
+%% table-naming-convention: snake_case
+%% column-naming-convention: snake_case
+%% audit-fields: true
+%% created-at-field: createdAt
+%% updated-at-field: updatedAt
+%% created-by-field: createdBy
+%% updated-by-field: updatedBy
+%% soft-delete: true
+%% soft-delete-field: deletedAt
+%% validation-framework: jakarta-validation
+%% validation-level: strict
+%% cache-strategy: redis
+%% cache-ttl-seconds: 3600
+%% serialization-format: json
+%% serialization-library: jackson
+%% property-naming-strategy: camelCase
+%% generate-getters-setters: true
+%% generate-builders: true
+%% generate-equals-hashcode: true
+%% generate-tostring: true
+%% use-lombok: true
+%% @end-class-diagram
+
+%% ============================================
+%% RELATIONS UML → CODE (BASÉES SUR NOTATIONS STANDARDS)
+%% ============================================
+%% @class-relationships
+%% inheritance-notation: <|--
+%% composition-notation: *--
+%% aggregation-notation: o--
+%% association-notation: --
+%% dependency-notation: ..>
+%% realization-notation: ..|>
+%% jpa-inheritance-strategy: JOINED
+%% discriminator-column: dtype
+%% discriminator-type: STRING
+%% composition-cascade: ALL
+%% composition-orphan-removal: true
+%% composition-fetch-type: LAZY
+%% aggregation-cascade: PERSIST,MERGE
+%% aggregation-orphan-removal: false
+%% aggregation-fetch-type: LAZY
+%% bidirectional-support: true
+%% owner-side: auto
+%% inverse-mapping: mappedBy
+%% generate-add-remove-methods: true
+%% generate-bidirectional-sync: true
+%% field-initialization: constructor
+%% collection-type: Set
+%% join-table-generation: true
+%% join-table-name-pattern: {source}_{target}
+%% @end-class-relationships
+
+%% ============================================
+%% CONTRAINTES NON-FONCTIONNELLES
+%% ============================================
+%% @constraints
+%% expected-load: 1000rps
+%% max-response-time-ms: 200
+%% availability-sla: 99.9
+%% max-concurrent-users: 10000
+%% data-retention-days: 365
+%% encryption-at-rest: true
+%% encryption-in-transit: true
+%% auto-scaling: true
+%% min-instances: 2
+%% max-instances: 10
+%% scale-up-threshold: 70
+%% scale-down-threshold: 30
+%% @end-constraints
+
+%% ============================================
+%% DIAGRAMME UML AVEC DÉTECTION AUTOMATIQUE DES MODULES
+%% ============================================
+classDiagram
+    %% ========== MODULE USER (détecté par hiérarchie) ==========
+    class User {
+        <<Entity>>
+        {tableName=users, module=user, cacheable=true}
+        +UUID id
+        +String username
+        +String email
+        +String passwordHash
+        +UserRole role
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +String createdBy
+        +String updatedBy
+        +LocalDateTime deletedAt
+        +validateEmail() boolean
+        +changePassword(String newPassword) void
+        +isActive() boolean
+    }
+    
+    class Author {
+        <<Entity>>
+        {tableName=authors, module=user}
+        +String bio
+        +String website
+        +String socialLinks
+        +updateBio(String bio) void
+        +addSocialLink(String platform, String url) void
+    }
+    
+    class Admin {
+        <<Entity>>
+        {tableName=admins, module=user}
+        +String permissions
+        +LocalDateTime lastLogin
+        +grantPermission(String permission) void
+        +revokePermission(String permission) void
+    }
+    
+    %% HÉRITAGE (JOINED strategy) - Module USER détecté
+    User <|-- Author
+    User <|-- Admin
+    
+    %% ========== MODULE ARTICLE (détecté par aggregate root + composition) ==========
+    class Article {
+        <<AggregateRoot>>
+        {tableName=articles, module=article, cacheable=true}
+        +UUID id
+        +String title
+        +String slug
+        +String content
+        +ArticleStatus status
+        +UUID authorId
+        +UUID categoryId
+        +LocalDateTime publishedAt
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +String createdBy
+        +String updatedBy
+        +LocalDateTime deletedAt
+        +publish() void
+        +archive() void
+        +generateSlug() String
+        +isPublished() boolean
+    }
+    
+    class BlocContenu {
+        <<Entity>>
+        {tableName=bloc_contenus, module=article}
+        +UUID id
+        +UUID articleId
+        +String contenu
+        +String type
+        +Integer ordre
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +moveUp() void
+        +moveDown() void
+    }
+    
+    class Category {
+        <<Entity>>
+        {tableName=categories, module=article}
+        +UUID id
+        +String name
+        +String description
+        +String slug
+        +UUID parentId
+        +Integer sortOrder
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +addSubCategory(Category category) void
+        +getArticleCount() Integer
+    }
+    
+    %% COMPOSITION (lifecycle dépendant) - cascade=ALL, orphanRemoval=true
+    Article *-- "0..*" BlocContenu : contient
+    
+    %% HIÉRARCHIE (auto-référence)
+    Category "0..1" --o "0..*" Category : contains
+    
+    %% ========== MODULE TAG (entité indépendante) ==========
+    class Tag {
+        <<Entity>>
+        {tableName=tags, module=tag}
+        +UUID id
+        +String nom
+        +String couleur
+        +String description
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +getArticleCount() Integer
+    }
+    
+    %% AGRÉGATION (lifecycle indépendant) - cascade=PERSIST,MERGE, orphanRemoval=false
+    Article o-- "0..*" Tag : utilise
+    
+    %% ========== MODULE COMMENT (relations multiples) ==========
+    class Commentaire {
+        <<Entity>>
+        {tableName=commentaires, module=comment}
+        +UUID id
+        +UUID articleId
+        +UUID userId
+        +UUID parentId
+        +String texte
+        +CommentStatus status
+        +LocalDateTime date
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +LocalDateTime deletedAt
+        +approve() void
+        +reject() void
+        +reply(String content, UUID userId) Commentaire
+        +isApproved() boolean
+    }
+    
+    %% ASSOCIATIONS BIDIRECTIONNELLES
+    Article "1" -- "0..*" Commentaire : a des commentaires
+    User "1" -- "0..*" Commentaire : écrit
+    Author "1" -- "0..*" Article : authors
+    Article "0..*" --o "1" Category : belongs to
+    
+    %% RELATION RÉFLEXIVE (auto-référence commentaire)
+    Commentaire "0..1" --o "0..*" Commentaire : replies to
+    
+    %% ========== MODULE SHARED (services partagés) ==========
+    class ArticleService {
+        <<Service>>
+        {module=shared}
+        +createArticle(ArticleDto dto) Article
+        +publishArticle(UUID id) void
+        +archiveArticle(UUID id) void
+        +searchArticles(String query) List~Article~
+    }
+    
+    class EmailService {
+        <<Service>>
+        {module=shared}
+        +sendNotification(String to, String subject, String body) void
+        +sendWelcomeEmail(User user) void
+        +sendPublicationNotification(Article article) void
+    }
+    
+    class CacheService {
+        <<Service>>
+        {module=shared}
+        +get(String key) Object
+        +put(String key, Object value, Duration ttl) void
+        +evict(String key) void
+        +clear() void
+    }
+    
+    %% DÉPENDANCES (injection) - génère @Autowired/@Inject
+    ArticleService ..> EmailService : uses
+    ArticleService ..> CacheService : uses
+    
+    %% ========== ENUMS (détectés automatiquement) ==========
+    class UserRole {
+        <<enumeration>>
+        ADMIN
+        EDITOR
+        AUTHOR
+        SUBSCRIBER
+    }
+    
+    class ArticleStatus {
+        <<enumeration>>
+        DRAFT
+        PUBLISHED
+        ARCHIVED
+        DELETED
+    }
+    
+    class CommentStatus {
+        <<enumeration>>
+        PENDING
+        APPROVED
+        REJECTED
+        SPAM
+    }
+    
+    User --> UserRole
+    Article --> ArticleStatus
+    Commentaire --> CommentStatus

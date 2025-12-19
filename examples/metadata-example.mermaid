@@ -1,0 +1,231 @@
+%% ============================================
+%% MÉTADONNÉES DU PROJET
+%% ============================================
+%% @project
+%% name: blog-cms-api
+%% version: 1.0.0
+%% description: Blog CMS avec système de publication modulaire
+%% project-type: web-application
+%% architecture-style: modular-monolith
+%% @end-project
+
+%% ============================================
+%% STACK TECHNIQUE
+%% ============================================
+%% @tech-stack
+%% backend-language: java
+%% backend-framework: spring-boot
+%% backend-version: 21
+%% orm-framework: jpa
+%% database-type: postgresql
+%% database-version: 16
+%% cache-layer: redis
+%% message-queue: rabbitmq
+%% @end-tech-stack
+
+%% ============================================
+%% MÉTADONNÉES DIAGRAMME DE CLASSES
+%% ============================================
+%% @class-diagram
+%% diagram-id: blog-domain-model
+%% diagram-type: class
+%% diagram-purpose: domain-model
+%% 
+%% persistence-layer: jpa
+%% id-generation-strategy: uuid
+%% id-type: UUID
+%% table-naming-convention: snake_case
+%% column-naming-convention: snake_case
+%% 
+%% audit-fields: true
+%% created-at-field: createdAt
+%% updated-at-field: updatedAt
+%% created-by-field: createdBy
+%% updated-by-field: updatedBy
+%% 
+%% soft-delete: true
+%% soft-delete-field: deletedAt
+%% 
+%% validation-framework: jakarta-validation
+%% validation-level: strict
+%% 
+%% cache-strategy: redis
+%% cache-ttl-seconds: 3600
+%% 
+%% serialization-format: json
+%% serialization-library: jackson
+%% property-naming-strategy: camelCase
+%% 
+%% generate-getters-setters: true
+%% generate-builders: true
+%% generate-equals-hashcode: true
+%% generate-tostring: true
+%% use-lombok: true
+%% @end-class-diagram
+
+%% ============================================
+%% MÉTADONNÉES MODULAIRES
+%% ============================================
+%% @module-metadata
+%% modular-architecture: true
+%% module-pattern: domain
+%% module-naming-convention: snake_case
+%% separate-module-directories: true
+%% module-base-directory: modules
+%% shared-module: true
+%% shared-module-name: shared
+%% enforce-layered-architecture: true
+%% module-specific-config: true
+%% module-specific-tests: true
+%% @end-module-metadata
+
+%% ============================================
+%% CONTRAINTES NON-FONCTIONNELLES
+%% ============================================
+%% @constraints
+%% expected-load: 1000rps
+%% max-response-time-ms: 200
+%% availability-sla: 99.9
+%% max-concurrent-users: 10000
+%% data-retention-days: 365
+%% encryption-at-rest: true
+%% encryption-in-transit: true
+%% auto-scaling: true
+%% min-instances: 2
+%% max-instances: 10
+%% @end-constraints
+
+classDiagram
+    %% ========== MODULE USER ==========
+    class User {
+        <<Entity>>
+        {tableName=users, module=user, cacheable=true}
+        +UUID id
+        +String username
+        +String email
+        +String passwordHash
+        +UserRole role
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +String createdBy
+        +String updatedBy
+        +LocalDateTime deletedAt
+        +validateEmail() boolean
+        +changePassword(String newPassword) void
+        +isActive() boolean
+    }
+
+    class UserProfile {
+        <<Entity>>
+        {tableName=user_profiles, module=user}
+        +UUID id
+        +UUID userId
+        +String firstName
+        +String lastName
+        +String bio
+        +String avatarUrl
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +updateProfile(ProfileData data) void
+    }
+
+    %% ========== MODULE BLOG ==========
+    class Article {
+        <<Entity>>
+        {tableName=articles, module=blog, cacheable=true}
+        +UUID id
+        +String title
+        +String slug
+        +String content
+        +ArticleStatus status
+        +UUID authorId
+        +UUID categoryId
+        +LocalDateTime publishedAt
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +String createdBy
+        +String updatedBy
+        +LocalDateTime deletedAt
+        +publish() void
+        +archive() void
+        +generateSlug() String
+        +isPublished() boolean
+    }
+
+    class Category {
+        <<Entity>>
+        {tableName=categories, module=blog}
+        +UUID id
+        +String name
+        +String description
+        +String slug
+        +UUID parentId
+        +Integer sortOrder
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +addSubCategory(Category category) void
+        +getArticleCount() Integer
+    }
+
+    %% ========== MODULE COMMENT ==========
+    class Comment {
+        <<Entity>>
+        {tableName=comments, module=comment}
+        +UUID id
+        +UUID articleId
+        +UUID userId
+        +UUID parentId
+        +String content
+        +CommentStatus status
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+        +LocalDateTime deletedAt
+        +approve() void
+        +reject() void
+        +reply(String content, UUID userId) Comment
+        +isApproved() boolean
+    }
+
+    %% ========== RELATIONS INTER-MODULES ==========
+    
+    %% Relations User Module
+    User "1" -- "1" UserProfile : has profile >
+    
+    %% Relations Blog Module
+    User "1" --o "0..*" Article : authors >
+    Article "0..*" --o "1" Category : belongs to >
+    Category "0..1" --o "0..*" Category : contains >
+    
+    %% Relations Comment Module
+    Article "1" *-- "0..*" Comment : contains >
+    User "1" o-- "0..*" Comment : writes >
+    Comment "0..1" --o "0..*" Comment : replies to >
+
+    %% ENUMS
+    class UserRole {
+        <<enumeration>>
+        ADMIN
+        EDITOR
+        AUTHOR
+        SUBSCRIBER
+    }
+
+    class ArticleStatus {
+        <<enumeration>>
+        DRAFT
+        PUBLISHED
+        ARCHIVED
+        DELETED
+    }
+
+    class CommentStatus {
+        <<enumeration>>
+        PENDING
+        APPROVED
+        REJECTED
+        SPAM
+    }
+
+    User --> UserRole
+    Article --> ArticleStatus
+    Comment --> CommentStatus

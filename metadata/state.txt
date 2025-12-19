@@ -1,0 +1,43 @@
+%% @state-diagram
+%% diagram-id: user-state-001
+%% diagram-type: state
+%% diagram-purpose: business-logic|workflow|lifecycle
+%% 
+%% ===== STATE MACHINE =====
+%% state-machine-pattern: finite-state-machine|hierarchical|concurrent
+%% state-persistence: database|memory|cache|event-store
+%% transition-validation: strict|permissive
+%% event-sourcing: true
+%% state-history: true
+%% 
+%% ===== TRANSITIONS =====
+%% transition-guards: true
+%% transition-actions: true
+%% transition-logging: true
+%% async-transitions: true
+%% 
+%% ===== EVENTS =====
+%% event-handling: synchronous|asynchronous|mixed
+%% event-validation: true
+%% event-auditing: true
+%% 
+%% ===== PERSISTENCE =====
+%% state-field: status|state|currentState
+%% state-type: enum|string|integer
+%% state-table: user_states
+%% 
+%% ===== BUSINESS RULES =====
+%% business-rules-validation: true
+%% state-invariants: true
+%% transition-permissions: role-based
+%% @end-state-diagram
+
+stateDiagram-v2
+    [*] --> Inactive : create
+    Inactive --> Active : activate
+    Active --> Suspended : suspend
+    Suspended --> Active : resume
+    Active --> Inactive : deactivate
+    Suspended --> Inactive : deactivate
+    Active --> [*] : delete
+    Inactive --> [*] : delete

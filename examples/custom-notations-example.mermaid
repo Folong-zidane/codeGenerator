@@ -1,0 +1,142 @@
+%% ============================================
+%% EXEMPLE AVEC NOTATIONS PERSONNALISÉES
+%% ============================================
+
+%% @project
+%% name: custom-notation-blog
+%% version: 1.0.0
+%% @end-project
+
+%% @tech-stack
+%% backend-language: java
+%% backend-framework: spring-boot
+%% @end-tech-stack
+
+%% ============================================
+%% NOTATIONS PERSONNALISÉES
+%% ============================================
+%% @class-relationships
+%% inheritance-notation: #
+%% composition-notation: **--
+%% aggregation-notation: oo--
+%% association-notation: -->
+%% dependency-notation: ~~~>
+%% realization-notation: ..|#
+%% 
+%% jpa-inheritance-strategy: SINGLE_TABLE
+%% discriminator-column: entity_type
+%% discriminator-type: STRING
+%% 
+%% composition-cascade: ALL
+%% composition-orphan-removal: true
+%% composition-fetch-type: EAGER
+%% 
+%% aggregation-cascade: PERSIST,MERGE,REFRESH
+%% aggregation-orphan-removal: false
+%% aggregation-fetch-type: LAZY
+%% 
+%% bidirectional-support: true
+%% owner-side: source
+%% generate-add-remove-methods: true
+%% 
+%% dependency-type: use
+%% di-framework: spring
+%% di-type: constructor
+%% @end-class-relationships
+
+classDiagram
+    %% ========== HÉRITAGE AVEC # ==========
+    class User {
+        +UUID id
+        +String username
+        +String email
+    }
+    
+    class Author {
+        +String bio
+        +String website
+    }
+    
+    class Admin {
+        +String permissions
+        +LocalDateTime lastLogin
+    }
+    
+    %% Héritage avec notation personnalisée #
+    User # Author
+    User # Admin
+    
+    %% ========== COMPOSITION AVEC **-- ==========
+    class Article {
+        +UUID id
+        +String title
+        +String content
+    }
+    
+    class BlocContenu {
+        +UUID id
+        +String contenu
+        +Integer ordre
+    }
+    
+    %% Composition avec notation personnalisée **--
+    Article **-- "1..*" BlocContenu
+    
+    %% ========== AGRÉGATION AVEC oo-- ==========
+    class Tag {
+        +UUID id
+        +String nom
+        +String couleur
+    }
+    
+    %% Agrégation avec notation personnalisée oo--
+    Article oo-- "0..*" Tag
+    
+    %% ========== ASSOCIATION AVEC --> ==========
+    class Commentaire {
+        +UUID id
+        +String texte
+        +LocalDateTime date
+    }
+    
+    %% Association avec notation personnalisée -->
+    User "1" --> "0..*" Commentaire : écrit
+    Article "1" --> "0..*" Commentaire : contient
+    
+    %% ========== DÉPENDANCE AVEC ~~~> ==========
+    class ArticleService {
+        <<Service>>
+        +createArticle() Article
+        +publishArticle() void
+    }
+    
+    class EmailService {
+        <<Service>>
+        +sendNotification() void
+    }
+    
+    class CacheService {
+        <<Service>>
+        +get() Object
+        +put() void
+    }
+    
+    %% Dépendances avec notation personnalisée ~~~>
+    ArticleService ~~~> EmailService : uses
+    ArticleService ~~~> CacheService : uses
+    
+    %% ========== RÉALISATION AVEC ..|# ==========
+    class UserRepository {
+        <<Interface>>
+        +findById() User
+        +save() User
+    }
+    
+    class UserRepositoryImpl {
+        <<Implementation>>
+        +findById() User
+        +save() User
+    }
+    
+    %% Réalisation avec notation personnalisée ..|#
+    UserRepository ..|# UserRepositoryImpl

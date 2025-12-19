@@ -259,17 +259,18 @@ class ProjectGenerator {
                 progress.report({ increment: 10, message: "Uploading diagrams..." });
                 
                 // 3. Initier génération
-                const generationId = await this.initiateGeneration(diagrams);
+                const result = await this.initiateGeneration(diagrams);
                 
-                progress.report({ increment: 20, message: "Processing on server..." });
+                progress.report({ increment: 50, message: "Processing on server..." });
                 
-                // 4. Attendre completion
-                await this.waitForCompletion(generationId, progress);
-                
-                progress.report({ increment: 30, message: "Downloading..." });
-                
-                // 5. Télécharger et merger
-                await this.downloadAndMerge(generationId, progress);
+                // 4. Traiter la réponse
+                if (result.isZip) {
+                    // Réponse directe ZIP
+                    await this.extractZipResponse(result.data, progress);
+                } else {
+                    // Réponse JSON avec fichiers
+                    await this.processJsonResponse(result.data, progress);
+                }
                 
                 progress.report({ increment: 100, message: "Complete!" });
             });
@@ -379,14 +380,42 @@ class ProjectGenerator {
             return false;
         }
         
-        // 3. Afficher résumé
+        // 3. Afficher résumé détaillé
         const summary = Object.entries(diagrams)
-            .map(([type, content]) => `• ${type}: ${content.split('\n').length} lines`)
+            .map(([type, content]) => {
+                const lines = content.split('\n').length;
+                const entities = this.countEntities(type, content);
+                return `• ${type}: ${lines} lines, ${entities} entities`;
+            })
             .join('\n');
         
         log(`Diagrams summary:\n${summary}`, 'info');
         
+        // Afficher notification avec résumé
+        const totalEntities = Object.entries(diagrams)
+            .reduce((sum, [type, content]) => sum + this.countEntities(type, content), 0);
+        
+        vscode.window.showInformationMessage(
+            `📊 Found ${Object.keys(diagrams).length} diagram(s) with ${totalEntities} entities total`
+        );
+        
         return true;
+    }
+    
+    private countEntities(diagramType: string, content: string): number {
+        switch (diagramType) {
+            case 'classDiagram':
+                return (content.match(/class\s+\w+/g) || []).length;
+            case 'sequenceDiagram':
+                return (content.match(/participant\s+\w+/g) || []).length;
+            case 'stateDiagram':
+                return (content.match(/state\s+\w+/g) || []).length + 
+                       (content.match(/\[\*\]/g) || []).length;
+            case 'activityDiagram':
+                return (content.match(/\w+\[.*?\]/g) || []).length;
+            default:
+                return content.split('\n').filter(line => line.trim().length > 0).length;
+        }
     }
     
     async createSampleProject(): Promise<void> {
@@ -394,32 +423,112 @@ class ProjectGenerator {
         
         await fs.promises.mkdir(diagramsPath, { recursive: true });
         
-        const sampleDiagram = `classDiagram
+        // Class Diagram
+        const classDiagram = `classDiagram
     class User {
         +UUID id
         +String username
         +String email
+        +Date createdAt
+        +login()
+        +logout()
     }
     class Post {
         +UUID id
         +String title
+        +String content
         +UUID userId
+        +Date publishedAt
+        +publish()
+        +unpublish()
     }
-    User "1" --> "*" Post`;
+    class Comment {
+        +UUID id
+        +String content
+        +UUID postId
+        +UUID userId
+        +Date createdAt
+    }
+    User "1" --> "*" Post : creates
+    Post "1" --> "*" Comment : has
+    User "1" --> "*" Comment : writes`;
         
-        await fs.promises.writeFile(
-            path.join(diagramsPath, 'class-diagram.mmd'),
-            sampleDiagram
-        );
+        // Sequence Diagram
+        const sequenceDiagram = `sequenceDiagram
+    participant U as User
+    participant S as System
+    participant DB as Database
+    
+    U->>S: login(username, password)
+    S->>DB: validateUser(username, password)
+    DB-->>S: userValid
+    S-->>U: loginSuccess
+    
+    U->>S: createPost(title, content)
+    S->>DB: savePost(post)
+    DB-->>S: postSaved
+    S-->>U: postCreated`;
         
-        log('Sample project created', 'info');
+        // State Diagram
+        const stateDiagram = `stateDiagram-v2
+    [*] --> Draft
+    Draft --> Review : submit
+    Review --> Published : approve
+    Review --> Draft : reject
+    Published --> Archived : archive
+    Archived --> [*]`;
+        
+        // Activity Diagram
+        const activityDiagram = `flowchart TD
+    A[Start] --> B{User Logged In?}
+    B -->|Yes| C[Show Dashboard]
+    B -->|No| D[Show Login]
+    D --> E[Validate Credentials]
+    E -->|Valid| C
+    E -->|Invalid| F[Show Error]
+    F --> D
+    C --> G[User Action]
+    G --> H{Action Type?}
+    H -->|Create Post| I[Create Post Form]
+    H -->|View Posts| J[List Posts]
+    H -->|Logout| K[End]
+    I --> L[Save Post]
+    L --> C
+    J --> C`;
+        
+        // Écrire tous les diagrammes
+        await Promise.all([
+            fs.promises.writeFile(
+                path.join(diagramsPath, 'class-diagram.mmd'),
+                classDiagram
+            ),
+            fs.promises.writeFile(
+                path.join(diagramsPath, 'sequence-diagram.mmd'),
+                sequenceDiagram
+            ),
+            fs.promises.writeFile(
+                path.join(diagramsPath, 'state-diagram.mmd'),
+                stateDiagram
+            ),
+            fs.promises.writeFile(
+                path.join(diagramsPath, 'activity-diagram.mmd'),
+                activityDiagram
+            )
+        ]);
+        
+        log('Sample project created with multiple diagram types', 'info');
         
         vscode.window.showInformationMessage(
-            '✅ Sample project created!',
-            'Generate Now'
+            '✅ Sample project created with 4 diagram types!',
+            'Generate Now',
+            'View Diagrams'
         ).then(choice => {
             if (choice === 'Generate Now') {
                 vscode.commands.executeCommand('basiccode.generate');
+            } else if (choice === 'View Diagrams') {
+                vscode.commands.executeCommand('revealFileInOS', 
+                    vscode.Uri.file(diagramsPath)
+                );
             }
         });
     }
@@ -442,12 +551,11 @@ class ProjectGenerator {
                 const filePath = path.join(diagramsPath, file);
                 const content = fs.readFileSync(filePath, 'utf-8');
                 
-                if (file.includes('class')) {
-                    diagrams.classDiagram = content;
-                } else if (file.includes('sequence')) {
-                    diagrams.sequenceDiagram = content;
-                } else if (file.includes('state')) {
-                    diagrams.stateDiagram = content;
+                // Détection intelligente du type de diagramme
+                const diagramType = this.detectDiagramType(content, file);
+                if (diagramType) {
+                    diagrams[diagramType] = content;
+                    log(`Found ${diagramType}: ${file}`, 'info');
                 }
             }
         }
@@ -455,70 +563,88 @@ class ProjectGenerator {
         return diagrams;
     }
     
-    private async initiateGeneration(diagrams: Record<string, string>): Promise<string> {
+    private detectDiagramType(content: string, filename: string): string | null {
+        // Détection par contenu (priorité)
+        if (content.includes('classDiagram') || content.match(/class\s+\w+/)) {
+            return 'classDiagram';
+        }
+        if (content.includes('sequenceDiagram') || content.match(/\w+\s*->\s*\w+/)) {
+            return 'sequenceDiagram';
+        }
+        if (content.includes('stateDiagram') || content.match(/\[\*\]\s*-->|state\s+\w+/)) {
+            return 'stateDiagram';
+        }
+        if (content.includes('graph') || content.includes('flowchart') || content.match(/\w+\s*-->\s*\w+/)) {
+            return 'activityDiagram';
+        }
+        if (content.includes('erDiagram') || content.match(/\w+\s*\|\|--\|\{\s*\w+/)) {
+            return 'erDiagram';
+        }
+        if (content.includes('gitgraph') || content.includes('commit')) {
+            return 'gitDiagram';
+        }
+        
+        // Détection par nom de fichier (fallback)
+        const lower = filename.toLowerCase();
+        if (lower.includes('class')) return 'classDiagram';
+        if (lower.includes('sequence')) return 'sequenceDiagram';
+        if (lower.includes('state')) return 'stateDiagram';
+        if (lower.includes('activity') || lower.includes('flow')) return 'activityDiagram';
+        if (lower.includes('er') || lower.includes('entity')) return 'erDiagram';
+        if (lower.includes('git')) return 'gitDiagram';
+        
+        return null;
+    }
+    
+    private async initiateGeneration(diagrams: Record<string, string>): Promise<any> {
         const backend = this.config.get('backend');
+        const language = this.config.get('language');
         
         log(`Initiating generation on backend: ${backend}`, 'info');
-        log(`Language: ${this.config.get('language')}, Package: ${this.config.get('packageName')}`, 'info');
+        log(`Language: ${language}, Package: ${this.config.get('packageName')}`, 'info');
+        log(`Diagrams found: ${Object.keys(diagrams).join(', ')}`, 'info');
         
-        const response = await axios.post(`${backend}/api/v2/stream/generate`, {
-            classDiagram: diagrams.classDiagram || '',
-            sequenceDiagram: diagrams.sequenceDiagram || '',
-            stateDiagram: diagrams.stateDiagram || '',
+        // Utiliser le nouveau contrôleur unifié
+        let endpoint = '/api/unified/generate/zip';
+        let payload: any = {
+            classDiagramContent: diagrams.classDiagram || null,
+            sequenceDiagramContent: diagrams.sequenceDiagram || null,
+            stateDiagramContent: diagrams.stateDiagram || null,
+            activityDiagramContent: diagrams.activityDiagram || null,
+            erDiagramContent: diagrams.erDiagram || null,
+            gitDiagramContent: diagrams.gitDiagram || null,
+            language: language,
             packageName: this.config.get('packageName'),
-            language: this.config.get('language')
+            projectName: 'generated-project'
+        };
+        
+        // Pour les tests ou développement, utiliser l'endpoint JSON
+        if (this.config.get('backend')?.includes('localhost')) {
+            endpoint = '/api/unified/generate';
+        }
+        
+        log(`Using unified endpoint: ${endpoint}`, 'info');
+        log(`Diagram types: ${Object.keys(diagrams).join(', ')}`, 'info');
+        
+        const response = await axios.post(`${backend}${endpoint}`, payload, {
+            responseType: endpoint.includes('/zip') ? 'arraybuffer' : 'json',
+            timeout: 30000 // 30 secondes pour les générations complexes
         });
         
-        log(`Generation ID: ${response.data.generationId}`, 'info');
-        
-        return response.data.generationId;
+        return {
+            data: response.data,
+            isZip: endpoint.includes('/zip')
+        };
     }
     
-    private async waitForCompletion(generationId: string, progress: vscode.Progress<any>): Promise<void> {
-        const backend = this.config.get('backend');
-        
-        log('Waiting for generation completion...', 'info');
-        
-        return new Promise((resolve, reject) => {
-            const checkStatus = async () => {
-                try {
-                    const response = await axios.get(`${backend}/api/v2/stream/status/${generationId}`);
-                    
-                    if (response.data.status === 'COMPLETED') {
-                        log(`Generation completed: ${response.data.fileCount} files`, 'info');
-                        resolve();
-                    } else {
-                        const msg = `Processing... (${response.data.fileCount} files)`;
-                        progress.report({ message: msg });
-                        log(msg, 'info');
-                        setTimeout(checkStatus, 1000);
-                    }
-                } catch (error) {
-                    log(`Error checking status: ${error}`, 'error');
-                    reject(error);
-                }
-            };
-            
-            checkStatus();
-        });
-    }
+
     
-    private async downloadAndMerge(generationId: string, progress: vscode.Progress<any>): Promise<void> {
-        const backend = this.config.get('backend');
+    private async extractZipResponse(zipData: ArrayBuffer, progress: vscode.Progress<any>): Promise<void> {
+        log(`Processing ZIP response: ${zipData.byteLength} bytes`, 'info');
         
-        log('Downloading generated project...', 'info');
+        progress.report({ increment: 20, message: "Extracting files..." });
         
-        // Télécharger ZIP
-        const response = await axios.get(`${backend}/api/v2/stream/download/${generationId}`, {
-            responseType: 'arraybuffer'
-        });
-        
-        log(`Downloaded ${response.data.byteLength} bytes`, 'info');
-        
-        progress.report({ increment: 20, message: "Extracting..." });
-        
-        // Extraire ZIP
-        const zip = new AdmZip(Buffer.from(response.data));
+        const zip = new AdmZip(Buffer.from(zipData));
         const entries = zip.getEntries();
         
         let extractedCount = 0;
@@ -527,31 +653,24 @@ class ProjectGenerator {
             if (!entry.isDirectory) {
                 const targetPath = path.join(this.workspacePath, entry.entryName);
                 
-                // Créer répertoires si nécessaire
                 const dir = path.dirname(targetPath);
                 if (!fs.existsSync(dir)) {
                     fs.mkdirSync(dir, { recursive: true });
                 }
                 
-                // Smart merge : vérifier si fichier existe et a été modifié
                 if (fs.existsSync(targetPath)) {
                     const existing = fs.readFileSync(targetPath, 'utf-8');
                     const newContent = entry.getData().toString('utf-8');
                     
-                    // Simple merge : si fichier identique, skip
-                    if (existing === newContent) {
-                        continue;
+                    if (existing !== newContent) {
+                        fs.writeFileSync(targetPath + '.backup', existing);
                     }
-                    
-                    // Si différent, créer backup et appliquer
-                    fs.writeFileSync(targetPath + '.backup', existing);
                 }
                 
-                // Écrire nouveau fichier
                 fs.writeFileSync(targetPath, entry.getData());
                 extractedCount++;
                 
-                if (extractedCount % 10 === 0) {
+                if (extractedCount % 5 === 0) {
                     progress.report({ 
                         message: `Extracted ${extractedCount}/${entries.length} files` 
                     });
@@ -559,13 +678,43 @@ class ProjectGenerator {
             }
         }
         
-        log(`Extracted ${extractedCount} files`, 'info');
+        log(`Extracted ${extractedCount} files from ZIP`, 'info');
+    }
+    
+    private async processJsonResponse(responseData: any, progress: vscode.Progress<any>): Promise<void> {
+        log('Processing JSON response with files', 'info');
         
-        // Cleanup
-        log('Cleaning up server resources...', 'info');
-        await axios.delete(`${backend}/api/v2/stream/cleanup/${generationId}`);
+        progress.report({ increment: 20, message: "Writing files..." });
         
-        log('Generation completed successfully!', 'info');
+        const files = responseData.files || responseData;
+        let writtenCount = 0;
+        
+        for (const [filePath, content] of Object.entries(files)) {
+            const targetPath = path.join(this.workspacePath, filePath as string);
+            
+            const dir = path.dirname(targetPath);
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir, { recursive: true });
+            }
+            
+            if (fs.existsSync(targetPath)) {
+                const existing = fs.readFileSync(targetPath, 'utf-8');
+                if (existing !== content) {
+                    fs.writeFileSync(targetPath + '.backup', existing);
+                }
+            }
+            
+            fs.writeFileSync(targetPath, content as string);
+            writtenCount++;
+            
+            if (writtenCount % 5 === 0) {
+                progress.report({ 
+                    message: `Written ${writtenCount}/${Object.keys(files).length} files` 
+                });
+            }
+        }
+        
+        log(`Written ${writtenCount} files from JSON response`, 'info');
     }
 }
 

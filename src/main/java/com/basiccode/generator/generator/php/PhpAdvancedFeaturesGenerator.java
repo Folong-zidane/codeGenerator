@@ -29,58 +29,26 @@ public class PhpAdvancedFeaturesGenerator {
      * Generate Job class for async operations
      */
     public String generateJobClass(String jobName, String modelName) {
-        return String.format("""
-            <?php
-            
-            namespace App\\Jobs;
-            
-            use App\\Models\\%s;
-            use Illuminate\\Bus\\Queueable;
-            use Illuminate\\Contracts\\Queue\\ShouldQueue;
-            use Illuminate\\Foundation\\Bus\\Dispatchable;
-            use Illuminate\\Queue\\InteractsWithQueue;
-            use Illuminate\\Queue\\SerializesModels;
-            
-            /**
-             * %s Job
-             * 
-             * Handles async operations for %s model
-             */
-            class %s implements ShouldQueue
-            {
-                use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-            
-                private %s $model;
-            
-                /**
-                 * Create a new job instance.
-                 */
-                public function __construct(%s $model)
-                {
-                    $this->model = $model;
-                    $this->queue = 'default';
-                    $this->delay = now()->addSeconds(5);
-                }
-            
-                /**
-                 * Execute the job.
-                 */
-                public function handle(): void
-                {
-                    // TODO: Implement job logic
-                    logger('Job executed for ' . $this->model->id);
-                }
-            
-                /**
-                 * Handle a job failure.
-                 */
-                public function failed(\\Exception $exception): void
-                {
-                    logger('Job failed: ' . $exception->getMessage());
-                }
-            }
-            """,
-            modelName, jobName, modelName, jobName, modelName, modelName
+        return String.format(
+            "<?php\n\n" +
+            "namespace App\\Jobs;\n\n" +
+            "use App\\Models\\%s;\n" +
+            "use Illuminate\\Bus\\Queueable;\n" +
+            "use Illuminate\\Contracts\\Queue\\ShouldQueue;\n\n" +
+            "class %s implements ShouldQueue\n" +
+            "{\n" +
+            "    use Queueable;\n\n" +
+            "    private %s $model;\n\n" +
+            "    public function __construct(%s $model)\n" +
+            "    {\n" +
+            "        $this->model = $model;\n" +
+            "    }\n\n" +
+            "    public function handle(): void\n" +
+            "    {\n" +
+            "        // TODO: Implement job logic\n" +
+            "    }\n" +
+            "}\n",
+            modelName, jobName, modelName, modelName
         );
     }
     
@@ -88,60 +56,22 @@ public class PhpAdvancedFeaturesGenerator {
      * Generate Event class
      */
     public String generateEventClass(String eventName, String modelName) {
-        return String.format("""
-            <?php
-            
-            namespace App\\Events;
-            
-            use App\\Models\\%s;
-            use Illuminate\\Broadcasting\\InteractsWithSockets;
-            use Illuminate\\Broadcasting\\PrivateChannel;
-            use Illuminate\\Contracts\\Broadcasting\\ShouldBroadcast;
-            use Illuminate\\Foundation\\Events\\Dispatchable;
-            use Illuminate\\Queue\\SerializesModels;
-            
-            /**
-             * %s Event
-             * 
-             * Event for %s model
-             */
-            class %s implements ShouldBroadcast
-            {
-                use Dispatchable, InteractsWithSockets, SerializesModels;
-            
-                public %s $model;
-            
-                /**
-                 * Create a new event instance.
-                 */
-                public function __construct(%s $model)
-                {
-                    $this->model = $model;
-                }
-            
-                /**
-                 * Get the channels the event should broadcast on.
-                 */
-                public function broadcastOn(): array
-                {
-                    return [
-                        new PrivateChannel('%s-' . $this->model->id),
-                    ];
-                }
-            
-                /**
-                 * Get the data to broadcast.
-                 */
-                public function broadcastWith(): array
-                {
-                    return [
-                        'id' => $this->model->id,
-                        'timestamp' => now(),
-                    ];
-                }
-            }
-            """,
-            modelName, eventName, modelName, eventName, modelName, modelName, modelName.toLowerCase()
+        return String.format(
+            "<?php\n\n" +
+            "namespace App\\Events;\n\n" +
+            "use App\\Models\\%s;\n" +
+            "use Illuminate\\Broadcasting\\InteractsWithSockets;\n" +
+            "use Illuminate\\Foundation\\Events\\Dispatchable;\n\n" +
+            "class %s\n" +
+            "{\n" +
+            "    use Dispatchable, InteractsWithSockets;\n\n" +
+            "    public %s $model;\n\n" +
+            "    public function __construct(%s $model)\n" +
+            "    {\n" +
+            "        $this->model = $model;\n" +
+            "    }\n" +
+            "}\n",
+            modelName, eventName, modelName, modelName
         );
     }
     
@@ -149,43 +79,19 @@ public class PhpAdvancedFeaturesGenerator {
      * Generate Listener class for event
      */
     public String generateListenerClass(String listenerName, String eventName) {
-        return String.format("""
-            <?php
-            
-            namespace App\\Listeners;
-            
-            use App\\Events\\%s;
-            use Illuminate\\Contracts\\Queue\\ShouldQueue;
-            use Illuminate\\Queue\\SerializesModels;
-            
-            /**
-             * %s Listener
-             * 
-             * Handles %s events
-             */
-            class %s implements ShouldQueue
-            {
-                use SerializesModels;
-            
-                /**
-                 * Create the event listener.
-                 */
-                public function __construct()
-                {
-                    //
-                }
-            
-                /**
-                 * Handle the event.
-                 */
-                public function handle(%s $event): void
-                {
-                    // TODO: Implement listener logic
-                    logger('%s event handled: ' . $event->model->id);
-                }
-            }
-            """,
-            eventName, listenerName, eventName, listenerName, eventName, eventName
+        return String.format(
+            "<?php\n\n" +
+            "namespace App\\Listeners;\n\n" +
+            "use App\\Events\\%s;\n" +
+            "use Illuminate\\Contracts\\Queue\\ShouldQueue;\n\n" +
+            "class %s implements ShouldQueue\n" +
+            "{\n" +
+            "    public function handle(%s $event): void\n" +
+            "    {\n" +
+            "        // TODO: Implement listener logic\n" +
+            "    }\n" +
+            "}\n",
+            eventName, listenerName, eventName
         );
     }
     
@@ -193,81 +99,22 @@ public class PhpAdvancedFeaturesGenerator {
      * Generate Observer class for model events
      */
     public String generateObserverClass(String modelName) {
-        return String.format("""
-            <?php
-            
-            namespace App\\Observers;
-            
-            use App\\Models\\%s;
-            use Illuminate\\Database\\Eloquent\\Model;
-            
-            /**
-             * %s Observer
-             * 
-             * Observes %s model events (create, update, delete, etc.)
-             */
-            class %sObserver
-            {
-                /**
-                 * Handle the %s "created" event.
-                 */
-                public function created(%s $%s): void
-                {
-                    logger('%s created: ' . $%s->id);
-                }
-            
-                /**
-                 * Handle the %s "updated" event.
-                 */
-                public function updated(%s $%s): void
-                {
-                    logger('%s updated: ' . $%s->id);
-                }
-            
-                /**
-                 * Handle the %s "deleted" event.
-                 */
-                public function deleted(%s $%s): void
-                {
-                    logger('%s deleted: ' . $%s->id);
-                }
-            
-                /**
-                 * Handle the %s "restored" event.
-                 */
-                public function restored(%s $%s): void
-                {
-                    logger('%s restored: ' . $%s->id);
-                }
-            
-                /**
-                 * Handle the %s "force deleted" event.
-                 */
-                public function forceDeleted(%s $%s): void
-                {
-                    logger('%s force deleted: ' . $%s->id);
-                }
-                
-                /**
-                 * Handle the %s "saving" event.
-                 */
-                public function saving(%s $%s): bool
-                {
-                    // TODO: Add pre-save logic (validation, transformation, etc.)
-                    return true;
-                }
-            }
-            """,
-            modelName, modelName, modelName, modelName,
-            modelName, modelName, lowerFirst(modelName),
-            modelName, lowerFirst(modelName),
-            modelName, modelName, lowerFirst(modelName),
-            modelName, lowerFirst(modelName),
-            modelName, modelName, lowerFirst(modelName),
-            modelName, lowerFirst(modelName),
-            modelName, modelName, lowerFirst(modelName),
-            modelName, lowerFirst(modelName),
-            modelName, modelName, lowerFirst(modelName),
+        return String.format(
+            "<?php\n\n" +
+            "namespace App\\Observers;\n\n" +
+            "use App\\Models\\%s;\n\n" +
+            "class %sObserver\n" +
+            "{\n" +
+            "    public function created(%s $%s): void\n" +
+            "    {\n" +
+            "        // Handle created event\n" +
+            "    }\n\n" +
+            "    public function updated(%s $%s): void\n" +
+            "    {\n" +
+            "        // Handle updated event\n" +
+            "    }\n" +
+            "}\n",
+            modelName, modelName, modelName, lowerFirst(modelName),
             modelName, lowerFirst(modelName)
         );
     }
@@ -276,36 +123,23 @@ public class PhpAdvancedFeaturesGenerator {
      * Generate API Resource class (transformer)
      */
     public String generateResourceClass(String modelName) {
-        return String.format("""
-            <?php
-            
-            namespace App\\Http\\Resources;
-            
-            use Illuminate\\Http\\Request;
-            use Illuminate\\Http\\Resources\\Json\\JsonResource;
-            
-            /**
-             * %s Resource
-             * 
-             * Transforms %s model for API responses
-             */
-            class %sResource extends JsonResource
-            {
-                /**
-                 * Transform the resource into an array.
-                 */
-                public function toArray(Request $request): array
-                {
-                    return [
-                        'id' => $this->id,
-                        // TODO: Add other fields from %s model
-                        'created_at' => $this->created_at,
-                        'updated_at' => $this->updated_at,
-                    ];
-                }
-            }
-            """,
-            modelName, modelName, modelName, modelName
+        return String.format(
+            "<?php\n\n" +
+            "namespace App\\Http\\Resources;\n\n" +
+            "use Illuminate\\Http\\Request;\n" +
+            "use Illuminate\\Http\\Resources\\Json\\JsonResource;\n\n" +
+            "class %sResource extends JsonResource\n" +
+            "{\n" +
+            "    public function toArray(Request $request): array\n" +
+            "    {\n" +
+            "        return [\n" +
+            "            'id' => $this->id,\n" +
+            "            'created_at' => $this->created_at,\n" +
+            "            'updated_at' => $this->updated_at,\n" +
+            "        ];\n" +
+            "    }\n" +
+            "}\n",
+            modelName
         );
     }
     
@@ -313,36 +147,20 @@ public class PhpAdvancedFeaturesGenerator {
      * Generate API Resource Collection
      */
     public String generateResourceCollectionClass(String modelName) {
-        return String.format("""
-            <?php
-            
-            namespace App\\Http\\Resources;
-            
-            use Illuminate\\Http\\Resources\\Json\\ResourceCollection;
-            
-            /**
-             * %s Collection Resource
-             * 
-             * Transforms collection of %s models for API responses
-             */
-            class %sCollection extends ResourceCollection
-            {
-                /**
-                 * Transform the resource collection into an array.
-                 */
-                public function toArray($request): array
-                {
-                    return [
-                        'data' => $this->collection,
-                        'meta' => [
-                            'total' => $this->collection->count(),
-                            'timestamp' => now(),
-                        ],
-                    ];
-                }
-            }
-            """,
-            modelName, modelName, modelName
+        return String.format(
+            "<?php\n\n" +
+            "namespace App\\Http\\Resources;\n\n" +
+            "use Illuminate\\Http\\Resources\\Json\\ResourceCollection;\n\n" +
+            "class %sCollection extends ResourceCollection\n" +
+            "{\n" +
+            "    public function toArray($request): array\n" +
+            "    {\n" +
+            "        return [\n" +
+            "            'data' => $this->collection,\n" +
+            "        ];\n" +
+            "    }\n" +
+            "}\n",
+            modelName
         );
     }
     
@@ -350,32 +168,20 @@ public class PhpAdvancedFeaturesGenerator {
      * Generate Middleware class
      */
     public String generateMiddlewareClass(String middlewareName) {
-        return String.format("""
-            <?php
-            
-            namespace App\\Http\\Middleware;
-            
-            use Closure;
-            use Illuminate\\Http\\Request;
-            use Symfony\\Component\\HttpFoundation\\Response;
-            
-            /**
-             * %s Middleware
-             */
-            class %s
-            {
-                /**
-                 * Handle an incoming request.
-                 */
-                public function handle(Request $request, Closure $next): Response
-                {
-                    // TODO: Implement middleware logic
-                    
-                    return $next($request);
-                }
-            }
-            """,
-            middlewareName, middlewareName
+        return String.format(
+            "<?php\n\n" +
+            "namespace App\\Http\\Middleware;\n\n" +
+            "use Closure;\n" +
+            "use Illuminate\\Http\\Request;\n\n" +
+            "class %s\n" +
+            "{\n" +
+            "    public function handle(Request $request, Closure $next)\n" +
+            "    {\n" +
+            "        // TODO: Implement middleware logic\n" +
+            "        return $next($request);\n" +
+            "    }\n" +
+            "}\n",
+            middlewareName
         );
     }
     
@@ -383,89 +189,20 @@ public class PhpAdvancedFeaturesGenerator {
      * Generate API Response Trait
      */
     public String generateApiResponseTrait() {
-        return """
-            <?php
-            
-            namespace App\\Traits;
-            
-            use Illuminate\\Http\\JsonResponse;
-            
-            /**
-             * API Response Trait
-             * 
-             * Provides consistent JSON response methods
-             */
-            trait ApiResponse
-            {
-                /**
-                 * Send a successful JSON response
-                 */
-                protected function success($data = null, string $message = 'Success', int $statusCode = 200): JsonResponse
-                {
-                    return response()->json([
-                        'success' => true,
-                        'message' => $message,
-                        'data' => $data,
-                    ], $statusCode);
-                }
-            
-                /**
-                 * Send an error JSON response
-                 */
-                protected function error(string $message = 'Error', int $statusCode = 400, $errors = null): JsonResponse
-                {
-                    return response()->json([
-                        'success' => false,
-                        'message' => $message,
-                        'errors' => $errors,
-                    ], $statusCode);
-                }
-            
-                /**
-                 * Send paginated JSON response
-                 */
-                protected function paginated($data, string $message = 'Success'): JsonResponse
-                {
-                    return response()->json([
-                        'success' => true,
-                        'message' => $message,
-                        'data' => $data->items(),
-                        'pagination' => [
-                            'total' => $data->total(),
-                            'per_page' => $data->perPage(),
-                            'current_page' => $data->currentPage(),
-                            'last_page' => $data->lastPage(),
-                            'from' => $data->firstItem(),
-                            'to' => $data->lastItem(),
-                        ],
-                    ]);
-                }
-            
-                /**
-                 * Send not found response
-                 */
-                protected function notFound(string $message = 'Resource not found'): JsonResponse
-                {
-                    return $this->error($message, 404);
-                }
-            
-                /**
-                 * Send unauthorized response
-                 */
-                protected function unauthorized(string $message = 'Unauthorized'): JsonResponse
-                {
-                    return $this->error($message, 401);
-                }
-            
-                /**
-                 * Send forbidden response
-                 */
-                protected function forbidden(string $message = 'Forbidden'): JsonResponse
-                {
-                    return $this->error($message, 403);
-                }
-            }
-            """;
+        return "<?php\n\n" +
+            "namespace App\\Traits;\n\n" +
+            "use Illuminate\\Http\\JsonResponse;\n\n" +
+            "trait ApiResponse\n" +
+            "{\n" +
+            "    protected function success($data = null): JsonResponse\n" +
+            "    {\n" +
+            "        return response()->json(['success' => true, 'data' => $data]);\n" +
+            "    }\n\n" +
+            "    protected function error(string $message = 'Error'): JsonResponse\n" +
+            "    {\n" +
+            "        return response()->json(['success' => false, 'message' => $message]);\n" +
+            "    }\n" +
+            "}\n";
     }
     
     /**
@@ -476,9 +213,8 @@ public class PhpAdvancedFeaturesGenerator {
         code.append("// Add to app/Providers/AppServiceProvider.php in boot() method:\n\n");
         
         for (String modelName : modelNames) {
-            code.append(String.format("""
-                %s::observe(%sObserver::class);
-                """,
+            code.append(String.format(
+                "%s::observe(%sObserver::class);\n",
                 modelName, modelName
             ));
         }

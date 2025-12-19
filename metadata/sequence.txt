@@ -1,0 +1,61 @@
+%% @sequence-diagram
+%% diagram-id: user-api-001
+%% diagram-type: sequence
+%% diagram-purpose: api-design|integration|communication
+%% 
+%% ===== MESSAGING =====
+%% async-messaging: true
+%% message-format: json|xml|protobuf|avro
+%% message-validation: schema-based
+%% message-encryption: tls|end-to-end
+%% 
+%% ===== TRANSACTION MANAGEMENT =====
+%% transaction-scope: distributed|local
+%% saga-pattern: orchestration|choreography
+%% compensation-actions: true
+%% 
+%% ===== RELIABILITY =====
+%% timeout-handling: circuit-breaker|timeout|retry
+%% retry-policy: exponential-backoff|fixed-delay|immediate
+%% max-retries: 3
+%% timeout-seconds: 30
+%% 
+%% ===== MONITORING =====
+%% distributed-tracing: true
+%% correlation-id: true
+%% request-logging: true
+%% response-logging: true
+%% 
+%% ===== SECURITY =====
+%% authentication: jwt|oauth2|api-key
+%% authorization: rbac|abac
+%% rate-limiting: true
+%% 
+%% ===== API DESIGN =====
+%% rest-compliance: true
+%% http-methods: GET|POST|PUT|DELETE|PATCH
+%% status-codes: standard
+%% content-negotiation: true
+%% @end-sequence-diagram
+
+sequenceDiagram
+    participant Client
+    participant AuthService
+    participant UserService
+    participant Database
+    participant EmailService
+    
+    Client->>AuthService: authenticate(credentials)
+    AuthService-->>Client: jwt_token
+    
+    Client->>UserService: createUser(userData, token)
+    UserService->>AuthService: validateToken(token)
+    AuthService-->>UserService: tokenValid
+    
+    UserService->>Database: save(user)
+    Database-->>UserService: user_id
+    
+    UserService->>EmailService: sendWelcomeEmail(user)
+    EmailService-->>UserService: email_sent
+    
+    UserService-->>Client: userResponse(201)

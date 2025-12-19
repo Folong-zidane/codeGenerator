@@ -1,231 +1,143 @@
 package com.basiccode.generator.generator.django;
 
-import com.basiccode.generator.generator.IRepositoryGenerator;
 import com.basiccode.generator.model.EnhancedClass;
-import com.basiccode.generator.model.UmlAttribute;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
-import java.util.stream.Collectors;
+import com.basiccode.generator.model.UMLAttribute;
 
 /**
- * ✅ ENHANCED Django Serializer Generator (Phase 1)
- *
- * Génère des sérializers DRF avec:
- * - Validation avancée des champs
- * - Support des champs imbriqués (nested serializers)
- * - Support des relations (ForeignKey, ManyToMany)
- * - Support des champs calculés
- * - Sérializers séparés pour Create/Update/Read
- * - Gestion des transactions
- *
- * NOTE: Renommé de DjangoRepositoryGenerator (qui était mal nommé)
- * Repository en Django c'est ORM (models), pas les sérializers!
- * Remplace: DjangoRepositoryGenerator
- * Amélioration: +100 lignes de fonctionnalités DRF avancées
+ * Générateur de sérialiseurs Django REST Framework ultra-optimisé
  */
-@Component
-@Slf4j
-public class DjangoSerializerGenerator implements IRepositoryGenerator {
-
-    @Override
-    public String generateRepository(EnhancedClass enhancedClass, String packageName) {
-        log.info("🐍 Generating DRF Serializers for: {}", enhancedClass.getOriginalClass().getName());
-        return generateSerializers(enhancedClass);
-    }
-
-    private String generateSerializers(EnhancedClass enhancedClass) {
-        String className = enhancedClass.getOriginalClass().getName();
-        StringBuilder code = new StringBuilder();
-
-        // Header
-        code.append(generateHeader());
-
-        // List serializer (pour les listes)
-        code.append(generateListSerializer(className, enhancedClass));
-        code.append("\n\n");
-
-        // Create serializer
-        code.append(generateCreateSerializer(className, enhancedClass));
-        code.append("\n\n");
-
-        // Update serializer
-        code.append(generateUpdateSerializer(className, enhancedClass));
-        code.append("\n\n");
-
-        // Read/Detail serializer
-        code.append(generateDetailSerializer(className, enhancedClass));
-        code.append("\n\n");
-
-        // Main serializer (utilise les autres)
-        code.append(generateMainSerializer(className, enhancedClass));
-
-        return code.toString();
-    }
-
-    private String generateHeader() {
-        StringBuilder header = new StringBuilder();
-
-        header.append("# Generated Django REST Framework Serializers\n");
-        header.append("# By BasicCode Generator - Phase 1\n\n");
-
-        header.append("from rest_framework import serializers\n");
-        header.append("from django.db import transaction\n");
-        header.append("from django.core.exceptions import ValidationError as DjangoValidationError\n");
-        header.append("from .models import *\n");
-        header.append("from .enums import *\n\n");
-
-        return header.toString();
-    }
-
-    private String generateListSerializer(String className, EnhancedClass enhancedClass) {
-        StringBuilder code = new StringBuilder();
-
-        code.append("class ").append(className).append("ListSerializer(serializers.ListSerializer):\n");
-        code.append("    \"\"\"\n");
-        code.append("    ListSerializer for bulk operations on ").append(className).append("\n");
-        code.append("    Supports bulk create, update, delete\n");
-        code.append("    \"\"\"\n\n");
-
-        code.append("    @transaction.atomic\n");
-        code.append("    def create(self, validated_data):\n");
-        code.append("        return [self.child.create(item) for item in validated_data]\n\n");
-
-        code.append("    @transaction.atomic\n");
-        code.append("    def update(self, instance, validated_data):\n");
-        code.append("        # Bulk update logic\n");
-        code.append("        for item, data in zip(instance, validated_data):\n");
-        code.append("            self.child.update(item, data)\n");
-        code.append("        return instance\n\n");
-
-        return code.toString();
-    }
-
-    private String generateCreateSerializer(String className, EnhancedClass enhancedClass) {
-        StringBuilder code = new StringBuilder();
-
-        code.append("class ").append(className).append("CreateSerializer(serializers.ModelSerializer):\n");
-        code.append("    \"\"\"\n");
-        code.append("    Serializer for creating new ").append(className).append(" instances\n");
-        code.append("    Only writable fields are exposed\n");
-        code.append("    \"\"\"\n\n");
-
-        code.append("    class Meta:\n");
-        code.append("        model = ").append(className).append("\n");
-
-        // Only include non-readonly fields
-        String writeFields = enhancedClass.getOriginalClass().getAttributes().stream()
-            .filter(attr -> !attr.getName().equals("id") && !attr.getName().equals("created_at") && !attr.getName().equals("updated_at"))
-            .map(UmlAttribute::getName)
-            .collect(Collectors.joining("', '", "['", "']"));
-
-        code.append("        fields = ").append(writeFields).append("\n\n");
-
-        // Add validation
-        code.append(generateValidationMethods(className, enhancedClass));
-
-        return code.toString();
-    }
-
-    private String generateUpdateSerializer(String className, EnhancedClass enhancedClass) {
-        StringBuilder code = new StringBuilder();
-
-        code.append("class ").append(className).append("UpdateSerializer(serializers.ModelSerializer):\n");
-        code.append("    \"\"\"\n");
-        code.append("    Serializer for updating existing ").append(className).append(" instances\n");
-        code.append("    Supports partial updates\n");
-        code.append("    \"\"\"\n\n");
-
-        code.append("    class Meta:\n");
-        code.append("        model = ").append(className).append("\n");
-        code.append("        fields = '__all__'\n");
-        code.append("        read_only_fields = ('id', 'created_at', 'updated_at')\n\n");
-
-        code.append("    def update(self, instance, validated_data):\n");
-        code.append("        for attr, value in validated_data.items():\n");
-        code.append("            setattr(instance, attr, value)\n");
-        code.append("        instance.save(update_fields=list(validated_data.keys()))\n");
-        code.append("        return instance\n\n");
-
-        return code.toString();
-    }
-
-    private String generateDetailSerializer(String className, EnhancedClass enhancedClass) {
-        StringBuilder code = new StringBuilder();
-
-        code.append("class ").append(className).append("DetailSerializer(serializers.ModelSerializer):\n");
-        code.append("    \"\"\"\n");
-        code.append("    Serializer for reading ").append(className).append(" details\n");
-        code.append("    Includes all fields with nested relationships\n");
-        code.append("    \"\"\"\n\n");
-
-        code.append("    class Meta:\n");
-        code.append("        model = ").append(className).append("\n");
-        code.append("        fields = '__all__'\n");
-        code.append("        read_only_fields = ('id', 'created_at', 'updated_at')\n\n");
-
-        return code.toString();
-    }
-
-    private String generateMainSerializer(String className, EnhancedClass enhancedClass) {
-        StringBuilder code = new StringBuilder();
-
-        code.append("class ").append(className).append("Serializer(serializers.ModelSerializer):\n");
-        code.append("    \"\"\"\n");
-        code.append("    Main serializer for ").append(className).append("\n");
-        code.append("    Supports full CRUD operations with validation\n");
-        code.append("    \"\"\"\n\n");
-
-        code.append("    class Meta:\n");
-        code.append("        model = ").append(className).append("\n");
-        code.append("        fields = '__all__'\n");
-        code.append("        read_only_fields = ('id', 'created_at', 'updated_at')\n");
-        code.append("        list_serializer_class = ").append(className).append("ListSerializer\n\n");
-
-        code.append("    def validate(self, data):\n");
-        code.append("        \"\"\"\n");
-        code.append("        Global validation for ").append(className).append("\n");
-        code.append("        \"\"\"\n");
-        code.append("        return data\n\n");
-
-        code.append("    def create(self, validated_data):\n");
-        code.append("        return ").append(className).append(".objects.create(**validated_data)\n\n");
-
-        code.append("    def update(self, instance, validated_data):\n");
-        code.append("        for attr, value in validated_data.items():\n");
-        code.append("            setattr(instance, attr, value)\n");
-        code.append("        instance.save()\n");
-        code.append("        return instance\n");
-
-        if (enhancedClass.isStateful()) {
-            code.append("\n    def validate_status(self, value):\n");
-            code.append("        if value not in dict(").append(className).append("Status.choices).keys():\n");
-            code.append("            raise serializers.ValidationError(f'Invalid status: {value}')\n");
-            code.append("        return value\n");
+public class DjangoSerializerGenerator {
+    
+    public String generateSerializer(EnhancedClass enhancedClass, String packageName) {
+        if (enhancedClass == null || enhancedClass.getOriginalClass() == null) {
+            throw new IllegalArgumentException("EnhancedClass and originalClass cannot be null");
         }
-
-        code.append("\n");
-
-        return code.toString();
+        
+        StringBuilder serializer = new StringBuilder();
+        String className = enhancedClass.getOriginalClass().getName();
+        String serializerName = className + "Serializer";
+        String createSerializerName = className + "CreateSerializer";
+        
+        // Imports
+        serializer.append("from rest_framework import serializers\n");
+        serializer.append("from django.core.validators import MinValueValidator, MaxValueValidator\n");
+        serializer.append("from django.utils.translation import gettext_lazy as _\n");
+        serializer.append("from typing import Dict, Any\n\n");
+        
+        serializer.append("from .models import ").append(className).append("\n\n");
+        
+        // Main serializer
+        serializer.append("class ").append(serializerName).append("(serializers.ModelSerializer):\n");
+        serializer.append("    \"\"\"Comprehensive serializer for ").append(className).append(" with validation\"\"\"\n\n");
+        
+        // Add computed fields
+        serializer.append("    # Computed fields\n");
+        serializer.append("    full_name = serializers.SerializerMethodField()\n");
+        serializer.append("    age_in_days = serializers.SerializerMethodField()\n");
+        serializer.append("    is_recent = serializers.SerializerMethodField()\n\n");
+        
+        // Meta class
+        serializer.append("    class Meta:\n");
+        serializer.append("        model = ").append(className).append("\n");
+        serializer.append("        fields = '__all__'\n");
+        serializer.append("        read_only_fields = ('id', 'created_at', 'updated_at')\n");
+        serializer.append("        extra_kwargs = {\n");
+        
+        // Generate field validations
+        if (enhancedClass.getOriginalClass().getAttributes() != null) {
+            for (UMLAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
+                String fieldName = toSnakeCase(attr.getName());
+                serializer.append(generateFieldValidation(fieldName, attr.getType()));
+            }
+        }
+        
+        serializer.append("        }\n\n");
+        
+        // Validation methods
+        serializer.append("    def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:\n");
+        serializer.append("        \"\"\"Cross-field validation\"\"\"\n");
+        serializer.append("        # Add business logic validation here\n");
+        serializer.append("        return data\n\n");
+        
+        // Computed field methods
+        serializer.append("    def get_full_name(self, obj) -> str:\n");
+        serializer.append("        \"\"\"Generate full name if applicable\"\"\"\n");
+        serializer.append("        if hasattr(obj, 'first_name') and hasattr(obj, 'last_name'):\n");
+        serializer.append("            return f'{obj.first_name} {obj.last_name}'\n");
+        serializer.append("        return str(obj)\n\n");
+        
+        serializer.append("    def get_age_in_days(self, obj) -> int:\n");
+        serializer.append("        \"\"\"Calculate age in days since creation\"\"\"\n");
+        serializer.append("        from django.utils import timezone\n");
+        serializer.append("        return (timezone.now() - obj.created_at).days\n\n");
+        
+        serializer.append("    def get_is_recent(self, obj) -> bool:\n");
+        serializer.append("        \"\"\"Check if object was created recently\"\"\"\n");
+        serializer.append("        return self.get_age_in_days(obj) <= 7\n\n");
+        
+        // Create serializer
+        serializer.append("class ").append(createSerializerName).append("(serializers.ModelSerializer):\n");
+        serializer.append("    \"\"\"Optimized serializer for ").append(className).append(" creation\"\"\"\n\n");
+        
+        serializer.append("    class Meta:\n");
+        serializer.append("        model = ").append(className).append("\n");
+        serializer.append("        exclude = ('id', 'created_at', 'updated_at')\n\n");
+        
+        serializer.append("    def create(self, validated_data: Dict[str, Any]) -> ").append(className).append(":\n");
+        serializer.append("        \"\"\"Create with additional processing\"\"\"\n");
+        serializer.append("        # Pre-processing logic here\n");
+        serializer.append("        instance = super().create(validated_data)\n");
+        serializer.append("        # Post-processing logic here\n");
+        serializer.append("        return instance\n");
+        
+        return serializer.toString();
     }
-
-    private String generateValidationMethods(String className, EnhancedClass enhancedClass) {
-        StringBuilder code = new StringBuilder();
-
-        code.append("    def validate_email(self, value):\n");
-        code.append("        if value and ").append(className).append(".objects.filter(email=value).exists():\n");
-        code.append("            raise serializers.ValidationError('Email already exists')\n");
-        code.append("        return value\n\n");
-
-        code.append("    @transaction.atomic\n");
-        code.append("    def create(self, validated_data):\n");
-        code.append("        return ").append(className).append(".objects.create(**validated_data)\n\n");
-
-        return code.toString();
+    
+    private String generateFieldValidation(String fieldName, String fieldType) {
+        StringBuilder validation = new StringBuilder();
+        validation.append("            '").append(fieldName).append("': {\n");
+        
+        if (fieldType != null) {
+            switch (fieldType.toLowerCase()) {
+                case "string":
+                case "str":
+                    if (fieldName.contains("email")) {
+                        validation.append("                'validators': [serializers.EmailValidator()],\n");
+                    }
+                    validation.append("                'min_length': 1,\n");
+                    validation.append("                'max_length': 255,\n");
+                    break;
+                case "integer":
+                case "int":
+                    validation.append("                'min_value': 0,\n");
+                    break;
+                case "bigdecimal":
+                case "decimal":
+                    validation.append("                'min_value': 0,\n");
+                    validation.append("                'max_digits': 12,\n");
+                    validation.append("                'decimal_places': 2,\n");
+                    break;
+            }
+        }
+        
+        validation.append("                'error_messages': {\n");
+        validation.append("                    'required': _('This field is required.'),\n");
+        validation.append("                    'blank': _('This field cannot be blank.'),\n");
+        validation.append("                }\n");
+        validation.append("            },\n");
+        
+        return validation.toString();
     }
-
-    @Override
-    public String getRepositoryDirectory() {
+    
+    private String toSnakeCase(String camelCase) {
+        return camelCase.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+    }
+    
+    public String getFileExtension() {
+        return ".py";
+    }
+    
+    public String getSerializerDirectory() {
         return "serializers";
     }
 }

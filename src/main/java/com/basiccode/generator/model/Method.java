@@ -1,33 +1,31 @@
 package com.basiccode.generator.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.util.*;
 
 /**
- * Représente une méthode
+ * Alias pour UMLMethod pour compatibilité
  */
+@Data
+@NoArgsConstructor
 public class Method {
     private String name;
-    private String returnType;
-    private Visibility visibility = Visibility.PUBLIC;
+    private String returnType = "void";
+    private String visibility = "public";
     private List<Parameter> parameters = new ArrayList<>();
+    private List<String> annotations = new ArrayList<>();
+    private String body;
     
-    public Method() {}
-    
-    public Method(String name, String returnType) {
-        this.name = name;
-        this.returnType = returnType;
+    public void addParameter(Parameter parameter) { 
+        parameters.add(parameter); 
     }
     
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void addAnnotation(String annotation) { 
+        annotations.add(annotation); 
+    }
     
-    public String getReturnType() { return returnType; }
-    public void setReturnType(String returnType) { this.returnType = returnType; }
-    
-    public Visibility getVisibility() { return visibility; }
-    public void setVisibility(Visibility visibility) { this.visibility = visibility; }
-    
-    public List<Parameter> getParameters() { return parameters; }
-    public void setParameters(List<Parameter> parameters) { this.parameters = parameters; }
+    public String getBusinessLogic() {
+        return body;
+    }
 }

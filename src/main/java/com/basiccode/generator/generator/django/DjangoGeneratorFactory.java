@@ -1,37 +1,40 @@
 package com.basiccode.generator.generator.django;
 
-import com.basiccode.generator.generator.*;
+import com.basiccode.generator.generator.IEntityGenerator;
+import com.basiccode.generator.generator.IServiceGenerator;
+import com.basiccode.generator.generator.IControllerGenerator;
+import com.basiccode.generator.generator.IFileWriter;
 
+/**
+ * Factory pour créer les générateurs Django
+ */
 public class DjangoGeneratorFactory {
     
-    public static IEntityGenerator createEntityGenerator() {
-        // 🚀 PHASE 1: Utiliser le générateur avancé DjangoModelGenerator
-        return new DjangoModelGeneratorAdapter();
+    public IEntityGenerator createEntityGenerator() {
+        return new DjangoEntityGenerator();
     }
     
-    public static IRepositoryGenerator createRepositoryGenerator() {
-        return new DjangoRepositoryGenerator();
-    }
-    
-    public static IServiceGenerator createServiceGenerator() {
+    public IServiceGenerator createServiceGenerator() {
         return new DjangoServiceGenerator();
     }
     
-    public static IControllerGenerator createControllerGenerator() {
+    public IControllerGenerator createControllerGenerator() {
         return new DjangoControllerGenerator();
     }
     
-    public static IFileWriter createFileWriter() {
+    public DjangoSerializerGenerator createSerializerGenerator() {
+        return new DjangoSerializerGenerator();
+    }
+    
+    public IFileWriter createFileWriter() {
         return new DjangoFileWriter();
     }
     
-    public static IMigrationGenerator createMigrationGenerator() {
-        // 🚀 PHASE 1: Utiliser le générateur de migrations amélioré
-        return new DjangoMigrationGeneratorEnhanced();
+    public String getLanguage() {
+        return "django";
     }
     
-    public static IRepositoryGenerator createSerializerGenerator() {
-        // 🚀 PHASE 1: Utiliser le générateur de sérializers DRF
-        return new DjangoSerializerGenerator();
+    public String getFramework() {
+        return "Django REST Framework";
     }
 }

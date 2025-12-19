@@ -4,5 +4,6 @@ import com.basiccode.generator.model.EnhancedClass;
 
 public interface IServiceGenerator {
     String generateService(EnhancedClass enhancedClass, String packageName);
+    String getFileExtension();
     String getServiceDirectory();
 }

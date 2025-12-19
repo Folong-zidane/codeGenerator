@@ -1,7 +1,6 @@
 package com.basiccode.generator.generator.php;
 
 import com.basiccode.generator.model.EnhancedClass;
-import com.basiccode.generator.model.UmlAttribute;
 
 public class PhpResourceGenerator {
     
@@ -29,7 +28,7 @@ public class PhpResourceGenerator {
         code.append("            'id' => $this->id,\n");
         
         // Add all attributes
-        for (UmlAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
+        for (com.basiccode.generator.model.UMLAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
             if (!"id".equalsIgnoreCase(attr.getName())) {
                 code.append("            '").append(attr.getName()).append("' => $this->").append(attr.getName()).append(",\n");
             }

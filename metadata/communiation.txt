@@ -1,0 +1,42 @@
+`yaml
+%% ============================================
+%% TRAÇABILITÉ INTER-DIAGRAMMES
+%% ============================================
+%% @diagram-relationships
+%% 
+%% ===== CAS D'UTILISATION → CLASSES =====
+%% usecase-to-class-mapping: true
+%% usecase-generates: controller,service,dto
+%% 
+%% Exemple:
+%% UseCase "Créer Article" → 
+%%   - ArticleController.createArticle()
+%%   - ArticleService.createArticle()
+%%   - Article (entity)
+%% 
+%% ===== SÉQUENCE → MÉTHODES =====
+%% sequence-to-method-mapping: true
+%% sequence-generates: method-signatures
+%% 
+%% Exemple:
+%% Séquence: Client → ArticleService: createArticle(title)
+%% Génère: public Article createArticle(String title)
+%% 
+%% ===== CLASSES → ÉTATS =====
+%% class-to-state-mapping: true
+%% state-field-name: status|state|statut
+%% 
+%% Exemple:
+%% Article (classe) → ArticleStateMachine
+%% Article.status → DRAFT|PUBLISHED|ARCHIVED
+%% 
+%% ===== COMPOSANTS → CLASSES =====
+%% component-to-class-mapping: true
+%% component-groups-classes: true
+%% 
+%% Exemple:
+%% Component "UserService" contient:
+%%   - User, Author, Admin (entities)
+%%   - UserController, UserService, UserRepository
+%% 
+%% @end-diagram-relationships

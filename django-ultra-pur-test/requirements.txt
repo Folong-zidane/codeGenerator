@@ -1,0 +1,31 @@
+# Core Django
+Django>=4.2.0,<5.0.0
+djangorestframework>=3.14.0
+django-filter>=23.0
+django-cors-headers>=4.0.0
+
+# Database
+psycopg2-binary>=2.9.0
+dj-database-url>=2.0.0
+
+# Cache
+django-redis>=5.2.0
+redis>=4.5.0
+
+# Configuration
+python-decouple>=3.8
+
+# API Documentation
+drf-spectacular>=0.26.0
+
+# Development tools
+django-extensions>=3.2.0
+
+# Static files
+whitenoise>=6.4.0
+
+# Production server
+gunicorn>=20.1.0
+
+# Monitoring
+sentry-sdk>=1.25.0

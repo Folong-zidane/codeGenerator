@@ -6,7 +6,17 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * 📦 Utilitaires pour la création de fichiers ZIP
+ */
 public class ZipUtils {
+    
+    /**
+     * Méthode principale utilisée par le contrôleur
+     */
+    public static byte[] createZip(Map<String, String> files) throws IOException {
+        return createZipFromFiles(files);
+    }
     
     public static byte[] createZipFromFiles(Map<String, String> files) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

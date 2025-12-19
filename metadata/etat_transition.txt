@@ -1,0 +1,36 @@
+yaml
+%% ============================================
+%% DIAGRAMME D'ÉTAT
+%% ============================================
+%% @state-diagram
+%% diagram-type: state
+%% 
+%% ===== TYPE DE MACHINE =====
+%% state-machine-type: finite|hierarchical|concurrent
+%% state-machine-framework: spring-statemachine|stateless|xstate
+%% 
+%% ===== ÉTATS HIÉRARCHIQUES =====
+%% hierarchical-states: true
+%% sub-states: true
+%% history-states: shallow|deep
+%% 
+%% ===== ACTIONS =====
+%% entry-actions: true              # entry / action
+%% exit-actions: true               # exit / action
+%% do-actions: true                 # do / activity
+%% transition-actions: true
+%% 
+%% ===== ÉVÉNEMENTS =====
+%% event-driven: true
+%% event-sourcing: true
+%% event-store: kafka|eventstore|postgres
+%% 
+%% ===== TRANSITIONS =====
+%% guard-conditions: true           # [guard] / action
+%% automatic-transitions: true
+%% 
+%% ===== PERSISTENCE =====
+%% state-persistence: database|redis|memory
+%% audit-trail: true
+%% 
+%% @end-state-diagram

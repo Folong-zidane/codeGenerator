@@ -1,7 +1,6 @@
 package com.basiccode.generator.generator.php;
 
 import com.basiccode.generator.model.EnhancedClass;
-import com.basiccode.generator.model.UmlAttribute;
 
 public class PhpRequestGenerator {
     
@@ -33,7 +32,7 @@ public class PhpRequestGenerator {
         code.append("    {\n");
         code.append("        return [\n");
         
-        for (UmlAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
+        for (com.basiccode.generator.model.UMLAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
             if (!"id".equalsIgnoreCase(attr.getName())) {
                 String rules = generateValidationRules(attr);
                 code.append("            '").append(attr.getName()).append("' => '").append(rules).append("',\n");
@@ -88,7 +87,7 @@ public class PhpRequestGenerator {
         code.append("        $id = $this->route('").append(className.toLowerCase()).append("');\n\n");
         code.append("        return [\n");
         
-        for (UmlAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
+        for (com.basiccode.generator.model.UMLAttribute attr : enhancedClass.getOriginalClass().getAttributes()) {
             if (!"id".equalsIgnoreCase(attr.getName())) {
                 String rules = generateUpdateValidationRules(attr, className);
                 code.append("            '").append(attr.getName()).append("' => ").append(rules).append(",\n");
@@ -113,7 +112,7 @@ public class PhpRequestGenerator {
         return code.toString();
     }
     
-    private String generateValidationRules(UmlAttribute attr) {
+    private String generateValidationRules(com.basiccode.generator.model.UMLAttribute attr) {
         StringBuilder rules = new StringBuilder("required");
         
         switch (attr.getType().toLowerCase()) {
@@ -123,10 +122,13 @@ public class PhpRequestGenerator {
                     rules.append("|email|unique:").append(attr.getName().toLowerCase()).append("s,email");
                 }
                 break;
-            case "integer", "int", "long":
+            case "integer":
+            case "int":
+            case "long":
                 rules.append("|integer|min:0");
                 break;
-            case "float", "double":
+            case "float":
+            case "double":
                 rules.append("|numeric|min:0");
                 break;
             case "boolean":
@@ -145,7 +147,7 @@ public class PhpRequestGenerator {
         return rules.toString();
     }
     
-    private String generateUpdateValidationRules(UmlAttribute attr, String className) {
+    private String generateUpdateValidationRules(com.basiccode.generator.model.UMLAttribute attr, String className) {
         StringBuilder rules = new StringBuilder();
         
         // For updates, most fields are sometimes required
@@ -158,10 +160,13 @@ public class PhpRequestGenerator {
                 case "string":
                     rules.append("|string|max:255");
                     break;
-                case "integer", "int", "long":
+                case "integer":
+                case "int":
+                case "long":
                     rules.append("|integer|min:0");
                     break;
-                case "float", "double":
+                case "float":
+                case "double":
                     rules.append("|numeric|min:0");
                     break;
                 case "boolean":
